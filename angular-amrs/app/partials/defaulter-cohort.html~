@@ -1,0 +1,34 @@
+<div ng-controller="DefaulterCohortCtrl">
+  <div class="container-fluid">
+    <a href="#/" class="btn btn-primary btn-lg btn-block">Back</a>
+
+    <div class="row">
+      <div class='col-md-6'>
+	<select ng-model="defaulterCohortUuid">
+	  <option value="">Choose clinic...</option>
+	  <option ng-repeat="dc in defaulterCohorts" value="{{dc.uuid}}">{{dc.name}}</option>
+	</select>
+      </div>
+      <div class='col-md-6'>
+	<button class="btn btn-primary btn-lg btn-block" ng-click="getDefaulterCohort()" id='defaulter_list_btn'>Get Defaulter List</button>	  
+      </div>
+    </div>
+
+    <ul class="list-group">
+      <li class="list-group-item">Name: {{defaulterCohort.name}}</li>
+      <li class="list-group-item">Date Created: {{defaulterCohort.date_created}}</li>
+      <li class="list-group-item">Patients remaining to be traced: {{defaulterCohort.length}}</li>
+    </ul>
+    <button class="btn btn-primary btn-lg btn-block" ng-Click="updateDefaulterCohort()">Update List</button>
+    <button class="btn btn-primary btn-lg btn-block" value="Get New List" ng-Click="getNewDefaulterCohort()">Get New List</button>
+    <button class="btn btn-primary btn-lg btn-block" value="Toggle Retired" ng-Click="toggleRetired()">Toggle Retired</button>
+
+    <div class="list-group">
+      <a href="#/patient/{{patient.uuid}}" class="list-group-item" ng-repeat="patient in defaulterCohort.patients">
+        <b>{{patient.given_name}} {{patient.middle_name}} {{patient.family_name}}</b><br/>
+	{{patient.identifier}}<br/>
+	{{patient.phone_number}}<br/>
+      </a>
+    </div>
+  </div>
+</div>

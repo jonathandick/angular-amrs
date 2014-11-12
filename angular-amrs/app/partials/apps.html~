@@ -1,0 +1,15 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="list-group">
+	<a class="list-group-item" href="#/defaulter-cohort">Outreach Defaulter Lists</a>
+	<a class="list-group-item" href="#/patient-search">Patient Search</a>
+	<a class="list-group-item" id="submit_saved_forms_link">Submit Saved Encounters (<span id="num_saved_encounters"></span>)</a>
+	<a class="list-group-item" onClick="javascript:window.open('/encounter_form/view_rest_errors','_self')">View REST Errors</a>
+	<a class="list-group-item" onClick="javascript:window.open('/hiv_dashboard/index','_self')">HIV Care Dashboard</a>
+	<a class="list-group-item" onClick="javascript:window.open('/ltfu/index','_self')">Retention</a>
+	<a class="list-group-item" href="#/amrs">Test AMRS</a>
+      </div>
+    </div>
+  </div>
+</div>

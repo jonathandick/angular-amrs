@@ -1,0 +1,61 @@
+
+var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies']);
+
+
+var OPENMRS_CONTEXT_PATH = "http://10.50.110.67:8080/amrs";
+
+openmrsServices.factory('Person',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/person/:uuid", 
+		       {uuid: '@uuid'},		       
+			   
+      }); 
+  }]);
+
+
+openmrsServices.factory('Provider',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/provider/:uuid", {
+          uuid: '@uuid'
+      });
+  }]);
+
+
+
+openmrsServices.factory('Patient',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/patient/:uuid", {
+          uuid: '@uuid'
+      });
+  }]);
+
+
+openmrsServices.factory('Encounter',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/encounter/:uuid", {
+          uuid: '@uuid'
+      });
+  }]);
+
+
+openmrsServices.factory('Obs',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/obs/:uuid", {
+          uuid: '@uuid'
+      });
+  }]);
+
+
+openmrsServices.factory('Location',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/location/:uuid", {
+          uuid: '@uuid'
+      });
+  }]);
+
+
+
+
+
+
+

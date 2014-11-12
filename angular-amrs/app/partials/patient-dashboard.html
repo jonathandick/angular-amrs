@@ -1,0 +1,55 @@
+
+<div ng-controller="PatientDashboardCtrl">
+  <div class="container-fluid">
+    <input type="hidden" name="patient_uuid" id="dash_patient_uuid"/>
+    <input type="hidden" name="dash_cohort_key" id="dash_cohort_key"/>
+    <a href="#/patient-search" class="btn btn-primary btn-lg btn-block">Back</a>
+    <ul class="list-group">
+      <li class="list-group-item" style="font-size:large">
+	{{patient.given_name}} {{patient.middle_name}} {{ patient.family_name}}
+      </li>
+      <li class="list-group-item" style="font-size:large">Identifier(s):{{patient.identifier}}</li>
+      <li class="list-group-item" style="font-size:large">Birthdate: {{patient.birthdate}}</li>
+      <li class="list-group-item" data-role="fieldcontain">
+	<div class='ui-grid-b'>
+	  <div class='ui-block-a' style="font-size:large;width:100%;">Phone Number:</div>
+	  <div class='ui-block-a' style="width:50%">
+	    <input style="font-size:large;" name="phone_number" id="dash_phone_number" type="tel" size="10" value="{{patient.phone_number}}"/>
+	  </div>	
+	  <div class='ui-block-b' style="width:50%">
+	    <input type='hidden' id='dash_patient_uuid'/>
+	    <input type="button" id="update_phone_number_button" onClick="updatePhoneNumberView()" value="Update"/>
+	  </div>
+	</div>
+      </li>
+      <li class="list-group-item" style="font-size:large">
+	Last Appt Date: {{patient.last_appt_date}}<br/>
+	Last Appt Type: <span id="dash_last_encounter_type"></span><br/>
+	Last RTC Date: <span id="dash_last_rtc_date"></span><br/>	
+      </li>	
+    </ul>
+    <button class="btn btn-primary btn-lg btn-block" data-toggle="collapse" data-target="#encounter_history" 
+	    aria-expanded="false" aria-controls="#encounter_history">
+      Encounter History
+    </button>    
+
+    <div id="encounter_history" class="collapse">
+      <h3>Encounter History</h3>
+      <div id="dash_encounter_data" style="height:350px; overflow:scroll;display:none">
+      </div>      
+    </div>
+
+    <div data-role='collapsible' id="tb_history_div">
+      <h3>TB History</h3>              
+      <div id="dash_tb_data" style="height:350px; overflow:scroll; display:none">
+      </div>
+    </div>
+
+    <div data-role='collapsible'>
+      <h3>Forms</h3>
+      <ul data-role="listview">
+	<li><a id="form_link" d_id="" p_id="" onClick="outreachFormView()">Enter Outreach Form</a></li>
+      </ul>
+    </div>
+  </div>
+</div>

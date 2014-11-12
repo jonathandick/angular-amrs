@@ -1,0 +1,182 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html><!-- manifest="{% static 'amrs_reports/outreach_webapp.manifest' %}"-->
+
+<head>
+  <script type="text/javascript" src="{% static 'js/jquery-1.10.2.min.js'%}"></script>  
+
+  <script type="text/javascript" src="{% static 'js/jquery.mobile-1.4.4/jquery.mobile-1.4.4.js'%}"></script>  
+  <link rel="stylesheet" type="text/css" href="{% static 'js/jquery.mobile-1.4.4/jquery.mobile-1.4.4.css'%}" />     
+  
+  <meta content='initial-scale=1.0, maximum-scale=1.0, user-scalable=no' name='viewport' />   
+  <link type="text/css" rel="stylesheet" href="{% static 'amrs_reports/css/mobile_huawei.css'%}" />
+
+  <script type="text/javascript" src="{% static 'js/jquery-validation-1.13.0/dist/jquery.validate.min.js'%}"></script>
+  <script type="text/javascript" src="{% static 'js/outreach_form.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/outreach_controllers.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/outreach_views2.js' %}"></script>
+
+<script>
+
+  
+  window.applicationCache.addEventListener('updateready',function() {
+     window.applicationCache.swapCache();
+     alert('Cache updated');
+     window.location.reload();
+  },false);
+
+  
+  $(document).ready(function() {  
+     $(".to_apps").click(function() {
+         appsView();
+     });
+     var encounters = getSavedEncounters();
+     var numEncounters = 0;
+     if(encounters !== null) {
+         numEncounters = Object.keys(encounters).length;
+     }
+
+     initOutreachFormView();
+     $("#apps_view #num_saved_encounters").text(numEncounters)
+
+
+     initDefaulterCohortListView();
+     $("#defaulter_list_btn").click(function(){
+         defaulterCohortListView();	
+     });
+
+   
+     $("#submit_saved_forms_link").click(function() {
+           submitSavedFormsView();
+     });
+  
+
+     $("#outreach_form_btn").click(function() {
+         submitOutreachFormView();
+      });
+
+
+     $("#search_string").on("keyup change",function() {
+          patientSearchView();
+     });
+
+
+  var storageSpace = 1024 * 1024 * 2.5;
+  var localStorageSpace = storageSpace - unescape(encodeURIComponent(JSON.stringify(localStorage))).length; 
+  var percentageLeftLocal = Math.round((localStorageSpace / storageSpace) * 100);
+  var sessionStorageSpace = storageSpace - unescape(encodeURIComponent(JSON.stringify(sessionStorage))).length; 
+  var percentageLeftSession = Math.round((sessionStorageSpace / storageSpace) * 100);
+  
+
+
+  $('#storageSpaceText').text("Storage Remaining : Local Storage: " + percentageLeftLocal + "% ; Session Storage: " + percentageLeftSession + "%");
+      
+  });
+
+  function toggleRetired() {
+      $("#defaulter_cohort_list .retired").toggle();  
+  }
+
+  
+
+   
+  </script>
+</head>
+
+<body>
+
+  <div data-role="header" data-theme='d'>
+    <h2><span style="font-size:18px;text-align:center">AMPATH+<br/>Outreach</span></h2>
+    <!--a href="/outreach/" class="ui-btn-left" data-theme='b'>Home</a-->
+    <a href='/amrs_user_validation/logout' class="ui-btn-right" data-theme='b'>Logout</a>
+  </div>
+
+  <div id='storageSpaceBar'>
+    <div id='storageSpaceValue'>
+      <div id='storageSpaceText'></div>
+    </div>
+  </div>
+  
+  <div id="apps_view" class="app">
+    <ul data-role="listview">
+      <li><a id="defaulter_list_app" onClick="defaulterCohortListView()">Outreach Defaulter Lists</a></li>
+      <li><a onClick="patientSearchView()">Patient Search</a></li>
+      <li><a id="submit_saved_forms_link">Submit Saved Encounters (<span id="num_saved_encounters"></span>)</a></li>
+      <li><a onClick="javascript:window.open('/encounter_form/view_rest_errors','_self')">View REST Errors</a></li>
+      <li><a onClick="javascript:window.open('/hiv_dashboard/index','_self')">HIV Care Dashboard</a></li>
+      <li><a onClick="javascript:window.open('/ltfu/index','_self')">Retention</a></li>
+    </ul>
+  </div>
+  
+  <div id='defaulter_cohort_list_view' style="display:none" class="app">
+    <input type="button" class="to_apps" value="Back to Apps"/>
+    <input type="hidden" id="list_defaulter_cohort_id"/>
+
+    <input type="hidden" id="list_location_uuid"/>
+
+    <div class='ui-grid-b'>
+      <div class='ui-block-a' style="width:50%">
+	<select id='defaulter_cohort'>
+	  <option value="">Choose clinic...</option>
+	</select>
+      </div>
+      <div class='ui-block-b' style="width:50%">
+	<input type='button' value='Get Defaulter List' id='defaulter_list_btn'/>    
+      </div>
+    </div>
+    <div id="loading_image" style="display:none">    
+      <img src="{% static 'js/jquery.mobile-1.4.4/images/ajax-loader.gif'%}"></img>
+    </div> 
+
+    
+    <span id='defaulter_cohort_name'></span><br/>
+    <span id='date_created'></span><br/>
+    <span id='num_remaining'></span><br/>
+    
+    <input type='button' name='update_defaulter_cohort' id='update_defaulter_cohort' value='Update List' onClick='updateDefaulterCohortView()'/>
+    <input type='button' name='create_defaulter_cohort' id='create_defaulter_cohort' value='Get New List' onClick='getNewDefaulterCohortView()'/>
+    <input type='button' name='toggle_retired_btn' id='toggle_retired_btn' value='Show/Hide Retired' onClick='toggleRetired()'/>
+    
+    <ul data-role="listview" data-filter="true" id="defaulter_cohort_list">
+    </ul>
+  </div>
+
+
+  <div id="patient_dashboard_view" style="display:none" class="app">
+    {% include "outreach_webapp/patient_dashboard.html" %}
+  </div>
+
+
+  <div id="outreach_form_view" style="display:none" class="app">
+    {% include "outreach_webapp/outreach_form.html" %}
+  </div>
+
+
+  <div id="patient_search_view" style="display:none" class="app">
+    <input type="button" class="to_apps" value="Back to Apps"/>
+    <label for="search_string">Enter Patient Name or Identifier</label>
+    <input type='text' name='search_string' id='search_string'/>
+    <ul id="patient_list" data-role="listview"></ul>
+  </div>
+
+  <div id="encounter_full_view" style="display:none" class="app">
+    <input type="button" value="Back to Dashboard" onClick="backToPatientDashboardView() "/> 
+    <table id="encounter_full_table">
+      <tr>
+	<td>Encounter Datetime</td><td><input type="text" id="encounterDatetime"/></td>
+      </tr>
+      <tr>
+	<td>Encounter Type</td><td><input type="text" id="encounterType"/></td>
+      </tr>
+      <tr>
+	<td>Location</td><td><input type="text" id="location"/></td>
+      </tr>
+      <tr>
+	<td>Provider</td><td><input type="text" id="provider"/></td>		
+      </tr>
+    </table>
+  </div>
+ 
+ 
+</body>
+</html>

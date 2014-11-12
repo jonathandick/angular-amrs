@@ -1,0 +1,3 @@
+var openmrsServices = angular.module('amrsServices', ['ngResource','ngCookies']);
+
+

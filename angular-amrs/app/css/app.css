@@ -1,0 +1,210 @@
+/* app css stylesheet */
+h2 a.ui-btn {
+    font-size:28px;
+}
+
+.page-header, .ui-title {
+   font-size: 32px;
+   background-color: #E9DEFF;
+   color: black;
+   margin: 0;
+}
+
+.large-font {
+    font-size: large;
+}
+
+.ui-listview li a {
+    font-size: large;
+}
+
+a[retired="true"] {
+    background-color: gray;
+}
+
+
+.ui-mobile label, .ui-block-a label {
+    text-decoration: none;
+    font-size: medium;
+    font-weight:bold;
+}
+
+div.ui-controlgroup-label {
+    width:100%;
+    text-decoration: none;
+    font-size: medium;
+    font-weight:bold;
+    
+}    
+
+
+.ui-field-contain .ui-controlgroup-label {
+    float:left;
+    width:100%;
+    margin:.5em 2% 0 0;
+}
+
+.ui-page-theme-a.retired  .ui-btn {
+    background-color:red;
+}
+
+.ui-navbar li .ui-btn {
+    font-size: 16px;
+    display: block;
+    margin: 0;
+    border-right-width: 0;
+}
+
+
+ 
+.ui-select .ui-btn-corner-all, .ui-btn.ui-corner-all, .ui-slider-track.ui-corner-all, .ui-flipswitch.ui-corner-all, .ui-li-count{
+    font-size: 25px;
+    line-height: 30px;
+    font-family: sans-serif;
+}
+
+div.ui-mini.ui-btn .ui-btn-corner-all,.ui-btn.ui-corner-all {
+    font-size:medium;
+}
+
+
+
+input[type=text], input[type=url], input[type=email], input[type=password], input[type=tel], input[type=date] {
+  -webkit-appearance: none; -moz-appearance: none;
+  display: block;
+  margin: 0;
+  width: 100%; height: 30px;
+  line-height: 30px; font-size: 25px;
+  border: 1px solid #bbb;
+}
+
+
+
+a {
+	text-decoration: none;
+	color: #33a7d2;
+	font-size: 10px;
+	font-weight:bold;
+}
+
+
+a:hover { text-decoration: underline; }
+
+ 
+
+#wrapper {
+	width: "100%";
+	margin: 0 auto;
+	background: #fff;
+	border: 1px solid black;
+	border-collapse:collapse;
+}
+
+
+#header {
+	background: #007733;
+	border-top: 1px solid black;
+}
+
+#header foo
+{
+    font: 14pt, "Times New Roman",Times, serif;
+    color: #aaa;
+    margin: 0;
+    vertical-align:bottom;
+    align:right;
+}
+
+#header small
+{
+    font: 8pt "Lucida Grande", "Bitstream Vera Sans", Verdana, sans-serif;
+    color: #aaa;
+    margin: 0;
+    vertical-align:bottom;
+}
+
+#wordmark
+{
+    background: #007733;
+    float: left;    
+}
+
+#wordmark img
+{   
+    width: 85%;
+    color: #007733;
+}
+
+.right_bottom
+{
+float:middle;
+vertical-align:bottom;
+}
+
+
+#links {
+    right:0px;
+    bottom: 0px;
+    padding: 0px;
+    margin: 0px;
+}
+	
+#links li {
+    display: block;
+    float: right;
+    line-height: 20px;
+    margin-right: 0 px;
+    vertical-align:bottom;
+}
+
+#links li a {
+    color: #fff;
+    display: block;
+    padding: 0 1em;
+    background: #003333;    
+    float: right;
+    vertical-align:bottom;
+}
+
+
+#inner {
+	padding: 1em;
+}
+
+
+
+.data {
+    color: #000000;
+    text-align: right;
+    background-color: #DDDDDD;
+
+}
+
+.toprow {
+    font-style: italic;
+    text-align: left;
+    background-color: #FFFF;
+}
+
+.toprow_data {
+    color: #000000;
+    text-align: right;
+    background-color: #CCCCCC;
+}
+
+
+hr.panel {
+color: #f00;
+background-color: #000;
+height: 3px;
+}
+
+div.alt_bg_color {
+background-color:#FFFFFF;
+}
+
+
+h3.banner {
+font-size: 20px;
+}
+
