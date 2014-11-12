@@ -6,15 +6,6 @@
 var amrsControllers = angular.module('amrsControllers',[]);
 
 
-amrsControllers.controller('LoginCtrl',['$scope','Auth',
-
-  function($scope,Auth) {					
-      $scope.username = "";
-      $scope.password = "";
-      
-      
-
-
 amrsControllers.controller('ProvidersCtrl', ['$scope','$http',
   function($scope,$http) {
       $scope.providers = [{name:'john'},{name:'jane'}];      
@@ -29,17 +20,6 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
       Location.query({q:"unknown"}).$promise.then(function(data) { console.log(data) });
       
       openmrs.query({object:"person",uuid:"3d54351f-9fb4-40c1-a5c1-bc665fecbcd6"}).$promise.then(function(data) {console.log(data)});
-      /*
-      Person.save({names:{givenName:"Jane",familyName:"Doe"},
-		   gender:"F"
-		  });
-      */
-      /*
-      Person.query(['Jonathan']).then(function(data) {
-	  console.log(data);
-      });
-      */
-
       
   }]);
 
@@ -51,7 +31,7 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
       $scope.patients = [];
 
       $scope.$watch('searchString',function(value) {
-	  Patient.search(value,function(data) {
+	  Patient.query({q:value}).$promise.then(function(data) {
 	      $scope.patients = data;
 	  });
       });
