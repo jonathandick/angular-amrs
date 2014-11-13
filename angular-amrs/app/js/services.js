@@ -7,7 +7,6 @@ var local = localStorage;
 
 var amrsServices = angular.module('amrsServices', ['ngResource','ngCookies','openmrsServices']);
 
-
 amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location',
   function (Base64, $cookieStore, $http, OpenmrsSession,$location) {
       // initialize to whatever is in the cookie, if anything
@@ -66,121 +65,6 @@ amrsServices.factory('Amrs',['$http','Auth',
 
       return Amrs;
   }]);
-
-
-
-amrsServices.factory('AMRSPatient',['$http','$rootScope',				
-  function($http,$rootScope) {
-      var Patient = {};
-      Patient.get = function(patient_uuid,callback) {
-	  var patient = session.getItem(patient_uuid);
-	  if(patient) {
-	      console.log("Patient in session");
-	      callback(JSON.parse(patient));
-	  }
-	  else {
-	      console.log("PatientDashboardCtrl : Querying server for patient");
-	      $http.get('/outreach/ajax_get_patient?patient_uuid=' + patient_uuid).success(function(data){ 	      
-		  session.setItem(patient_uuid,JSON.stringify(data));
-		  callback(data);
-	      });
-	  }
-      };
-
-      Patient.search = function(searchString,callback){
-	  if(searchString && searchString.length > 3) {
-              $http.get('https://testserver1.ampath.or.ke/outreach/ajax_patient_search?search_string=' + searchString).success(function(data) {
-                  callback(data);
-              });
-          }
-      };
-
-      return Patient;
-      
-  }]);
-      
-amrsServices.factory('DefaulterCohort',['$http',
-  function($http) {
-      var DefaulterCohort = {};
-      DefaulterCohort.get = function(uuid,callback) {
-	  var dc = session.getItem(uuid);
-	  if(dc) {
-	      callback(JSON.parse(dc));
-	  }
-	  else {
-	      $http.get('/outreach/ajax_get_defaulter_cohort?defaulter_cohort_uuid=' + uuid).success(function(data) {		  
-		  session.setItem(data.defaulter_cohort.uuid,JSON.stringify(data.defaulter_cohort));
-		  if(uuid != data.defaulter_cohort.uuid) {
-		      local.removeItem("defaulterCohorts");
-		  }
-		  callback(data.defaulter_cohort);
-	      });
-	  }
-      };
-      
-      DefaulterCohort.getDefaulterCohorts = function(callback) {
-	  var dcs = local.getItem("defaulterCohorts");
-          if(dcs) {
-	      console.log("getting defaulter cohorts from local");
-              callback(JSON.parse(dcs));
-          }
-          else {
-	      console.log("getting defaulter cohorts from zerver");
-              $http.get('/outreach/ajax_get_defaulter_cohorts').success(function(data) {                  
-                  local.setItem("defaulterCohorts",JSON.stringify(data));
-		  callback(data);
-              });
-          }
-      };
-
-      DefaulterCohort.update = function(uuid,callback) {
-	  console.log("updateDefaulterCohort() : updating cohort...");
-	  var cohort,numUpdated=0;
-	  if(navigator.onLine) {
-	      cohort = JSON.parse(session.getItem(uuid));
-
-	      var url = '/outreach/ajax_get_retired_members?defaulter_cohort_uuid=' +uuid;
-	      $http.get(url).success(function(retiredPatients) {
-		  console.log(retiredPatients);
-		  if(retiredPatients.indexOf("*") != -1) {		      
-		      session.removeItem(uuid);
-		      local.removeItem("defaulterCohorts");
-		      DefaulterCohort.get(uuid,callback);		      
-		  }
-		  else {
-		      for(var i=0; i<retiredPatients.length; i++) {
-			  var patientUuid = retiredPatients[i];
-			  if(patientUuid in cohort.patients) {
-			      var p = cohort.patients[patientUuid];
-			      if(p.retired == 0) {
-				  cohort.patients[patientUuid].retired=1;
-				  numUpdated++;
-			      }
-			  }
-		      }
-		      session.setItem(uuid,JSON.stringify(cohort));
-		  }
-              });
-	  }
-	  callback(numUpdated);
-      };
-
-      DefaulterCohort.getNew = function(uuid,callback) {
-	  session.removeItem(uuid);
-	  var url = '/outreach/ajax_get_new_defaulter_cohort?defaulter_cohort_uuid=' + uuid;
-	  $http.get(url).success(function(data) {
-	      local.setItem("defaulterCohorts",JSON.stringify(data.defaulter_cohorts));
-              session.setItem(data.defaulter_cohort.uuid,JSON.stringify(data.defaulter_cohort));
-              callback(data.defaulter_cohort);
-	  });
-      };
-
-
-      return DefaulterCohort
-
-  }]);
-
-
 
 
 amrsServices.factory('Base64', function() {
