@@ -15,6 +15,14 @@ openmrsServices.factory('openmrs',['$resource',
   }]);
 
 
+openmrsServices.factory('OpenmrsSession',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",{} 		       
+		      ); 
+  }]);
+
+
+
 openmrsServices.factory('Person',['$resource',   			       
   function($resource) { 
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/person/:uuid", 

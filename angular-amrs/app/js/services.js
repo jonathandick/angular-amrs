@@ -8,24 +8,52 @@ var local = localStorage;
 var amrsServices = angular.module('amrsServices', ['ngResource','ngCookies','openmrsServices']);
 
 
-amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 
-  function (Base64, $cookieStore, $http) {
+amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location',
+  function (Base64, $cookieStore, $http, OpenmrsSession,$location) {
       // initialize to whatever is in the cookie, if anything
       $http.defaults.headers.common['Authorization'] = 'Basic ' + $cookieStore.get('authdata');
       
       var Auth = {}
-      Auth.setCredentials = function (username, password) {
+	  
+      Auth.setCredentials = function (username, password) {	  
           var encoded = Base64.encode(username + ':' + password);
           $http.defaults.headers.common.Authorization = 'Basic ' + encoded;
           $cookieStore.put('authdata', encoded);
       };
       
       Auth.clearCredentials = function () {
+	  sessionStorage.removeItem("sessionId");
           document.execCommand("ClearAuthenticationCache");
           $cookieStore.remove('authdata');
           $http.defaults.headers.common.Authorization = 'Basic ';
       };
 
+      Auth.isAuthenticated = function() {	  
+	  var id = sessionStorage.getItem("sessionId");
+	  if(id) { return true; }
+	  else { return false; }
+      };
+
+
+      Auth.authenticate = function(username,password) {
+	  console.log("Auth.authenticate() : request authentication");
+	  Auth.setCredentials(username,password);
+	  OpenmrsSession.get().$promise.then(function(data) {
+	      console.log(data);
+	      if(data.authenticated) {
+		  sessionStorage.setItem("sessionId",data.sessionId);
+		  $location.path("/apps");		  
+	      }
+	      else {		 
+		  $location.path("/login");
+	      }
+	  });
+      };
+
+      Auth.logout = function() {
+	  Auth.clearCredentials();
+	  session.removeItem("sessionId");
+      }
       
       
       return Auth;

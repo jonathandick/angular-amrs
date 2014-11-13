@@ -12,28 +12,79 @@ amrsControllers.controller('ProvidersCtrl', ['$scope','$http',
   }]);
 
 
-amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs',
-  function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs) {					      
-      $scope.locations = {};                  
+amrsControllers.controller('LoginCtrl',['$scope','Auth',
+  function($scope,Auth) {
+      $scope.username = '';
+      $scope.password = '';
+
+      $scope.authenticate = function() {
+	  sessionStorage.removeItem("sessionId");
+	  Auth.authenticate($scope.username,$scope.password);
+      };
+  }]);
       
-      Person.query({q:"Jonathan"}).$promise.then(function(data) { console.log(data) });
-      Location.query({q:"unknown"}).$promise.then(function(data) { console.log(data) });
+
+amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','$cookies',
+  function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,$cookies) {					      
+      $scope.v = "";
+      $scope.q = "";
       
-      openmrs.query({object:"person",uuid:"3d54351f-9fb4-40c1-a5c1-bc665fecbcd6"}).$promise.then(function(data) {console.log(data)});
+      $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
+
+      $scope.test = function() {
+
+	  $http.get("https://testserver1.ampath.or.ke/outreach/login")
+	      .success(function(data,status,headers,config) { 	      
+		  console.log(data);
+	      });	  
+      };
+
+      $scope.test2 = function() {
+	  $http.get("https://testserver1.ampath.or.ke/outreach/ajax_patient_search?search_string=test")
+	      .success(function(data) {
+		  console.log(data);
+	      });
+
+      };
+      
+  }]);
+
+
+
+amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth',
+  function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth) {					      
+      $scope.v = "";
+      $scope.q = "";
+      
+      $scope.test = function() {
+	  var params = {q:$scope.q};
+	  if($scope.v != "") { params["v"] = $scope.v };	  
+	  
+	  Person.query(params).$promise.then(function(data) { 
+	      $scope.result = data; 
+	      console.log(data);
+	  });
+      };
       
   }]);
 
 
 
 amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patient',
-  function($scope,$http,Auth,Patient) {
+  function($scope,$http,Auth,Patient,Person) {
       $scope.filter = "";
       $scope.patients = [];
 
       $scope.$watch('searchString',function(value) {
-	  Patient.query({q:value}).$promise.then(function(data) {
-	      $scope.patients = data;
-	  });
+	  var v = "custom:(uuid,";
+	  v += "person:(uuid,gender,birthdate,preferredName:(givenName,middleName,familyName),birthdate,attributes:(attributeType:(uuid),uuid)))";
+
+	  if(value && value.length > 3) {
+	      Patient.query({q:value,v:v}).$promise.then(function(data) {
+		  console.log(data);
+		  $scope.patients = data;
+	      });
+	  }
       });
 
    }]);
