@@ -1,9 +1,9 @@
-
 <div ng-controller="PatientDashboardCtrl">
   <div class="container-fluid">
     <input type="hidden" name="patient_uuid" id="dash_patient_uuid"/>
     <input type="hidden" name="dash_cohort_key" id="dash_cohort_key"/>
-    <a href="#/patient-search" class="btn btn-primary btn-lg btn-block">Back</a>
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
+
     <ul class="list-group">
       <li class="list-group-item" style="font-size:large">
 	{{patient.given_name}} {{patient.middle_name}} {{ patient.family_name}}
@@ -28,28 +28,29 @@
 	Last RTC Date: <span id="dash_last_rtc_date"></span><br/>	
       </li>	
     </ul>
-    <button class="btn btn-primary btn-lg btn-block" data-toggle="collapse" data-target="#encounter_history" 
-	    aria-expanded="false" aria-controls="#encounter_history">
-      Encounter History
-    </button>    
 
-    <div id="encounter_history" class="collapse">
-      <h3>Encounter History</h3>
-      <div id="dash_encounter_data" style="height:350px; overflow:scroll;display:none">
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="encounterHistory = !encounterHistory">Encounter History</button>
+    <div collapse="!encounterHistory" >
+      <h3>Encounter History</h3>              
+      <div id="dash_encounter_data" style="height:350px; overflow:scroll; display:none">
       </div>      
     </div>
 
-    <div data-role='collapsible' id="tb_history_div">
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="tbHistory = !tbHistory">TB History</button>
+    <div collapse="!tbHistory" >
       <h3>TB History</h3>              
       <div id="dash_tb_data" style="height:350px; overflow:scroll; display:none">
+      </div>      
+    </div>
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="forms = !forms">Forms</button>
+    <div collapse="!forms" >
+      <div class="list-group">
+	<a style="font-size:medium" class="list-group-item" ui-sref="outreach-form({patientUuid:patient.uuid})">Enter Outreach Form</a>
       </div>
     </div>
 
-    <div data-role='collapsible'>
-      <h3>Forms</h3>
-      <ul data-role="listview">
-	<li><a id="form_link" d_id="" p_id="" onClick="outreachFormView()">Enter Outreach Form</a></li>
-      </ul>
-    </div>
   </div>
 </div>

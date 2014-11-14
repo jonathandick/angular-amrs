@@ -1,16 +1,24 @@
+<script>
+  function toggleRetired() {
+      $("a[retired='true']").toggle();
+  }
+</script>
+
+
 <div ng-controller="DefaulterCohortCtrl">
   <div class="container-fluid">
-    <a href="#/" class="btn btn-primary btn-lg btn-block">Back</a>
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
+    <br/>
 
     <div class="row">
       <div class='col-md-6'>
-	<select ng-model="defaulterCohortUuid">
+	<select class="form-control" ng-model="defaulterCohortUuid">
 	  <option value="">Choose clinic...</option>
 	  <option ng-repeat="dc in defaulterCohorts" value="{{dc.uuid}}">{{dc.name}}</option>
 	</select>
       </div>
       <div class='col-md-6'>
-	<button class="btn btn-primary btn-lg btn-block" ng-click="getDefaulterCohort()" id='defaulter_list_btn'>Get Defaulter List</button>	  
+	<button class="btn btn-custom btn-lg btn-block " ng-click="getDefaulterCohort()" id='defaulter_list_btn'>Get Defaulter List</button>	  
       </div>
     </div>
 
@@ -19,15 +27,16 @@
       <li class="list-group-item">Date Created: {{defaulterCohort.date_created}}</li>
       <li class="list-group-item">Patients remaining to be traced: {{defaulterCohort.length}}</li>
     </ul>
-    <button class="btn btn-primary btn-lg btn-block" ng-Click="updateDefaulterCohort()">Update List</button>
-    <button class="btn btn-primary btn-lg btn-block" value="Get New List" ng-Click="getNewDefaulterCohort()">Get New List</button>
-    <button class="btn btn-primary btn-lg btn-block" value="Toggle Retired" ng-Click="toggleRetired()">Toggle Retired</button>
+    <button class="btn btn-custom btn-lg btn-block" ng-Click="updateDefaulterCohort()">Update List</button>
+    <button class="btn btn-custom btn-lg btn-block" value="Get New List" ng-Click="getNewDefaulterCohort()">Get New List</button>
+    <button class="btn btn-custom btn-lg btn-block" value="Toggle Retired" onClick="toggleRetired()">Toggle Retired</button>
 
-    <div class="list-group">
-      <a href="#/patient/{{patient.uuid}}" class="list-group-item" retired="{{patient.retired}}" ng-repeat="patient in defaulterCohort.patients">
+    <div class="list-group" id="defaulterList">
+      <a ui-sref="patient({uuid:patient.uuid})" style="font-size:large" class="list-group-item" retired="{{patient.retired}}" ng-repeat="patient in defaulterCohort.patients">
+	<span class="badge"><span class="glyphicon glyphicon-chevron-right"></span></span>
         <b>{{patient.given_name}} {{patient.middle_name}} {{patient.family_name}}</b><br/>
-	{{patient.identifier}}<br/>
-	{{patient.phone_number}}<br/>
+	Identifier: {{patient.identifier}}<br/>
+	Phone: {{patient.phone_number}}
       </a>
     </div>
   </div>

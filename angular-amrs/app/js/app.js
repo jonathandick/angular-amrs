@@ -2,7 +2,7 @@
 
 /* App Module */
 
-var amrsApp = angular.module('amrsApp', ['ui.router','amrsControllers','openmrs.widget.login']);
+var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers','ui.bootstrap','openmrs.widgets']);
 
 var static_dir = 'js/angular-amrs/app/';
 
@@ -26,7 +26,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      authenticate:true,
 	  })
 	  .state('patient', {
-	      url: '/patient/:patient',
+	      url: '/patient/:uuid',
 	      templateUrl: static_dir + 'partials/patient-dashboard.html',
 	      controller: 'PatientDashboardCtrl',
 	      authenticate:true,
@@ -36,8 +36,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      url: "/defaulter-cohort",
 	      templateUrl: static_dir + 'partials/defaulter-cohort.html',	      
 	      controller: 'DefaulterCohortCtrl',
-	      authenticate:true,
-	      
+	      authenticate:true,	      
 	  })	  
 	  .state('amrs',{
 	      url: "/amrs",
@@ -45,7 +44,11 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      controller: 'AmrsCtrl',
 	      authenticate:true,
 	  })
-
+	  .state('outreach-form',{
+	      url:"/outreach-form/:patientUuid/:formUuid",
+	      templateUrl: static_dir + 'partials/outreach-form.html',
+	      authenticate:true,
+	  })
 	  .state('django',{
 	      url: "/django",
 	      templateUrl: static_dir + 'partials/test-django.html',
@@ -59,7 +62,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
       $urlRouterProvider.otherwise("/apps");
   }])
     .run(['$rootScope','$state','Auth',
-	  function ($rootScope, $state, Auth) {
+	  function ($rootScope, $state, Auth) {	     
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");

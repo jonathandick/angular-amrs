@@ -5,7 +5,7 @@
 var session = sessionStorage;
 var local = localStorage;
 
-var amrsServices = angular.module('amrsServices', ['ngResource','ngCookies','openmrsServices']);
+var amrsServices = angular.module('amrsServices', ['ngResource','ngCookies','openmrsServices','amrsControllers']);
 
 amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location',
   function (Base64, $cookieStore, $http, OpenmrsSession,$location) {

@@ -1,3 +1,4 @@
+'use strict';
 
 var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies']);
 
@@ -59,8 +60,33 @@ openmrsServices.factory('Encounter',['$resource',
   }]);
 
 
+openmrsServices.factory('EncounterService',['$http','Encounter',
+  function($http,Encounter) {
+      var EncounterService = {};
+
+      EncounterService.submit = function(encounterUuid,enc) {
+	  if(enc.obs) {
+	      var t = [];
+	      for(var c in enc.obs) {
+		  t.push({concept:c,value:enc.obs[c]});
+	      }
+	      enc.obs = t;
+	  }
+	  var url = OPENMRS_CONTEXT_PATH + 'ws/rest/v1/encounter/';
+	  if(encounterUuid && encounterUuid != "") { 
+	      url += '/' + encounterUuid; 
+	  }
+	  return $http.post(url,enc);
+      };
+      
+      return EncounterService;
+
+  }]);
+
+
+
 openmrsServices.factory('EncounterType',['$resource',   			       
-  function($resource) { 
+  function($resource) {       
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/encountertype/:uuid", 
 		       { uuid: '@uuid'}, 
 		       { query: {method:"GET",isArray:false}}

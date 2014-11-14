@@ -3,7 +3,7 @@
 /* Directives */
 
 
-angular.module('openmrs.widget.login',[])
+angular.module('openmrs.widgets',[])
     .directive('openmrsLogin', [ function() {
 	return {
 	    restrict : "E",
@@ -21,6 +21,19 @@ angular.module('openmrs.widget.login',[])
 		
 	    }
 	}
+    }])
+    .directive('backButton', [function() {
+	return {
+	    restrict: 'A',
+	    
+	    link: function(scope, element, attrs) {
+		element.bind('click', goBack);
+		
+		function goBack() {
+		    history.back();
+		    scope.$apply();
+		}
+	    }
+	}
     }]);
-	       
 	       
