@@ -81,8 +81,8 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
 
 	  if(value && value.length > 3) {
 	      Patient.query({q:value,v:v}).$promise.then(function(data) {
-		  console.log(data);
-		  $scope.patients = data;
+		  console.log(data.results);
+		  $scope.patients = data.results;
 	      });
 	  }
       });
@@ -91,7 +91,8 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
 
 
 amrsControllers.controller('PatientDashboardCtrl',['$scope','Patient','$routeParams',
-  function($scope,Patient,$routeParams) {
+  function($scope,Patient,$routeParams) {      
+      console.log($routeParams);
       Patient.get($routeParams.patient_uuid,function(data) {
 	  $scope.patient = data;
       });

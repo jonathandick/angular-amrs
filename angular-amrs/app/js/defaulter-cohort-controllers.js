@@ -8,10 +8,11 @@ var defaulterCohortControllers = angular.module('defaulterCohortControllers',['d
 
 defaulterCohortControllers.controller('PatientDashboardCtrl',['$scope','DCPatientService','$stateParams',
 							      
-  function($scope,PatientService,$stateParams) {      
+  function($scope,DCPatientService,$stateParams) {      
       if($stateParams.uuid) {
 	  console.log($stateParams.uuid);
-	  PatientService.get($stateParams.uuid,function(data) {
+	  DCPatientService.get($stateParams.uuid,function(data) {
+	      console.log(data);
 	      $scope.patient = data;
 	  });
       }

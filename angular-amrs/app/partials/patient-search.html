@@ -6,7 +6,7 @@
     <input type='text' ng-model="searchString" placeholder="Patient search..."/>      
     <div class="list-group">
       <a href="#/patient/{{patient.uuid}}" class="list-group-item" ng-repeat="patient in patients">
-	<b>{{patient.given_name}} {{patient.family_name}}</b>
+	<b>{{patient.person.preferredName.givenName}} {{patient.person.preferredName.familyName}}</b>
       </a>        
     </div>
   </div>

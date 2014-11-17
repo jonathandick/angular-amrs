@@ -9,28 +9,28 @@ var DEFAULTER_COHORT_CONTEXT  = "https://testserver1.ampath.or.ke";
 var defaulterCohortServices = angular.module('defaulterCohortServices', ['ngResource','ngCookies','openmrsServices']);
 
 
-defaulterCohortServices.factory('DCPatientService',['$http','Patient',
-  function($http,Patient) {
+defaulterCohortServices.factory('DCPatientService',['$http','PatientService',
+  function($http,PatientService) {
       var DCPatientService = {};
-      DCPatientService.get = function(patient_uuid,callback) {
-	  console.log("PatientService.get() : " + patient_uuid);
-	  var patient = session.getItem(patient_uuid);
+      DCPatientService.get = function(patientUuid,callback) {
+	  console.log("DCPatientService.get() : " + patientUuid);
+	  var patient = session.getItem(patientUuid);
 	  if(patient) {
-	      console.log("Patient in session");
+	      console.log("DCPatientService.get() : Patient in session");
 	      callback(JSON.parse(patient));
 	  }
 	  else {
-	      console.log("PatientDashboardCtrl : Querying server for patient");
-	      Patient.get(patient_uuid).$promise.then(function(data){ 	      
-		  session.setItem(patient_uuid,JSON.stringify(data));
-		  callback(data);
+	      console.log("DCPatientService.get() : Querying server for patient");
+	      PatientService.get(patientUuid, function(p){
+		  //session.setItem(patientUuid,JSON.stringify(p.getPatient()));
+		  callback(p);
 	      });
 	  }
       };
 
       DCPatientService.search = function(searchString,callback){
-	  if(searchString && searchString.length > 3) {
-	      Patient.get({q:searchString}).$promise.then(function(data){
+	  if(searchString && searchString.length > 3) {	      
+	      Patient.query({q:searchString}).$promise.then(function(data){
                   callback(data);
               });
           }

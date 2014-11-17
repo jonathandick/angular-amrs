@@ -44,11 +44,71 @@ openmrsServices.factory('Provider',['$resource',
 
 openmrsServices.factory('Patient',['$resource',   			       
   function($resource) { 
+      var c = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
+	  + "attributes:(uuid,value,attributeType:ref)))";
+
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/patient/:uuid", 
-		       { uuid: '@uuid'}, 
+		       { uuid: '@uuid',v:c},
 		       { query: {method:"GET",isArray:false}}
 		      ); 
   }]);
+
+
+openmrsServices.factory('PatientService',['$http','Patient',
+  function($http,Patient) {
+      var PatientService = {};
+
+      var abstractPatient = {
+	  patientData: {},
+	  clone : function() {
+              var a = {patientData:{},};
+              for(var k in this) {
+		  if(typeof this[k] == 'function' && k != "clone") {
+                      a[k] = this[k];
+		  }
+              }
+              return a;
+	  },
+	  getPatient : function () { return this.patientData; },	  
+	  getName : function() { return this.patientData.person.preferredName.display; },
+	  getGivenName : function() { return this.patientData.person.preferredName.givenName; },
+	  setGivenName : function(s) { return this.patientData.person.preferredName.givenName = s; },
+
+	  getBirthdate : function() { return this.patientData.person.birthdate; },
+	  getDead : function() { return this.patientData.person.dead},
+	  getDeathDate : function() { return this.patientData.person.deathDate},
+	  getGender : function() { return this.patientData.person.gender},
+
+	  getIdentifiers : function(identifierType) {
+	      return this.patientData.identifiers;
+	  },
+
+	  getPhoneNumber : function() {
+	      for(var i in this.patientData.person.attributes) {
+		  var attr = this.patientData.person.attributes[i];
+		  if(attr.attributeType.uuid == "72a759a8-1359-11df-a1f1-0026b9348838") {
+		      return attr.value;
+		  }
+	      }
+	  }
+	  
+      };
+
+
+      PatientService.get = function(patientUuid,callback) {
+	  Patient.get({uuid:patientUuid}).$promise.then(function(data) {
+	      var p = abstractPatient.clone();
+	      p.patientData = data;
+	      if(callback) { return callback(p); }
+	      else { return p};
+	  });
+      };
+
+      return PatientService;
+
+  }]);
+
+
 
 
 openmrsServices.factory('Encounter',['$resource',   			       
@@ -78,7 +138,7 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 	  }
 	  return $http.post(url,enc);
       };
-      
+
       return EncounterService;
 
   }]);
