@@ -8,8 +8,8 @@
       <li class="list-group-item" style="font-size:large">
 	Patient Name: {{patient.getName()}}
       </li>
-      <li class="list-group-item" style="font-size:large">Identifier(s) <div ng-repeat="i in patient.getIdentifiers()">{{i.display}}</div></li>
-      <li class="list-group-item" style="font-size:large">Birthdate: {{patient.getBirthdate()}}</li>
+      <li class="list-group-item" style="font-size:large">Identifier(s): <span ng-repeat="i in patient.getIdentifiers()">{{i.display}}; </span></li>
+      <li class="list-group-item" style="font-size:large">Birthdate: {{patient.getBirthdate().substring(0,10)}}</li>
       <li class="list-group-item" data-role="fieldcontain">
 	<div class='ui-grid-b'>
 	  <div class='ui-block-a' style="font-size:large;width:100%;">Phone Number:</div>
@@ -48,7 +48,7 @@
     <button class="btn btn-custom btn-lg btn-block" ng-click="forms = !forms">Forms</button>
     <div collapse="!forms" >
       <div class="list-group">
-	<a style="font-size:medium" class="list-group-item" ui-sref="outreach-form({patientUuid:patient.uuid})">Enter Outreach Form</a>
+	<a style="font-size:medium" class="list-group-item" ui-sref="outreach-form({patientUuid:patient.getUuid()})">Enter Outreach Form</a>
       </div>
     </div>
 

@@ -1,32 +1,28 @@
 <div ng-controller="OutreachFormCtrl">
-  <div class="container-fluid">
+   <div class="container-fluid">
 
     <form novalidate class="simple-form" id="outreach_form" name="outreach_form" method='post'>
+      <patient-demographics patient="patient"></patient-demographics>	        
+      <br/>
 
-      <div class="form-group text-center">
-	<input id="outreach_form_btn" type="button" value="Submit" ng-click="submit()"/>
-      </div>      
-
-      
-      
+      <button ng-click="submit()">Submit</button>
       <tabset>	
-	<tab heading="Demographics">	        
+	<tab heading="Encounter Info">	        
+	  <br/>
 	  <div class="form-group">
             <label for="encounterDatetime">Encounter Date:</label>
             <input id="encounterDatetime" ng-model="enc.encounterDatetime" name="encounterDatetime" 
 		   type="date" min="2013-01-01" required/>
 	  </div>
 	  <div>
-	    <label for="locationUuid">Clinic</label>
-	    <select id="locationUuid" name="locationUuid" ng-model="enc.location">
-	      <option>Clinic...</option>
-	      <option ng-repeat="location in locations" value="{{location.uuid}}">{{location.name}}</option>
-	    </select>
+	    
+	    <clinic-locations-dropdown model="enc.location" label="Clinic Location">
+	    </clinic-locations-dropdown>
 	  </div>
 	  
 	  <div class="form-group">
 	    <label for="phoneNumber">Phone:</label>
-	    <input id="phoneNumber" ng-model="personAttributes['72a759a8-1359-11df-a1f1-0026b9348838']" 
+	    <input id="phoneNumber" ng-model="enc.personAttributes['72a759a8-1359-11df-a1f1-0026b9348838']" 
 		   type="tel" value="{{patient.phone_number}}"/>
 	  </div>
 	  
@@ -35,52 +31,13 @@
             <input id="missedReturnVisitDate" ng-model="enc.obs['a89e3896-1350-11df-a1f1-0026b9348838']" value='' type="date"
 		   name="obs__a89e3896-1350-11df-a1f1-0026b9348838" value=''/>
 	  </div>
-	  
-	  <div>
-	    <label for="form_identifier">AMRS ID Number:</label>
-	    <input auto-populate="True" id="identifier"
-		   name="identifier" type="text" readonly/>
-	  </div>
-	  <div class="form-group">
-	    <label for="family_name">Family Name:</label>
-	    <input auto-populate="True" id="family_name" name="patient.family_name" type="text" value="{{patient.family_name}}"
-		   readonly="readonly" value=""/>
-	  </div>
-	  
-	  <div class="form-group">
-	    <label for="given_name">Given Name:</label>
-	    <input auto-populate="True" id="given_name" name="patient.given_name" type="text" value="{{patient.given_name}}"
-		   readonly="readonly"/>
-	  </div>
-	  <div class="form-group">
-	    <label for="middle_name">Middle Name:</label>
-	    <input auto-populate="True" id="middle_name" name="patient.middle_name" type="text"
-		 readonly="readonly" value=""/>
-	  </div>
-	  <div class="form-group">        
-	    <label for="gender">Gender:</label>
-	    <input auto-populate="True" type='text' id="gender" name="gender" readonly="readonly"/>
-	  </div>
-	  <div class="form-group">
-	    <label for="birthdate">Date Of Birth:</label>
-	    <input auto-populate="True" id="birthdate" name="patient.birthdate" type="text"
-		 readonly="readonly" value=''/>
-	  </div>
-	  
-	  <div class="form-group">	   
-            <label for="last_encounter_date">Last Encounter Date:</label>
-            <input auto-populate="True" id="last_encounter_date" type="date" readonly/>
-	  </div>
-	  <div class="form-group">
-            <label for="last_encounter_type">Last Encounter Type:</label>
-            <input auto-populate="True" id="last_encounter_type" type="text" readonly size='50'/>
-	  </div>	
 	</tab>
 	
 	<tab heading="Phone Follow-up">
+	  <br/>
 	  <div class="form-group">
 	    <label for="obs.number_of_call_attempts">Number of call attempts:</label>
-	    <select id="obs.number_of_call_attempts" ng-model="enc.obs['e6c52d7e-3e25-4a83-8f9c-55a03bdc653a']" 
+	    <select class="form-control" id="obs.number_of_call_attempts" ng-model="enc.obs['e6c52d7e-3e25-4a83-8f9c-55a03bdc653a']" 
 		    name="enc.obsbs__e6c52d7e-3e25-4a83-8f9c-55a03bdc653a">
 	      <option></option>
 	      <option>1</option>
@@ -132,6 +89,7 @@
 	</tab>
 	
 	<tab heading="Field Follow-up">
+	  <br/>
 	  <div class="form-group">
             <label for="contacted_in_field">Was the patient found?:</label>
 	    <select class="form-control" id="contacted_in_field" ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']">
@@ -167,7 +125,7 @@
 	</tab>
 
 	<tab heading="If Found">
-	  
+	  <br/>
 	  <div class="form-group"> 
 	    <label for="date_found">Date Found:</label>
             <input id="date_found" ng-model="enc.obs['a89df246-1350-11df-a1f1-0026b9348838']" type="date"></input>	       
@@ -183,10 +141,11 @@
 	      <option value="a89f03ac-1350-11df-a1f1-0026b9348838" oldvalue="1749^SCHOOL^99DCT">School</option>
 	      <option value="a8a01a4e-1350-11df-a1f1-0026b9348838" oldvalue="1873^DATA PROVIDED BY AMAPATH RECORDS^99DCT">Patient File</option>
 	      <option value="a8aaf3e2-1350-11df-a1f1-0026b9348838" oldvalue="5622^OTHER NON-CODED^99DCT">Other</option>
-	</select>
+	    </select>
 	  </div>
-	  <div data-role="ui-field-contain" id="reason_missed_div">
-	    <fieldset data-role="controlgroup">
+
+
+    	  <div class="form-group" id="reason_missed_div">
 	      <legend>Reason for Missed Visit:</legend>
       	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.deceased' 
 		     type='checkbox' value='a89335d6-1350-11df-a1f1-0026b9348838' oldvalue='159^DECEASED^99DCT' class="custom" data-mini="true"/>
@@ -269,7 +228,7 @@
 	      <legend>If deceased:</legend>
 	      <div class="form-group">
 		<label for="date_of_death">Death date:</label>
-		<input class="form-control datepicker" data-concept="1570^DATE OF DEATH^99DCT" id="date_of_death" 
+		<input name="date_of_death" class="form-control datepicker" data-concept="1570^DATE OF DEATH^99DCT" id="date_of_death" 
 		       ng-model="enc.obs['a89df3d6-1350-11df-a1f1-0026b9348838']" type="date"/>               
 	    
 	      </div>
@@ -323,9 +282,10 @@
 	  </div>
 	</tab>
 	<tab heading="Finish">    
+	  <br/>
 	  <div class="form-group">
 	    <label for='patient_status'>What's the patients clinical status?</label>
-	    <select id='patient_status' ng-model="enc.obs['7c579743-5ef7-4e2c-839f-5b95597cb01c']" data-concept="9082^PATIENT CARE STATUS^99DCT" required>
+	    <select validate-patient-status name='patientStatus' class="form-control" id='patient_status' ng-model="enc.obs['7c579743-5ef7-4e2c-839f-5b95597cb01c']" required>
 	      <option></option>
 	      <option value="a8af5018-1350-11df-a1f1-0026b9348838" oldvalue='6101^CONTINUE^99DCT'>Patient wishes to remain in care at AMPATH</option>
 	      <option value="a89335d6-1350-11df-a1f1-0026b9348838" oldvalue='159^DECEASED^99DCT'>Patient Dead</option>
@@ -339,6 +299,7 @@
 	      </option>
 	      <option value="07c536bc-19f2-4296-9c4a-edd85f070095" oldvalue='9080^PROCESS OF BEING TRACED^99DCT'>Patient in process of being traced</option>
 	    </select>
+	    <span style="color:red" ng-show="outreach_form.patientStatus.$error.test">{{errors.patientStatus.errors}}</span>
 	  </div>
 	  
 	  <div class="form-group">
@@ -355,18 +316,14 @@
 	      <option value="7a260efe-bd7e-4926-87d9-b9e008956873" oldvalue="9078^VERY HIGH^99DCT">Yes</option>
 	    </select>
 	  </div>
+
 	  <div class="form-group">
-	    <label for='transfer_location'>If patient transferred to another AMPATH clinic, clinic name:</label>
-	    <select ng-model="personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" id='transfer_location'>
-	      <option></option>
-	    </select>
+	    <clinic-locations-dropdown model="enc.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" label="Transfer Location">
+	    </clinic-locations-dropdown>	    
 	  </div>
 	  <div class="form-group">
-	    <label for="provider_uuid">Provider</label>
-	    <select name='provider_uuid' id='provider_uuid' required>
-	      <option></option>
-	    </select>
-	  </div>      
+	    <providers-dropdown model="enc.provider" label="Provider:"></providers-dropdown>
+	  </div> 
 	</tab>
       </tabset>
     </form>

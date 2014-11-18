@@ -10,9 +10,7 @@ defaulterCohortControllers.controller('PatientDashboardCtrl',['$scope','DCPatien
 							      
   function($scope,DCPatientService,$stateParams) {      
       if($stateParams.uuid) {
-	  console.log($stateParams.uuid);
-	  DCPatientService.get($stateParams.uuid,function(data) {
-	      console.log(data);
+	  DCPatientService.get($stateParams.uuid,function(data) {	      
 	      $scope.patient = data;
 	  });
       }
@@ -77,36 +75,4 @@ defaulterCohortControllers.controller('DefaulterCohortCtrl', ['$scope','$http','
       
   }]);
 
-defaulterCohortControllers.controller('OutreachFormCtrl', ['$scope','$stateParams','DCPatientService','DCEncounterService',
-  function($scope,$stateParams,PatientService,EncounterService) {	
-      $scope.patient = "";
-
-      $scope.encounterUuid = "";
-
-      $scope.enc = {encounterType:"df5547bc-1350-11df-a1f1-0026b9348838",
-		    form:"1eb7938a-8a2a-410c-908a-23f154bf05c0"};
-
-      if($stateParams.patientUuid) {
-	  console.log($stateParams.uuid);
-	  PatientService.get($stateParams.patientUuid,function(data) {
-	      $scope.patient = data;
-	      $scope.enc.patient = $scope.patient.uuid;
-	  });
-      }
-
-      if($stateParams.encounterUuid) {
-	  $scope.encounterUuid = $stateParams.encounterUuid;
-	  EncounterService.get($stateParams.encounterUuid,function(data) {
-	      $scope.enc = data;
-	  });
-      }
-      
-
-      $scope.submit = function() {
-	  EncounterService.submit($scope.encounterUuid,$scope.enc);
-      }
-
-
-      
-  }]);
 

@@ -2,8 +2,9 @@
 
 /* Directives */
 
+var static_dir = 'js/angular-amrs/app/';
 
-angular.module('openmrs.widgets',[])
+angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
     .directive('openmrsLogin', [ function() {
 	return {
 	    restrict : "E",
@@ -51,14 +52,46 @@ angular.module('openmrs.widgets',[])
 	    }
 	}
     }])
-    .directive('EncounterPane', [function(EncounterService) {
+    .directive('patientDemographics', [function() {
 	return {
 	    restrict : "E",
-	    scope : {},
-	    link : function($scope,element,attrs) {
+	    scope : {
+		patient:'='
 	    },
+	    link : function($scope,element,attrs) {		
+	    },	    
+	    templateUrl: static_dir + "directive-templates/patient-demographics.html",
+	    
+	}
+    }])
+    .directive('clinicLocationsDropdown',['LocationServiceFlex',function() {
+	return {
+	    restrict: "E",
+	    scope: {
+		model:'=',
+		label:'@',
+	    },
+	    controller : function($scope,LocationServiceFlex) {
+		LocationServiceFlex.getAll(function(locations) { 		    
+		    $scope.locations = locations;		    		    		    
+		});
+	    },
+	    templateUrl : static_dir + "/directive-templates/locations.html",
+	}
+    }])
+    .directive('providersDropdown',['ProviderService',function() {
+	return {
+	    restrict: "E",
+	    scope: {
+		model:'=',
+		label:'@',
+	    },
+	    controller : function($scope,ProviderService) {
+		ProviderService.query(function(providers) { 		    
+		    $scope.providers = providers;		    		    		    
+		});
+	    },	    
+	    templateUrl : static_dir + "/directive-templates/providersDropdown.html",
 	}
     }]);
-				
-		
-	       
+

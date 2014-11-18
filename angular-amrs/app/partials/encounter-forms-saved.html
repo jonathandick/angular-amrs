@@ -1,0 +1,11 @@
+<div ng-controller="SavedFormsCtrl">
+    <div class="container-fluid">
+    <a href="#/" class="btn btn-custom btn-lg btn-block">Back</a>
+    <hr/>
+    <div class="list-group">
+      <a ui-sref="encounter-form-saved({hash:hash,formUuid:enc.form})" class="list-group-item" ng-repeat="(hash,enc) in savedEncounterForms">
+	<b>{{enc.p.getName()}}</b>
+      </a>        
+    </div>
+  </div>
+</div>

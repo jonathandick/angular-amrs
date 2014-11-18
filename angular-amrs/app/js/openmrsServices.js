@@ -42,6 +42,19 @@ openmrsServices.factory('Provider',['$resource',
   }]);
 
 
+openmrsServices.factory('ProviderService',['Provider',
+  function(Provider) {
+      var ProviderService = {};
+      
+      ProviderService.query = function(callback) {
+	  Provider.query().$promise.then(function(data) {
+	      callback(data.results);
+	  });
+      };
+
+      return ProviderService;
+  }]);
+
 openmrsServices.factory('Patient',['$resource',   			       
   function($resource) { 
       var c = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
@@ -70,16 +83,27 @@ openmrsServices.factory('PatientService',['$http','Patient',
               return a;
 	  },
 	  getPatient : function () { return this.patientData; },	  
-	  getName : function() { return this.patientData.person.preferredName.display; },
+	  getUuid : function() { return this.patientData.uuid; },
+	  getName : function() { 
+	      return (this.patientData.person.preferredName.givenName || "") + " " 
+		  + (this.patientData.person.preferredName.middleName || "") + " " 
+		  + this.patientData.person.preferredName.familyName;
+	  },
 	  getGivenName : function() { return this.patientData.person.preferredName.givenName; },
 	  setGivenName : function(s) { return this.patientData.person.preferredName.givenName = s; },
+
+	  getFamily : function() { return this.patientData.person.preferredName.familyName; },
+	  setFamilyName : function(s) { return this.patientData.person.preferredName.familyName = s; },
+
+	  getMiddleName : function() { return this.patientData.person.preferredName.middleName; },
+	  setMiddleName : function(s) { return this.patientData.person.preferredName.middleName = s; },
 
 	  getBirthdate : function() { return this.patientData.person.birthdate; },
 	  getDead : function() { return this.patientData.person.dead},
 	  getDeathDate : function() { return this.patientData.person.deathDate},
 	  getGender : function() { return this.patientData.person.gender},
 
-	  getIdentifiers : function(identifierType) {
+	  getIdentifiers : function(identifierType) {	      
 	      return this.patientData.identifiers;
 	  },
 
@@ -169,6 +193,21 @@ openmrsServices.factory('Location',['$resource',
 		       { query: {method:"GET",isArray:false}}
 		      ); 
   }]);
+
+
+openmrsServices.factory('LocationService',['$http','Location',
+  function($http,Location) {
+      var LocationService = {};
+
+      LocationService.getAll = function(callback) {
+	  Location.get().$promise.then(function(data) {callback(data.results);});
+      };
+
+      return LocationService;
+
+  }]);
+
+
 
 
 openmrsServices.factory('Concept',['$resource',   			       

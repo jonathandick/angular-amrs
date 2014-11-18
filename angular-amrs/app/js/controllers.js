@@ -92,7 +92,6 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
 
 amrsControllers.controller('PatientDashboardCtrl',['$scope','Patient','$routeParams',
   function($scope,Patient,$routeParams) {      
-      console.log($routeParams);
       Patient.get($routeParams.patient_uuid,function(data) {
 	  $scope.patient = data;
       });

@@ -2,7 +2,9 @@
 
 /* App Module */
 
-var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers','ui.bootstrap','openmrs.widgets']);
+var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers',
+					 'ui.bootstrap','openmrs.widgets','outreachForm.validators',
+					 'encounterFormControllers']);
 
 var static_dir = 'js/angular-amrs/app/';
 
@@ -44,8 +46,39 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      controller: 'AmrsCtrl',
 	      authenticate:true,
 	  })
+	  .state('encounter-form',{
+	      url:"/encounter-form/:formUuid/:patientUuid",
+	      authenticate:true,
+	      onEnter : function($state) {		  
+		  var formUuid = $state.params.formUuid;
+		  var transitions = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":'outreach-form'};
+		  if(transitions[formUuid]) {		      
+		      $state.transitionTo(transitions[formUuid],$state.params);
+		  }
+		  else {$state.transitionTo('apps');}
+	      },
+	  })      
+	  .state('encounter-forms-saved',{
+	      url:"/encounter-forms-saved",
+	      templateUrl: static_dir + 'partials/encounter-forms-saved.html',
+	      authenticate:true,
+	  })
+	  .state('encounter-form-saved',{
+	      url:"/encounter-form-saved?hash&formUuid",
+	      authenticate:true,
+	      onEnter : function($state,$stateParams) {		
+		  var formUuid = $stateParams.formUuid;		  
+		  var transitions = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":'outreach-form'};
+		  if(transitions[formUuid]) {		   
+		      var state = transitions[formUuid];
+		      $state.transitionTo('outreach-form',{hash:$stateParams.hash});
+		  }
+		  else {$state.transitionTo('apps');}
+	      },
+
+	  })
 	  .state('outreach-form',{
-	      url:"/outreach-form/:patientUuid/:formUuid",
+	      url:"/outreach-form?patientUuid&encounterUuid&hash",
 	      templateUrl: static_dir + 'partials/outreach-form.html',
 	      authenticate:true,
 	  })
@@ -62,7 +95,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
       $urlRouterProvider.otherwise("/apps");
   }])
     .run(['$rootScope','$state','Auth',
-	  function ($rootScope, $state, Auth) {	     
+	  function ($rootScope, $state, Auth) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
