@@ -32,12 +32,16 @@ encounterFormControllers.controller('OutreachFormCtrl', ['$scope','$stateParams'
       $scope.patient = "";
       $scope.encounterUuid = "";
       $scope.provider = "";
+      $scope.hash = "";
       
       $scope.errors = {};
       $scope.enc = {encounterType:"df5547bc-1350-11df-a1f1-0026b9348838",
 		    form:"1eb7938a-8a2a-410c-908a-23f154bf05c0"};
+
+      
       
       if($stateParams.hash) {
+	  $scope.hash = $stateParams.hash;
 	  $scope.enc = EncounterServiceFlex.getLocal($stateParams.hash);
 	  PatientServiceFlex.get($scope.enc.patient,function(patient) { $scope.patient = patient; });
       }
@@ -56,6 +60,10 @@ encounterFormControllers.controller('OutreachFormCtrl', ['$scope','$stateParams'
 	  });
       }
       
+      $scope.save = function() {
+	  console.log("hash: " + $scope.hash);
+	  EncounterServiceFlex.saveLocal($scope.enc,$scope.hash);
+      }
 
       $scope.submit = function() {
 	  console.log($scope.enc);

@@ -4,7 +4,7 @@
 
 var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers',
 					 'ui.bootstrap','openmrs.widgets','outreachForm.validators',
-					 'encounterFormControllers']);
+					 'encounterFormControllers','checklist-model']);
 
 var static_dir = 'js/angular-amrs/app/';
 

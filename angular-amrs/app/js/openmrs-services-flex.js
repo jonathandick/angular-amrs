@@ -68,10 +68,11 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
       };
 
 
-      EncounterServiceFlex.saveLocal = function(enc) {
-	  console.log(enc);
-	  var s = JSON.stringify(enc);             
-	  var hash = getHashCode(s);
+      EncounterServiceFlex.saveLocal = function(enc,hash) {
+	  if(!hash) { 
+	      var s = JSON.stringify(enc);             
+	      var hash = getHashCode(s);
+	  }
 	  var forms = local.getItem('savedEncounterForms');
 
 	  if(forms) { forms = JSON.parse(forms); }

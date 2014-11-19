@@ -5,6 +5,27 @@
 var static_dir = 'js/angular-amrs/app/';
 
 angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
+    .directive('customDatepicker',function($compile,$timeout){
+        return {
+            replace:true,
+            templateUrl:'custom-datepicker.html',
+            scope: {
+                ngModel: '=',
+                dateOptions: '@',
+                dateDisabled: '@',
+                opened: '=',
+                min: '@',
+                max: '@',
+                popup: '@',
+                options: '@',
+                name: '@',
+                id: '@'
+            },
+            link: function($scope, $element, $attrs, $controller){
+
+            }    
+        };
+    })
     .directive('openmrsLogin', [ function() {
 	return {
 	    restrict : "E",

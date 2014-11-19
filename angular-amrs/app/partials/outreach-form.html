@@ -5,17 +5,21 @@
       <patient-demographics patient="patient"></patient-demographics>	        
       <br/>
 
-      <button ng-click="submit()">Submit</button>
-      <tabset>	
+      <button ng-click="save()">Save</button><br/>
+
+
+     <br/><br/>
+
+      <tabset>
 	<tab heading="Encounter Info">	        
 	  <br/>
 	  <div class="form-group">
             <label for="encounterDatetime">Encounter Date:</label>
-            <input id="encounterDatetime" ng-model="enc.encounterDatetime" name="encounterDatetime" 
-		   type="date" min="2013-01-01" required/>
+            <input type="text" id="encounterDatetime" ng-model="enc.encounterDatetime" name="encounterDatetime"
+		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt.open" ng-click="dt.open=true"/>
 	  </div>
+
 	  <div>
-	    
 	    <clinic-locations-dropdown model="enc.location" label="Clinic Location">
 	    </clinic-locations-dropdown>
 	  </div>
@@ -28,8 +32,8 @@
 	  
 	  <div class="form-group">
             <label for="missed_return_visit_date">Missed appointment date:</label>
-            <input id="missedReturnVisitDate" ng-model="enc.obs['a89e3896-1350-11df-a1f1-0026b9348838']" value='' type="date"
-		   name="obs__a89e3896-1350-11df-a1f1-0026b9348838" value=''/>
+            <input id="missedReturnVisitDate" ng-model="enc.obs['a89e3896-1350-11df-a1f1-0026b9348838']" type="text"
+		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt2.open" ng-click="dt2.open=true"/>
 	  </div>
 	</tab>
 	
@@ -64,8 +68,7 @@
 	  
 	  <div class="form-group">
 	    <label for="owner_of_phone">Who does the phone belong to? :</label>
-	    <select class="form-control" id="owner_of_phone" ng-model="enc.obs['47a5988a-e5f7-424e-96cc-3b34aeea3c1a']" 
-		    data-concept="7506^OWNER OF PHONE^99DCT">
+	    <select class="form-control" id="owner_of_phone" ng-model="enc.obs['47a5988a-e5f7-424e-96cc-3b34aeea3c1a']">		    
 	      <option value="">...</option>
  	      <option value='a899b35c-1350-11df-a1f1-0026b9348838' oldvalue="1065^YES^99DCT">Patient</option>
 	      <option value="a89cd280-1350-11df-a1f1-0026b9348838" oldvalue="1410^CARETAKER^99DCT">Caregiver</option>
@@ -76,45 +79,36 @@
 	  </div>
 	  <div class="form_group">
 	    <label for='refer_for_field_follow_up'>If not contacted, refer for field follow-up?</label>
-            <select class="form-control" id='refer_for_field_follow_up' ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']"
-		data-concept="9067^REFER FOR FIELD FOLLOW-UP^99DCT">
-	      <option><option>
-	      <option value='a899b35c-1350-11df-a1f1-0026b9348838'  oldvalue='1065^Yes^99DCT'>Yes</option>
-	      <option value='a89de526-1350-11df-a1f1-0026b9348838' oldvalue='1551^DISTANCE TOO FAR^99DCT'>No, in catchment but distant too far</option>
-              <option value='83df5f26-f97a-4cda-9c05-d0bdc6e4ebee' 
-		      oldvalue='6834^OUT OF AMPATH CATCHMENT AREA^99DCT'>No, out of catchment area</option>
-	      <option value='a89decc4-1350-11df-a1f1-0026b9348838' oldvalue='1561^INADEQUATE LOCATOR INFORMATION^99DCT'>No, locator inadequate</option>	  
+            <select class="form-control" name='refer_for_field_follow_up' ng-model="enc.obs['a89deb3e-1350-11df-a1f1-0026b9348838']">
+	      <option/>
+	      <option value='a899b35c-1350-11df-a1f1-0026b9348838'>Yes</option>
+	      <option value='a89de526-1350-11df-a1f1-0026b9348838'>No, in catchment but distant too far</option>
+              <option value='83df5f26-f97a-4cda-9c05-d0bdc6e4ebee'>No, out of catchment area</option>
+	      <option value='a89decc4-1350-11df-a1f1-0026b9348838'>No, locator inadequate</option>	  
 	    </select>
-	  </div>
+	  </div>	  
 	</tab>
 	
 	<tab heading="Field Follow-up">
 	  <br/>
 	  <div class="form-group">
             <label for="contacted_in_field">Was the patient found?:</label>
-	    <select class="form-control" id="contacted_in_field" ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']">
-	      <option></option>
+	    <select class="form-control" name="contacted_in_field" ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']">
+	      <option/>
 	      <option value='true'>Yes</option>
 	      <option value='false'>No</option>
 	    </select>
 	  </div>
 	  <div class="form-group">
             <label for="reason_not_found_in_field">If not found, reason:</label>
-	    <select class="form-control" id="reason_not_found_in_field" ng-model="enc.obs['a89de5e4-1350-11df-a1f1-0026b9348838']" 
-		    data-concept="1552^NOT FOUND, REASONS^99DCT">
-	      <option value=""></option>
- 	      <option value='a89decc4-1350-11df-a1f1-0026b9348838' 
-		      oldvalue="1561^LOCATOR INFORMATION INADEQUATE^99DCT">Locator information inadequate</option>
-	      <option value='a89ded8c-1350-11df-a1f1-0026b9348838' 
-		      oldvalue="1562^RELOCATED^99DCT">Patient moved away</option>
-	      <option value = 'a89de21a-1350-11df-a1f1-0026b9348838'
-		    oldvalue="1547^WORK OR SCHOOL^99DCT">Patient at work</option>
-	      <option value='a89dee54-1350-11df-a1f1-0026b9348838'
-		      oldvalue="1563^NOT AT HOME^99DCT">Patient not at home</option>
-	      <option value='a89ef826-1350-11df-a1f1-0026b9348838'
-		      oldvalue="1739^ROAD IMPASSABLE^99DCT">Road impassable</option>
-	    <option value='a8aaf3e2-1350-11df-a1f1-0026b9348838'
-		    oldvalue="5622^OTHER NON-CODED^99DCT">Other</option>
+	    <select class="form-control" name="reason_not_found_in_field" ng-model="enc.obs['a89de5e4-1350-11df-a1f1-0026b9348838']">		    
+	      <option/>
+ 	      <option value='a89decc4-1350-11df-a1f1-0026b9348838'>Locator information inadequate</option>	      
+	      <option value='a89ded8c-1350-11df-a1f1-0026b9348838'>Patient moved away</option>		      
+	      <option value='a89de21a-1350-11df-a1f1-0026b9348838'>Patient at work</option>
+	      <option value='a89dee54-1350-11df-a1f1-0026b9348838'>Patient not at home</option>		      
+	      <option value='a89ef826-1350-11df-a1f1-0026b9348838'>Road impassable</option>
+	      <option value='a8aaf3e2-1350-11df-a1f1-0026b9348838'>Other</option>		    
 	    </select>
 	  </div>	    
 	  <div class="form-group">
@@ -128,7 +122,8 @@
 	  <br/>
 	  <div class="form-group"> 
 	    <label for="date_found">Date Found:</label>
-            <input id="date_found" ng-model="enc.obs['a89df246-1350-11df-a1f1-0026b9348838']" type="date"></input>	       
+            <input id="date_found" ng-model="enc.obs['a89df246-1350-11df-a1f1-0026b9348838']" type="text"
+		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt3.open" ng-click="dt3.open=true"/>
 	  </div>
 	  <div class="form-group">
             <label for="location_of_contact">Location of contact:</label>
@@ -144,92 +139,177 @@
 	    </select>
 	  </div>
 
-
     	  <div class="form-group" id="reason_missed_div">
-	      <legend>Reason for Missed Visit:</legend>
-      	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.deceased' 
-		     type='checkbox' value='a89335d6-1350-11df-a1f1-0026b9348838' oldvalue='159^DECEASED^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.deceased'>Deceased </label>  
+	    <legend>Reason for Missed Visit:</legend>
+	    <div class='list-button'>
+	      <label>
+      		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.deceased' 
+		       type='checkbox' checklist-value='a89335d6-1350-11df-a1f1-0026b9348838'/>
+    		<span>Deceased</span> 
+	      </label>
+	    </div>
+
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.ampath_clinic_transfer' 
+	 	       type='checkbox' checklist-value="a89ef060-1350-11df-a1f1-0026b9348838"/>    		  
+		<span>Transferred Clinic</span>
+	      </label>  
+	    </div>
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id="work_commitmentstype" type='checkbox'
+		       checklist-value="a89e2a54-1350-11df-a1f1-0026b9348838"/>
+		<span>Work Committments</span>
+	      </label>  
+	    </div>
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.family_commitments' 
+		       type='checkbox' checklist-value='a89e291e-1350-11df-a1f1-0026b9348838'/>
+		<span>Family Committments</span>
+	      </label>  
+	    </div>
+	    
+	    <div class='list-button'>
+	      <label>	      
+		<input type='checkbox' checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" 
+		       id='obs.reason_for_missed_visit.transport_costs' checklist-value="a89e2b30-1350-11df-a1f1-0026b9348838"/> 
+		<span>Transport Costs</span>
+	      </label>  
+	    </div>
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.did_not_miss_appointment' 
+		       type='checkbox' checklist-value="a89e26d0-1350-11df-a1f1-0026b934883"/>		         	      
+		<span>Did not actually miss appointment</span>
+	      </label>
+	    </div>  	      
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.school_commitments' 
+		       type='checkbox' checklist-value="a8a08e7a-1350-11df-a1f1-0026b9348838"/>
+		<span>School Committments</span>
+	      </label>
+	    </div>  
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.travel' type='checkbox' 
+		       checklist-value="a89de152-1350-11df-a1f1-0026b9348838"/>
+    		<span>Travelled</span>
+	      </label>
+	    </div>  
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.insecurity' type='checkbox' 
+		       checklist-value="a8a08cfe-1350-11df-a1f1-0026b9348838"/>
+    		<span>Insecurity</span>
+	      </label>
+	    </div>  
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.forgot_appointment' 
+		       type='checkbox' checklist-value="a89e27f2-1350-11df-a1f1-0026b9348838"/>		     
+    		<span>Forgot appointment</span>
+	      </label>
+	    </div>  
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.health_issues' type='checkbox' 
+		       checklist-value="a89de2d8-1350-11df-a1f1-0026b9348838"/>
+    		<span>To ill to come</span>
+	      </label>
+	    </div>  
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.hiv_disclosure' type='checkbox' 
+		       checklist-value="a89ecaa4-1350-11df-a1f1-0026b9348838"/>
+		<span>Disclosure Issues</span>
+	      </label>
+	    </div>  
 	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.ampath_clinic_transfer' 
-	 	     type='checkbox' value='a89ef060-1350-11df-a1f1-0026b9348838' oldvalue='1732^AMPATH CLINIC TRANSFER^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.ampath_clinic_transfer'>Transferred Clinic</label>  
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.in_good_health' type='checkbox' 
+		       checklist-value="81033c9e-80d4-445a-9899-3a6a9c9520ee"/>    	      
+		<span>Had medications and felt well</span>
+	      </label>
+	    </div>  
+	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.family_conflict' type='checkbox' 
+		       checklist-value="ec9227a3-d078-4ed0-bdc3-e8328a9e549e"/>
+		<span>Family conflict</span>
+	      </label>
+	    </div>  
+    	    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" 
+		       id='obs.reason_for_missed_visit.conflicting_return_to_clinic_dates' 
+		       type='checkbox' checklist-value="04b9e1ce-3463-495b-9c08-7a1a2db779ba"/>
+		<span>Patient given different date than in AMRS</span>
+	    </label></div>      	      
+	    
+	    <div class='list-button'>
+	      <label>
+		<input type='checkbox' checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" 
+		       checklist-value="057dae68-3d6f-4d79-926c-ed75a0ce7fd5"/>
+		<span>Patient was admitted</span>
+	      </label>
+	    </div>  
+    	                    
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.refusal' type='checkbox' 
+		       checklist-value="a89d25fa-1350-11df-a1f1-0026b9348838"/>
+    		<span>Patient Refused</span>
+	      </label>
+	    </div>  
 	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.work_commitments' type='checkbox' 
-		     value="a89e2a54-1350-11df-a1f1-0026b9348838" oldvalue='1577^WORK COMMITMENTS^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.work_commitments'>Work Committments</label>  
-	      
-	  
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.family_commitments' type='checkbox' 
-		     value='a89e291e-1350-11df-a1f1-0026b9348838' oldvalue='1576^FAMILY COMMITMENTS^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.family_commitments'>Family Committments</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.transport_costs' type='checkbox' 
-		     value="a89e2b30-1350-11df-a1f1-0026b9348838" oldvalue='1578^TRANSPORT COSTS^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.transport_costs'>Transport Costs</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.did_not_miss_appointment' type='checkbox' 
-		     value="a89e26d0-1350-11df-a1f1-0026b934883" oldvalue='1574^DID NOT MISS APPOINTMENT^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.did_not_miss_appointment'>Did not actually miss appointment</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.school_commitments' type='checkbox' 
-		     value="a8a08e7a-1350-11df-a1f1-0026b9348838" oldvalue='1956^SCHOOL COMMITMENTS^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.school_commitments'>School Committments</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.travel' type='checkbox' 
-		     value="a89de152-1350-11df-a1f1-0026b9348838" oldvalue='1546^TRAVEL^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.travel'>Travelled</label>  
-	  
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.insecurity' type='checkbox' 
-		     value="a8a08cfe-1350-11df-a1f1-0026b9348838" oldvalue='1954^INSECURITY^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.insecurity'>Insecurity</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.forgot_appointment' type='checkbox' 
-		     value="a89e27f2-1350-11df-a1f1-0026b9348838" oldvalue='1575^FORGOT APPOINTMENT^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.forgot_appointment'>Forgot appointment</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.health_issues' type='checkbox' 
-		     value="a89de2d8-1350-11df-a1f1-0026b9348838" oldvalue='1548^HEALTH ISSUES^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.health_issues'>To ill to come</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.hiv_disclosure' type='checkbox' 
-		     value="a89ecaa4-1350-11df-a1f1-0026b9348838" oldvalue='1688^HIV DISCLOSURE^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.hiv_disclosure'>Disclosure Issues</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.in_good_health' type='checkbox' 
-		 value="81033c9e-80d4-445a-9899-3a6a9c9520ee" oldvalue='9070^IN GOOD HEALTH^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.in_good_health'>Had medications and felt well</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.family_conflict' type='checkbox' 
-		     value="ec9227a3-d078-4ed0-bdc3-e8328a9e549e" oldvalue='9075^FAMILY CONFLICT^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.family_conflict'>Family conflict</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.conflicting_return_to_clinic_dates' 
-		     type='checkbox' value="04b9e1ce-3463-495b-9c08-7a1a2db779ba" oldvalue='9076^CONFLICTING RETURN TO CLINIC DATES^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.conflicting_return_to_clinic_dates'>Patient given different date than in AMRS</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.admitted_to_hospital' type='checkbox' 
-		     value="057dae68-3d6f-4d79-926c-ed75a0ce7fd5" oldvalue='6419^ADMITTED TO HOSPITAL^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.admitted_to_hospital'>Patient was admitted</label>  
-              
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.refusal' type='checkbox' 
-		     value="a89d25fa-1350-11df-a1f1-0026b9348838" oldvalue='1504^REFUSAL^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.refusal'>Patient Refused</label>  
-	      
-	      <input ng-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.other_non_coded' type='checkbox' 
-		     value="a8aaf3e2-1350-11df-a1f1-0026b9348838" oldvalue='5622^OTHER NON-CODED^99DCT' class="custom" data-mini="true"/>
-    	      <label for='obs.reason_for_missed_visit.other_non_coded'>Other</label>  
-	  
-            </fieldset>	
+	    <div class='list-button'>
+	      <label>
+		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.other_non_coded' type='checkbox' 
+		       checklist-value="a8aaf3e2-1350-11df-a1f1-0026b9348838"/>
+    		<span>Other</span>
+	      </label>
+	    </div>  
+	  </div>
+ 	  
+ 	  
+	  <div class="form-group"> 
+            <label for="obs.reason_to_refuse_care">If refused care, reason: </label>                 
+	    <select class="form-control" id="obs.reason_to_refuse_care" ng-model="enc.obs['a89e3468-1350-11df-a1f1-0026b9348838']" 
+		    data-concept="1588^REASON TO REFUSE CARE^99DCT">
+	      <option value=""></option>
+	      <option value="a89e30e4-1350-11df-a1f1-0026b9348838" 
+		      oldvalue="1584^FAMILY DISCRIMINATION^99DCT">Family Discrimination (disclosure issues)</option>
+ 	      
+	      <option value="a89e3396-1350-11df-a1f1-0026b9348838" oldvalue="1587^HEALED BY FAITH^99DCT">Believes healed by faith</option>
+	      <option value="a89e3274-1350-11df-a1f1-0026b9348838" oldvalue="1586^DENIAL^99DCT">Denial</option>
+	      <option value="a89e31ac-1350-11df-a1f1-0026b9348838" oldvalue="1585^COMMUNITY DISCRIMINATION^99DCT">Community Discrimination</option>
+	      <option value="a8a097bc-1350-11df-a1f1-0026b9348838" oldvalue="1961^NO LONGER TAKING MEDICINE^99DCT">No longer taking medicines</option>
+	      <option value="a8aca1ce-1350-11df-a1f1-0026b9348838" oldvalue="5841^HERBAL TRADITIONAL MEDICATIONS^99DCT">Taking herbals</option>
+	      <option value="a8aaf3e2-1350-11df-a1f1-0026b9348838" oldvalue="5622^OTHER NON-CODED^99DCT">Other</option>
+	    </select>
 	  </div>
 
-	  <div data-role="fieldcontain">
+	  <div class='form-group'>
 	    <fieldset data-role="controlgroup">
 	      <legend>If deceased:</legend>
 	      <div class="form-group">
 		<label for="date_of_death">Death date:</label>
-		<input name="date_of_death" class="form-control datepicker" data-concept="1570^DATE OF DEATH^99DCT" id="date_of_death" 
-		       ng-model="enc.obs['a89df3d6-1350-11df-a1f1-0026b9348838']" type="date"/>               
+		<input name="date_of_death" id="date_of_death" ng-model="enc.obs['a89df3d6-1350-11df-a1f1-0026b9348838']" type="text"		       
+		       datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt4.open" ng-click="dt4.open=true"/>
 	    
 	      </div>
 	      <div class="form-group">
@@ -264,22 +344,7 @@
 	      </div>
 	    </fieldset>
 	  </div>
-	  <div class="form-group"> 
-            <label for="obs.reason_to_refuse_care">If refused care, reason: </label>                 
-	    <select class="form-control" id="obs.reason_to_refuse_care" ng-model="enc.obs['a89e3468-1350-11df-a1f1-0026b9348838']" 
-		    data-concept="1588^REASON TO REFUSE CARE^99DCT">
-	      <option value=""></option>
-	      <option value="a89e30e4-1350-11df-a1f1-0026b9348838" 
-		      oldvalue="1584^FAMILY DISCRIMINATION^99DCT">Family Discrimination (disclosure issues)</option>
- 	      
-	      <option value="a89e3396-1350-11df-a1f1-0026b9348838" oldvalue="1587^HEALED BY FAITH^99DCT">Believes healed by faith</option>
-	      <option value="a89e3274-1350-11df-a1f1-0026b9348838" oldvalue="1586^DENIAL^99DCT">Denial</option>
-	      <option value="a89e31ac-1350-11df-a1f1-0026b9348838" oldvalue="1585^COMMUNITY DISCRIMINATION^99DCT">Community Discrimination</option>
-	      <option value="a8a097bc-1350-11df-a1f1-0026b9348838" oldvalue="1961^NO LONGER TAKING MEDICINE^99DCT">No longer taking medicines</option>
-	      <option value="a8aca1ce-1350-11df-a1f1-0026b9348838" oldvalue="5841^HERBAL TRADITIONAL MEDICATIONS^99DCT">Taking herbals</option>
-	      <option value="a8aaf3e2-1350-11df-a1f1-0026b9348838" oldvalue="5622^OTHER NON-CODED^99DCT">Other</option>
-	    </select>
-	  </div>
+
 	</tab>
 	<tab heading="Finish">    
 	  <br/>
@@ -304,8 +369,8 @@
 	  
 	  <div class="form-group">
 	    <label for='return_visit_date'>If patient plans to return to clinic, RTC Date:</label> 
-	    <input class="form-control datepicker checkFutureDate" data-concept="5096^RETURN VISIT DATE^99DCT" id="return_visit_date" 
-		   ng-model="enc.obs['a8a666ba-1350-11df-a1f1-0026b9348838']" type="date"/>
+	    <input id="return_visit_date" ng-model="enc.obs['a8a666ba-1350-11df-a1f1-0026b9348838']" type="text"		   
+		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt5.open" ng-click="dt5.open=true"/>
 	  </div>
 	  <div class="form-group"> 
             <label for="likelihood_of_return">Do you think the patient will return to clinic?</label>                 

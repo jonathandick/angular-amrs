@@ -1,4 +1,41 @@
 /* app css stylesheet */
+
+
+.list-button {
+    display: block;
+    width: 100%;
+    margin:1px;
+    background-color:#EFEFEF;
+    border-radius:4px;
+    border:1px solid #D0D0D0;
+    overflow:auto;
+    float:left;
+}
+
+.list-button label {
+    float:left;
+    width:4.0em;
+    display: block;    
+    width: 100%;
+}
+
+.list-button label span {
+    text-align:left;
+    padding:3px 25px;
+    display:block;
+}
+
+.list-button label input {
+    position:absolute;
+    padding:3px 10px;    
+}
+
+.list-button input:checked + span {
+    background-color:#ADD8E6;
+    overflow:auto;
+}
+
+
 .btn-custom {
   background-color: hsl(201, 0%, 82%) !important;
   background-repeat: repeat-x;
