@@ -5,13 +5,6 @@
 
 var amrsControllers = angular.module('amrsControllers',[]);
 
-
-amrsControllers.controller('ProvidersCtrl', ['$scope','$http',
-  function($scope,$http) {
-      $scope.providers = [{name:'john'},{name:'jane'}];      
-  }]);
-
-
 amrsControllers.controller('LoginCtrl',['$scope','Auth',
   function($scope,Auth) {
       $scope.username = '';
@@ -27,24 +20,36 @@ amrsControllers.controller('LoginCtrl',['$scope','Auth',
 amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','$cookies',
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,$cookies) {					      
       $scope.v = "";
-      $scope.q = "";
+      $scope.q = ""; 
       
       $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
-
+      //$http.defaults.headers.post['X-CSRFToken'] = "JxwegyTphLWBk8n1buQLFW3cCPoMA8Eh";
+      
       $scope.test = function() {
 
 	  $http.get("https://testserver1.ampath.or.ke/outreach/login")
 	      .success(function(data,status,headers,config) { 	      
+		  $scope.data = data;
+		  console.log(config);
+	      })
+	      .error(function(data, status, headers, config) {
+		  $scope.error = "Error 1: " + data + " ; " + status + " headers: " + headers + " config: " + config;
+		  $scope.error = config;
 		  console.log(data);
+		  console.log(status);
+		  console.log(config);
 	      });	  
       };
 
       $scope.test2 = function() {
 	  $http.get("https://testserver1.ampath.or.ke/outreach/ajax_patient_search?search_string=test")
 	      .success(function(data) {
+		  $scope.data = data;
 		  console.log(data);
+	      })
+	      .error(function(data, status, headers, config) {
+		  $scope.error = "Error 2: " + data + " ; " + status + " headers: " + headers;
 	      });
-
       };
       
   }]);
@@ -81,7 +86,6 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
 
 	  if(value && value.length > 3) {
 	      Patient.query({q:value,v:v}).$promise.then(function(data) {
-		  console.log(data.results);
 		  $scope.patients = data.results;
 	      });
 	  }
@@ -90,9 +94,11 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
    }]);
 
 
-amrsControllers.controller('PatientDashboardCtrl',['$scope','Patient','$routeParams',
-  function($scope,Patient,$routeParams) {      
-      Patient.get($routeParams.patient_uuid,function(data) {
+amrsControllers.controller('PatientDashboardCtrl',['$scope','$stateParams','PatientServiceFlex','$state',
+  function($scope,$stateParams,PatientServiceFlex,$state) {
+      $scope.patient = {};
+      PatientServiceFlex.get($stateParams.uuid,function(data) {
 	  $scope.patient = data;
       });
+
   }]);

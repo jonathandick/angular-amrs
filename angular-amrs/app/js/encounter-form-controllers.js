@@ -5,14 +5,6 @@
 
 var encounterFormControllers = angular.module('encounterFormControllers',['ngRoute','openmrsServices','openmrsServicesFlex']);
 
-
-
-encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex',
-  function($scope,$stateParams,PatientServiceFlex) {
-      console.log("in EncounterFormCtrl");
-      $scope.test = "hello world";
-  }]);
-
 encounterFormControllers.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex',
   function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex) {
       var savedEncounterForms = EncounterServiceFlex.getLocal();
@@ -26,47 +18,82 @@ encounterFormControllers.controller('SavedFormsCtrl', ['$scope','$stateParams','
 
 
 
-
-encounterFormControllers.controller('OutreachFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex',
-  function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex,LocationServiceFlex) {	
+encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex','FormService',
+  function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex,FormService) {	
       $scope.patient = "";
       $scope.encounterUuid = "";
       $scope.provider = "";
       $scope.hash = "";
-      
-      $scope.errors = {};
-      $scope.enc = {encounterType:"df5547bc-1350-11df-a1f1-0026b9348838",
-		    form:"1eb7938a-8a2a-410c-908a-23f154bf05c0"};
+      $scope.formUuid = $stateParams.formUuid;
+      $scope.enc = {};
 
-      
-      
-      if($stateParams.hash) {
-	  $scope.hash = $stateParams.hash;
-	  $scope.enc = EncounterServiceFlex.getLocal($stateParams.hash);
-	  PatientServiceFlex.get($scope.enc.patient,function(patient) { $scope.patient = patient; });
-      }
-      
-      if($stateParams.patientUuid) {
-	  PatientServiceFlex.get($stateParams.patientUuid,function(data) {
-	      $scope.patient = data;
-	      $scope.enc.patient = $scope.patient.getUuid();
-	  });
-      }
+      $scope.toFormData = function(encounter) {
+	  console.log(encounter);
+	  $scope.enc = {uuid:encounter.uuid,
+			encounterDatetime:encounter.encounterDatetime,
+			encounterType:encounter.encounterType.uuid,
+			form:encounter.form.uuid,
+			patient:encounter.patient.uuid,
+			location:encounter.location.uuid,
+			provider:encounter.provider.uuid,
+			obs:{},			
+		       }
+	  for(var i=0; i< encounter.obs.length; i++) {
+	      var o = encounter.obs[i];	      
+	      console.log(o);
+	      var value = o.value;
+	      if(typeof o.value === "object") {
+		  value = o.value.uuid;
+	      }
+	      var concept = o.concept.uuid;
+	      if($scope.enc.obs[concept]) {
+		  if(typeof $scope.enc.obs[concept] === "string") {
+		      $scope.enc.obs[concept] = [$scope.enc.obs[concept],value];
+		  }
+		  else {
+		      $scope.enc.obs[concept].push(value);
+		  }
+	      }
+	      else {
+		  $scope.enc.obs[concept] = value;
+	      }
+	  }
+      };
 
-      if($stateParams.encounterUuid) {
+
+
+      var patientUuid = $stateParams.patientUuid; 
+      if($stateParams.encounterUuid) {	  
 	  $scope.encounterUuid = $stateParams.encounterUuid;
 	  EncounterServiceFlex.get($stateParams.encounterUuid,function(data) {
-	      $scope.enc = data;
+	      $scope.toFormData(data);
+	      console.log($scope.enc);
 	  });
       }
-      
+      else if($stateParams.hash) {
+	  $scope.hash = $stateParams.hash;
+	  $scope.enc = EncounterServiceFlex.getLocal($stateParams.hash);
+	  patientUuid = $scope.enc.patient;
+      }
+      else {
+	  $scope.enc = {encounterType: FormService.getEncounterType($scope.formUuid),
+			form:$scope.formUuid};
+      }
+
+      $scope.errors = {};      
+
+      if(patientUuid) {
+	  PatientServiceFlex.get(patientUuid,function(patient) { $scope.patient = patient; });
+	  //$scope.enc.patient = patientUuid;
+      }
+
+
       $scope.save = function() {
 	  console.log("hash: " + $scope.hash);
 	  EncounterServiceFlex.saveLocal($scope.enc,$scope.hash);
       }
 
       $scope.submit = function() {
-	  console.log($scope.enc);
 	  EncounterServiceFlex.submit($scope.enc);
       }
 

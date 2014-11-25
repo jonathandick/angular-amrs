@@ -8,21 +8,32 @@ var local = localStorage;
 openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
   function($http,PatientService) {
       var PatientServiceFlex = {};
+
+      PatientServiceFlex.clone = function(data) {
+	  return PatientService.abstractPatient.clone(data);
+      };
+
+
       PatientServiceFlex.get = function(patientUuid,callback) {
 	  console.log("PatientServiceFlex.get() : " + patientUuid);
-	  var patient = session.getItem(patientUuid);
-	  if(patient) {
+	  var patient = angular.fromJson(session.getItem(patientUuid));
+	  //patient.patientData there temporarily. DefaulterCohort returns inappropriately formatted patient. Needs to be changed. 
+	  if(patient && patient.patientData) {
+	      patient = PatientService.abstractPatient.clone(patient);	      
 	      console.log("PatientServiceFlex.get() : Patient in session");
-	      callback(JSON.parse(patient));
+	      //patient = PatientService.abstractPatient.clone(JSON.parse(patient));	      
+	      callback(patient);
 	  }
 	  else {
 	      console.log("PatientServiceFlex.get() : Querying server for patient");
 	      PatientService.get(patientUuid, function(p){
-		  //session.setItem(patientUuid,JSON.stringify(p.getPatient()));
+		  session.setItem(patientUuid,JSON.stringify(p.getPatient()));
 		  callback(p);
 	      });
 	  }
       };
+
+	  
 
       PatientServiceFlex.search = function(searchString,callback){
 	  if(searchString && searchString.length > 3) {	      
@@ -49,18 +60,21 @@ function getHashCode(s) {
 }
 
 
-openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','EncounterService',
+openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','EncounterService','PersonAttribute',
   function($http,Encounter,EncounterService) {
       var EncounterServiceFlex = {};
       EncounterServiceFlex.get = function(encounterUuid,callback) {
 	  console.log("EncounterServiceFlex.get() : " + encounterUuid);
 	  var enc = session.getItem(encounterUuid);
+	  var enc = undefined;
 	  if(enc) {
 	      console.log("EncounterServiceFlex.get() : Encounter in session");
 	      callback(JSON.parse(enc));
 	  }
 	  else {
-	      Encounter.get(encounterUuid).$promise.then(function(data){ 	      
+	      console.log("Querying server for encounter data...");
+	      Encounter.get({uuid:encounterUuid}).$promise.then(function(data){ 	      
+		  console.log('Encounter.get()');
 		  session.setItem(encounterUuid,JSON.stringify(data));
 		  callback(data);
 	      });
@@ -92,16 +106,50 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	  else { return forms; }
       };
 
+      //This puts the object representing obs into the proper format required by OpenMRS RestWS
+      EncounterServiceFlex.prepareObs = function(enc) {
+	  if(enc.obs) {
+	      var t = [];
+	      for(var c in enc.obs) {
+		  if(typeof enc.obs[c] == "string") {
+		      t.push({concept:c,value:enc.obs[c]});
+		  }
+		  else if(typeof enc.obs[c] == "object") {  // this is for an obs with multiple answers, e.g. a multi select dropbox
+		      for(var i=0; i< enc.obs[c].length; i++) {
+			  t.push({concept:c,value:enc.obs[c][i]});
+		      }
+		  }
+	      }
+	      enc.obs = t;
+	  }
+	  return enc;
+      };	  
 
-      EncounterServiceFlex.submit = function(enc) {	  
-	  console.log(enc);
-	  this.saveLocal(enc);
-      }
+      EncounterServiceFlex.submit = function(enc) {	  	  
+	  enc = EncounterServiceFlex.prepareObs(enc);
+	  EncounterService.submit(enc);
+      };
 
+
+      EncounterServiceFlex.patientQuery = function(params,callback) {
+	  EncounterService.patientQuery(params,callback);
+      };								  	 
 
       return EncounterServiceFlex;
            
   }]);
+
+
+openmrsServicesFlex.factory('EncounterFormServiceFlex',['$http','Encounter','EncounterService','PersonAttribute',
+  function($http,Encounter,EncounterService) {
+      var efsf = {};
+      
+
+      return efsf;      
+      
+}]);
+
+
 
 
 openmrsServicesFlex.factory('LocationServiceFlex',['$http','LocationService',
@@ -125,4 +173,28 @@ openmrsServicesFlex.factory('LocationServiceFlex',['$http','LocationService',
       };
 
       return lsf;
+  }]);
+
+
+openmrsServicesFlex.factory('ProviderServiceFlex',['$http','ProviderService',
+  function($http,ProviderService) {
+      var psf = {};
+      
+      psf.query = function(callback) {
+	  var providers = local.getItem('openmrsProviders');
+	  if(providers) {
+	      providers = JSON.parse(providers);
+	      if(callback) { return callback(providers) }		  
+	      else { return providers; }
+	  }
+	  else {		  
+	      ProviderService.query(function(providers) {
+		  local.setItem('openmrsProviders',JSON.stringify(providers));
+		  if(callback) { return callback(providers); }		  
+		  else { return providers; }
+	      });
+	  }
+      };
+
+      return psf;
   }]);

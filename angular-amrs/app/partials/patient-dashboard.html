@@ -1,3 +1,4 @@
+
 <div ng-controller="PatientDashboardCtrl">
   <div class="container-fluid">
     <input type="hidden" name="patient_uuid" id="dash_patient_uuid"/>
@@ -10,47 +11,44 @@
       </li>
       <li class="list-group-item" style="font-size:large">Identifier(s): <span ng-repeat="i in patient.getIdentifiers()">{{i.display}}; </span></li>
       <li class="list-group-item" style="font-size:large">Birthdate: {{patient.getBirthdate().substring(0,10)}}</li>
-      <li class="list-group-item" data-role="fieldcontain">
-	<div class='ui-grid-b'>
-	  <div class='ui-block-a' style="font-size:large;width:100%;">Phone Number:</div>
-	  <div class='ui-block-a' style="width:50%">
-	    <input style="font-size:large;" name="phone_number" id="dash_phone_number" type="tel" size="10" value="{{patient.getPhoneNumber()}}"/>
-	  </div>	
-	  <div class='ui-block-b' style="width:50%">
-	    <input type='hidden' id='dash_patient_uuid'/>
-	    <input type="button" id="update_phone_number_button" onClick="updatePhoneNumberView()" value="Update"/>
+      <li class="list-group-item">
+	  <div style="font-size:large;width:100%;">
+	  <div class="row">
+	    <div class="col-md-6">
+	      Phone Number: <input style="font-size:large;" name="phone_number" id="dash_phone_number" type="tel" size="10" value="{{patient.getPhoneNumber()}}"/>
+	    </div>	
+	    <div class="col-md-6">
+	      <button class="btn btn-custom btn-lg btn-block" ng-click="">Update</button>
+	    </div>
 	  </div>
-	</div>
       </li>
       <li class="list-group-item" style="font-size:large">
 	Last Appt Date: {{patient.last_appt_date}}<br/>
-	Last Appt Type: <span id="dash_last_encounter_type"></span><br/>
-	Last RTC Date: <span id="dash_last_rtc_date"></span><br/>	
+	Last Appt Type: {{patient.last_appt_type}}<br/>
+	Last RTC Date: {{patient.rtc_date}}<br/>	
       </li>	
     </ul>
 
 
     <button class="btn btn-custom btn-lg btn-block" ng-click="encounterHistory = !encounterHistory">Encounter History</button>
-    <div collapse="!encounterHistory" >
+    <div collapse="encounterHistory" >
       <h3>Encounter History</h3>              
-      <div id="dash_encounter_data" style="height:350px; overflow:scroll; display:none">
+      <div style="height:350px; overflow:scroll;">
+	<encounters-pane patient-uuid="{{patient.getUuid()}}"></encounters-pane>
       </div>      
+
     </div>
 
 
     <button class="btn btn-custom btn-lg btn-block" ng-click="tbHistory = !tbHistory">TB History</button>
     <div collapse="!tbHistory" >
       <h3>TB History</h3>              
-      <div id="dash_tb_data" style="height:350px; overflow:scroll; display:none">
-      </div>      
     </div>
 
     <button class="btn btn-custom btn-lg btn-block" ng-click="forms = !forms">Forms</button>
-    <div collapse="!forms" >
-      <div class="list-group">
-	<a style="font-size:medium" class="list-group-item" ui-sref="outreach-form({patientUuid:patient.getUuid()})">Enter Outreach Form</a>
-      </div>
+    <div collapse="!forms" style="height:350px; overflow:scroll;">
+      <forms-pane patient-uuid="{{patient.getUuid()}}"></forms-pane>
     </div>
-
+    
   </div>
 </div>

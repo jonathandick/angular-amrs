@@ -1,0 +1,3 @@
+<div class="list-group" ng-repeat='(formUuid,form) in forms'>
+  <a style="font-size:medium" class="list-group-item" ui-sref="encounter-form({formUuid:formUuid,patientUuid:patientUuid})">{{form.name}}</a>  
+</div>

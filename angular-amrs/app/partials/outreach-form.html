@@ -1,16 +1,19 @@
-<div ng-controller="OutreachFormCtrl">
+<div ng-controller="EncounterFormCtrl">
    <div class="container-fluid">
-
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
     <form novalidate class="simple-form" id="outreach_form" name="outreach_form" method='post'>
       <patient-demographics patient="patient"></patient-demographics>	        
       <br/>
 
-      <button ng-click="save()">Save</button><br/>
-
-
-     <br/><br/>
-
-      <tabset>
+      <div class="row">
+	<div class="col-md-6">
+	  <button class="btn btn-custom btn-lg btn-block" ng-click="save()">Save</button><br/>
+	</div>
+	<div class="col-md-6">
+	  <button class="btn btn-custom btn-lg btn-block" ng-click="submit()">Submit</button><br/>
+	</div>
+      </div>
+      <tabset vertical="true" type="pills">
 	<tab heading="Encounter Info">	        
 	  <br/>
 	  <div class="form-group">

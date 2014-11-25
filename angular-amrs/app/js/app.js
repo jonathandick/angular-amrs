@@ -2,12 +2,11 @@
 
 /* App Module */
 
-var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers',
+var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers','openmrsServices',
 					 'ui.bootstrap','openmrs.widgets','outreachForm.validators',
-					 'encounterFormControllers','checklist-model']);
+					 'encounterFormControllers','checklist-model','infinite-scroll']);
 
 var static_dir = 'js/angular-amrs/app/';
-
 
 amrsApp.config(['$stateProvider', '$urlRouterProvider',
   function($stateProvider, $urlRouterProvider) {
@@ -47,16 +46,14 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      authenticate:true,
 	  })
 	  .state('encounter-form',{
-	      url:"/encounter-form/:formUuid/:patientUuid",
-	      authenticate:true,
-	      onEnter : function($state) {		  
-		  var formUuid = $state.params.formUuid;
-		  var transitions = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":'outreach-form'};
-		  if(transitions[formUuid]) {		      
-		      $state.transitionTo(transitions[formUuid],$state.params);
-		  }
-		  else {$state.transitionTo('apps');}
+	      url:"/encounter-form?formUuid&patientUuid",
+	      authenticate:true, 
+	      templateProvider: function($stateParams,FormService,$templateFactory) {
+		  var template = FormService.getTemplate($stateParams.formUuid);
+		  var html = $templateFactory.fromUrl(static_dir + template); 
+		  return html;
 	      },
+	      
 	  })      
 	  .state('encounter-forms-saved',{
 	      url:"/encounter-forms-saved",
@@ -67,21 +64,26 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      url:"/encounter-form-saved?hash&formUuid",
 	      authenticate:true,
 	      onEnter : function($state,$stateParams) {		
-		  var formUuid = $stateParams.formUuid;		  
+		  var formUuid = $stateParams.formUuid;
 		  var transitions = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":'outreach-form'};
 		  if(transitions[formUuid]) {		   
 		      var state = transitions[formUuid];
-		      $state.transitionTo('outreach-form',{hash:$stateParams.hash});
+		      $state.transitionTo('outreach-form',{hash:$stateParams.hash});		      
 		  }
 		  else {$state.transitionTo('apps');}
 	      },
 
 	  })
-	  .state('outreach-form',{
-	      url:"/outreach-form?patientUuid&encounterUuid&hash",
-	      templateUrl: static_dir + 'partials/outreach-form.html',
-	      authenticate:true,
-	  })
+	  .state('encounter',{
+	      url:"/encounter?encounterUuid&formUuid&patientUuid",
+	      authenticate:true, 
+	      templateProvider: function($stateParams,FormService,$templateFactory) {
+		  var template = FormService.getTemplate($stateParams.formUuid);
+		  var html = $templateFactory.fromUrl(static_dir + template); 
+		  
+		  return html;
+	      },	      
+	  })            
 	  .state('django',{
 	      url: "/django",
 	      templateUrl: static_dir + 'partials/test-django.html',

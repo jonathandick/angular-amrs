@@ -1,0 +1,18 @@
+<div infinite-scroll='loadMore()' infinite-scroll-distance='0' infinite-scroll-disabled='busy'>
+  <table class='table table-hover table-striped'>
+    <tr>
+      <td>Date</td>
+      <td>Type</td>
+      <td>Location</td>
+      <td>Provider</td>
+    </tr>
+    <tr ng-repeat="encounter in encounters" ng-click="showEncounter(encounter.uuid,encounter.form.uuid)">
+      <td>{{encounter.encounterDatetime.substring(0,10)}}</td>
+      <td>{{encounter.encounterType.display}}</td>
+      <td>{{encounter.location.display}}</td>
+      <td>{{encounter.provider.display}}</td>
+    </tr>
+  </table>
+  <div ng-show='busy>Loading data...</div>
+</div>
+

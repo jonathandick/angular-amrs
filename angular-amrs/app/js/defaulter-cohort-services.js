@@ -9,85 +9,21 @@ var DEFAULTER_COHORT_CONTEXT  = "https://testserver1.ampath.or.ke";
 var defaulterCohortServices = angular.module('defaulterCohortServices', ['ngResource','ngCookies','openmrsServices']);
 
 
-defaulterCohortServices.factory('DCPatientService',['$http','PatientService',
-  function($http,PatientService) {
-      var DCPatientService = {};
-      DCPatientService.get = function(patientUuid,callback) {
-	  console.log("DCPatientService.get() : " + patientUuid);
-	  var patient = session.getItem(patientUuid);
-	  if(patient) {
-	      console.log("DCPatientService.get() : Patient in session");
-	      callback(JSON.parse(patient));
-	  }
-	  else {
-	      console.log("DCPatientService.get() : Querying server for patient");
-	      PatientService.get(patientUuid, function(p){
-		  //session.setItem(patientUuid,JSON.stringify(p.getPatient()));
-		  callback(p);
-	      });
-	  }
-      };
-
-      DCPatientService.search = function(searchString,callback){
-	  if(searchString && searchString.length > 3) {	      
-	      Patient.query({q:searchString}).$promise.then(function(data){
-                  callback(data);
-              });
-          }
-      };
-
-      return DCPatientService;
-      
-  }]);
-
-
-
-defaulterCohortServices.factory('DCEncounterService',['$http','Encounter','EncounterService',
-  function($http,Encounter,EncounterService) {
-      var DCEncounterService = {};
-      DCEncounterService.get = function(encounterUuid,callback) {
-	  console.log("EncounterService.get() : " + encounterUuid);
-	  var enc = session.getItem(encounterUuid);
-	  if(enc) {
-	      console.log("Encounter in session");
-	      callback(JSON.parse(enc));
-	  }
-	  else {
-	      Encounter.get(encounterUuid).$promise.then(function(data){ 	      
-		  session.setItem(encounterUuid,JSON.stringify(data));
-		  callback(data);
-	      });
-	  }
-      };
-
-
-      DCEncounterService.submit = function(encounterUuid,enc) {
-	  console.log(enc);
-	  /*
-	  EncounterService.submit(encounterUuid,enc).$promise.then(function(data) {
-	      console.log(data);
-	  });
-	  */
-      };
-
-
-      return DCEncounterService;
-           
-  }]);
-
-
-      
-
-
 defaulterCohortServices.factory('DefaulterCohort',['$http',
   function($http) {
       var DefaulterCohort = {};
       DefaulterCohort.get = function(uuid,callback) {
+	  
+	  if(uuid === undefined || uuid === "") {
+	      uuid = session.getItem("curDefaulterCohortUuid");
+	  }
+	  else { session.setItem("curDefaulterCohortUuid",uuid); }
+
 	  var dc = session.getItem(uuid);
-	  if(dc) {
+	  if(dc) {	      
 	      callback(JSON.parse(dc));
 	  }
-	  else {
+	  else if (uuid !== undefined && uuid !== "") {
 	      $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohort?defaulter_cohort_uuid=' + uuid).success(function(data) {
 		  session.setItem(data.defaulter_cohort.uuid,JSON.stringify(data.defaulter_cohort));
 		  for(var i=0; i<data.defaulter_cohort.patients.length; i++) {

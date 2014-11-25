@@ -6,6 +6,41 @@ var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies
 var OPENMRS_CONTEXT_PATH = "http://10.50.110.67:8080/amrs";
 
 
+
+openmrsServices.factory('OpenmrsUtilityService',[
+  function() {
+      var util = {};
+      
+      util.getParam = function (uri,name) {
+	  var params = uri.substring(uri.indexOf('?')).split('&');	  	  
+	  var p = {};
+	  for(var i=0; i<params.length; i++) {
+	      var pair = params[i];
+	      var t = pair.split('=');
+	      if(t[0] == name) { return t[1];}
+	  }
+	  return undefined;
+      };
+
+      util.getStartIndex = function(data) {	  
+	  var startIndex = undefined;
+	  if(data.links) {
+	      for(var i in data.links) {
+		  var l = data.links[i];
+		  if(l.rel == "next") {			      
+		      startIndex = this.getParam(l.uri,'startIndex');
+		      break;
+		  }
+	      }
+	  }
+	  return startIndex;
+      };
+
+      
+      return util;
+}]);
+
+
 openmrsServices.factory('openmrs',['$resource',   			       
   function($resource) { 
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/:object/:uuid", 
@@ -14,6 +49,8 @@ openmrsServices.factory('openmrs',['$resource',
 		       { query: {method:"GET",isArray:false}}
 		      ); 
   }]);
+
+
 
 
 openmrsServices.factory('OpenmrsSession',['$resource',   			       
@@ -35,8 +72,9 @@ openmrsServices.factory('Person',['$resource',
 
 openmrsServices.factory('Provider',['$resource',   			       
   function($resource) { 
+      var v = "custom:(uuid,identifier,person:ref)";
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/provider/:uuid", 
-		       { uuid: '@uuid'}, 
+		       { uuid: '@uuid',v:v}, 
 		       { query: {method:"GET",isArray:false}}
 		      ); 
   }]);
@@ -52,16 +90,17 @@ openmrsServices.factory('ProviderService',['Provider',
 	  });
       };
 
+
       return ProviderService;
   }]);
 
 openmrsServices.factory('Patient',['$resource',   			       
   function($resource) { 
-      var c = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
+      var v = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
 	  + "attributes:(uuid,value,attributeType:ref)))";
 
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/patient/:uuid", 
-		       { uuid: '@uuid',v:c},
+		       { uuid: '@uuid',v:v},
 		       { query: {method:"GET",isArray:false}}
 		      ); 
   }]);
@@ -71,10 +110,13 @@ openmrsServices.factory('PatientService',['$http','Patient',
   function($http,Patient) {
       var PatientService = {};
 
-      var abstractPatient = {
+      PatientService.abstractPatient = {
 	  patientData: {},
-	  clone : function() {
-              var a = {patientData:{},};
+	  clone : function(data) {
+
+	      if(!data) { return undefined; }
+
+              var a = {patientData:data,};
               for(var k in this) {
 		  if(typeof this[k] == 'function' && k != "clone") {
                       a[k] = this[k];
@@ -118,11 +160,10 @@ openmrsServices.factory('PatientService',['$http','Patient',
 	  
       };
 
-
+     
       PatientService.get = function(patientUuid,callback) {
 	  Patient.get({uuid:patientUuid}).$promise.then(function(data) {
-	      var p = abstractPatient.clone();
-	      p.patientData = data;
+	      var p = PatientService.abstractPatient.clone(data);
 	      if(callback) { return callback(p); }
 	      else { return p};
 	  });
@@ -134,11 +175,48 @@ openmrsServices.factory('PatientService',['$http','Patient',
 
 
 
+openmrsServices.factory('Form',['$resource',  			       
+  function($resource) { 
+      var v = "custom:(uuid,name,encounterType:(uuid,name))";
+      return $resource(OPENMRS_CONTEXT_PATH + "/ws/rest/v1/form/:uuid", 
+		       { uuid: '@uuid',v:v}, 
+		       { query: {method:"GET",isArray:false}}
+		      ); 
+  }]);
+
+
+openmrsServices.factory('FormService',['Form',  			       
+  function() {
+      var FormService = {};
+      var formMap = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":
+                     {name: 'outreach form',template:'partials/outreach-form.html',encounterType:"df5547bc-1350-11df-a1f1-0026b9348838"},     
+		    }; 
+      
+      FormService.getTemplate = function(formUuid) {
+	  return formMap[formUuid]['template'];
+      };
+
+      FormService.getEncounterType = function(formUuid) {
+	  return formMap[formUuid]['encounterType'];
+      };
+
+      FormService.query = function() {
+	  return formMap;
+      }
+      
+      return FormService;
+  }]);
+
+
+
 
 openmrsServices.factory('Encounter',['$resource',   			       
   function($resource) { 
+      var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
+      v += ",encounterType:ref,provider:ref,obs:(uuid,concept:(uuid,uuid),value:ref))";    
+      
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/encounter/:uuid", 
-		       { uuid: '@uuid'}, 
+		       { uuid: '@uuid',v:v}, 
 		       { query: {method:"GET",isArray:false}}
 		      ); 
   }]);
@@ -148,21 +226,40 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
   function($http,Encounter) {
       var EncounterService = {};
 
-      EncounterService.submit = function(encounterUuid,enc) {
-	  if(enc.obs) {
-	      var t = [];
-	      for(var c in enc.obs) {
-		  t.push({concept:c,value:enc.obs[c]});
-	      }
-	      enc.obs = t;
-	  }
-	  var url = OPENMRS_CONTEXT_PATH + 'ws/rest/v1/encounter/';
-	  if(encounterUuid && encounterUuid != "") { 
-	      url += '/' + encounterUuid; 
-	  }
-	  return $http.post(url,enc);
+      EncounterService.patientQuery = function(params,callback) {
+	  Encounter.get(params).$promise.then(function(data) {
+	      if(callback) { return callback(data); }
+	      else { return data};
+	  })
       };
 
+
+      EncounterService.submit = function(enc) {
+
+	  var url = OPENMRS_CONTEXT_PATH + '/ws/rest/v1/encounter/';
+	  if(enc.uuid) {
+	      url += enc.uuid; 
+	      delete enc.uuid;
+	  }
+
+	  if(enc.personAttributes) {
+	      var attributes = enc.personAttributes;
+	      delete enc.personAttributes;
+	  }
+		  
+	  $http.post(url,enc)
+	      .success(function(data, status, headers, config) {
+		  console.log(data);
+		  if(data.error) {
+		      console.log(data);
+		  }
+	      })
+	      .error(function(data, status, headers, config) {
+		  console.log(data);
+		  console.log(status);
+	      });
+
+      };
       return EncounterService;
 
   }]);

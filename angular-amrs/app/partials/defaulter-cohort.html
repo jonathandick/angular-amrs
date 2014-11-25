@@ -25,7 +25,9 @@
     <ul class="list-group">
       <li class="list-group-item">Name: {{defaulterCohort.name}}</li>
       <li class="list-group-item">Date Created: {{defaulterCohort.date_created}}</li>
-      <li class="list-group-item">Patients remaining to be traced: {{defaulterCohort.length}}</li>
+      <li class="list-group-item">
+	Patients remaining to be traced: {{(defaulterCohort.patients.length - numRetired) + "/" + defaulterCohort.patients.length}}
+      </li>
     </ul>
     <button class="btn btn-custom btn-lg btn-block" ng-Click="updateDefaulterCohort()">Update List</button>
     <button class="btn btn-custom btn-lg btn-block" value="Get New List" ng-Click="getNewDefaulterCohort()">Get New List</button>
@@ -36,7 +38,8 @@
 	<span class="badge"><span class="glyphicon glyphicon-chevron-right"></span></span>
         <b>{{patient.given_name}} {{patient.middle_name}} {{patient.family_name}}</b><br/>
 	Identifier: {{patient.identifier}}<br/>
-	Phone: {{patient.phone_number}}
+	Phone: {{patient.phone_number}}<br/>
+	Risk Category: {{riskCategories[patient.risk_category]}}
       </a>
     </div>
   </div>
