@@ -7,13 +7,30 @@ var encounterFormControllers = angular.module('encounterFormControllers',['ngRou
 
 encounterFormControllers.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex',
   function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex) {
-      var savedEncounterForms = EncounterServiceFlex.getLocal();
-      var keys = Object.keys(savedEncounterForms);
-      for(var hash in savedEncounterForms) {	  
-	  var patientUuid = savedEncounterForms[hash].patient;
-	  PatientServiceFlex.get(patientUuid,function(p) { savedEncounterForms[hash].p = p; });
+      $scope.savedEncounterForms = EncounterServiceFlex.getLocal();
+
+      console.log($scope.savedEncounterForms);
+      
+      $scope.loadPatient = function(hash,patientUuid) {	  
+	  PatientServiceFlex.get(patientUuid,function(p) { 	      
+	      $scope.savedEncounterForms[hash].p = p; 
+	  });	  
+      };
+      
+      $scope.loadList = function() {      
+	  for(var hash in $scope.savedEncounterForms) {
+	      var patientUuid = $scope.savedEncounterForms[hash].patient;
+	      $scope.loadPatient(hash,patientUuid);
+	  }
+      };
+
+      $scope.submitAllLocal = function() {
+	  EncounterServiceFlex.submitAllLocal();
       }
-      $scope.savedEncounterForms = savedEncounterForms;
+
+
+      $scope.loadList();
+      
   }]);
 
 
@@ -25,10 +42,11 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
       $scope.provider = "";
       $scope.hash = "";
       $scope.formUuid = $stateParams.formUuid;
-      $scope.enc = {};
+      $scope.enc = {}; // used to represent the encounter modified for an html form
+
+      $scope.encounter = {}; //represents the original resource
 
       $scope.toFormData = function(encounter) {
-	  console.log(encounter);
 	  $scope.enc = {uuid:encounter.uuid,
 			encounterDatetime:encounter.encounterDatetime,
 			encounterType:encounter.encounterType.uuid,
@@ -36,11 +54,10 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 			patient:encounter.patient.uuid,
 			location:encounter.location.uuid,
 			provider:encounter.provider.uuid,
-			obs:{},			
+			obs:{},
 		       }
 	  for(var i=0; i< encounter.obs.length; i++) {
 	      var o = encounter.obs[i];	      
-	      console.log(o);
 	      var value = o.value;
 	      if(typeof o.value === "object") {
 		  value = o.value.uuid;
@@ -60,14 +77,12 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 	  }
       };
 
-
-
       var patientUuid = $stateParams.patientUuid; 
-      if($stateParams.encounterUuid) {	  
+      if($stateParams.encounterUuid) {
 	  $scope.encounterUuid = $stateParams.encounterUuid;
 	  EncounterServiceFlex.get($stateParams.encounterUuid,function(data) {
 	      $scope.toFormData(data);
-	      console.log($scope.enc);
+	      $scope.encounter = data;
 	  });
       }
       else if($stateParams.hash) {
@@ -77,14 +92,14 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
       }
       else {
 	  $scope.enc = {encounterType: FormService.getEncounterType($scope.formUuid),
-			form:$scope.formUuid};
+			form:$scope.formUuid,
+			patient:patientUuid};
       }
 
       $scope.errors = {};      
 
       if(patientUuid) {
 	  PatientServiceFlex.get(patientUuid,function(patient) { $scope.patient = patient; });
-	  //$scope.enc.patient = patientUuid;
       }
 
 
@@ -93,10 +108,16 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 	  EncounterServiceFlex.saveLocal($scope.enc,$scope.hash);
       }
 
+
       $scope.submit = function() {
-	  EncounterServiceFlex.submit($scope.enc);
-      }
+	  EncounterServiceFlex.submit($scope.enc,$scope.encounter,$scope.hash,
+	     function(data) {
+		 if(data === undefined || data === null || data.error) {
+		     alert("There was an error. Your form is being saved to your local storage");		     
+		 }
+	     });		 
+      };
 
-
+      
       
   }]);

@@ -17,7 +17,8 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
       PatientServiceFlex.get = function(patientUuid,callback) {
 	  console.log("PatientServiceFlex.get() : " + patientUuid);
 	  var patient = angular.fromJson(session.getItem(patientUuid));
-	  //patient.patientData there temporarily. DefaulterCohort returns inappropriately formatted patient. Needs to be changed. 
+
+	  //patient.patientData temporary. DefaulterCohort returns inappropriately formatted patient. Needs to be changed. 
 	  if(patient && patient.patientData) {
 	      patient = PatientService.abstractPatient.clone(patient);	      
 	      console.log("PatientServiceFlex.get() : Patient in session");
@@ -28,7 +29,9 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
 	      console.log("PatientServiceFlex.get() : Querying server for patient");
 	      PatientService.get(patientUuid, function(p){
 		  session.setItem(patientUuid,JSON.stringify(p.getPatient()));
-		  callback(p);
+		  if(callback) { callback(p); }
+		  else { return p;}
+		      
 	      });
 	  }
       };
@@ -82,6 +85,32 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
       };
 
 
+      EncounterServiceFlex.removeLocal = function(hash) {
+	  var forms = local.getItem('savedEncounterForms');
+	  if(forms) { 
+	      forms = JSON.parse(forms);
+	      delete forms[hash];
+	      local.setItem("savedEncounterForms",JSON.stringify(forms));
+	  }
+      }
+
+      EncounterServiceFlex.submitAllLocal = function() {
+	  var forms = EncounterServiceFlex.getLocal();
+	  var errors = 0;
+	  var successes = 0;
+	  for(var hash in forms) {
+	      var enc = forms[hash];
+	      var data = EncounterServiceFlex.submit(enc,{},hash);
+	      if(data === undefined || data === null || data.error) {	      
+		  errors++;
+	      }
+	      else { successes++;}
+	  }
+	  alert(successes + " forms submitted successfully. " + errors + " forms with errors, still saved locally.");
+      }
+	      
+	  
+
       EncounterServiceFlex.saveLocal = function(enc,hash) {
 	  if(!hash) { 
 	      var s = JSON.stringify(enc);             
@@ -107,16 +136,46 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
       };
 
       //This puts the object representing obs into the proper format required by OpenMRS RestWS
-      EncounterServiceFlex.prepareObs = function(enc) {
+      EncounterServiceFlex.prepareObs = function(enc,encounter) {
+	  var obsUuids = {};
+	  if(encounter && encounter.obs) {
+	      for(var i=0; i < encounter.obs.length; i++) {
+		  var o = encounter.obs[i];
+		  var concept = o.concept.uuid; 
+		  var value = o.value;
+		  if(typeof value === "object") {value = value.uuid;}
+		  
+		  if(o.concept.uuid in obsUuids) {
+		      obsUuids[concept].push({value:value,uuid:o.uuid});
+		  }
+		  else { obsUuids[concept] = [{value:value,uuid:o.uuid}] }; 
+	      }
+	  }
+
+
 	  if(enc.obs) {
 	      var t = [];
-	      for(var c in enc.obs) {
+	      for(var c in enc.obs) {		  	  
+		  var o = obsUuids[c];		  
+
 		  if(typeof enc.obs[c] == "string") {
-		      t.push({concept:c,value:enc.obs[c]});
+		      var answer = {concept:c,value:enc.obs[c]};
+		      if(o) { 
+			  answer['uuid'] = o[0].uuid; 
+		      }
+		      t.push(answer);
 		  }
 		  else if(typeof enc.obs[c] == "object") {  // this is for an obs with multiple answers, e.g. a multi select dropbox
 		      for(var i=0; i< enc.obs[c].length; i++) {
-			  t.push({concept:c,value:enc.obs[c][i]});
+			  var answer = {concept:c,value:enc.obs[c][i]};			  			  
+			  if(o) {
+			      for(var j=0; j<o.length; j++) {
+				  if(o[j].value == enc.obs[c][i]) {
+				      answer['uuid'] = o.uuid;
+				  }
+			      }
+			  }
+			  t.push(answer);
 		      }
 		  }
 	      }
@@ -125,9 +184,22 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	  return enc;
       };	  
 
-      EncounterServiceFlex.submit = function(enc) {	  	  
-	  enc = EncounterServiceFlex.prepareObs(enc);
-	  EncounterService.submit(enc);
+      EncounterServiceFlex.submit = function(enc,encounter,hash) {	  	  
+	  if(encounter && encounter.length > 0) {
+	      alert('Currently existing forms can not be edited');
+	  }
+	  else {
+	      enc = EncounterServiceFlex.prepareObs(enc,encounter);	  
+	      EncounterService.submit(enc,function(data) {
+		  if(data === undefined || data === null || data.error) {
+		      EncounterServiceFlex.saveLocal(enc,hash);
+		  }
+		  else if(hash !== undefined) {
+		      EncounterServiceFlex.removeLocal(hash);
+		  }
+		  return data;
+	      });
+	  }
       };
 
 

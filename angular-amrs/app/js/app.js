@@ -46,7 +46,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      authenticate:true,
 	  })
 	  .state('encounter-form',{
-	      url:"/encounter-form?formUuid&patientUuid",
+	      url:"/encounter-form?formUuid&patientUuid&hash",
 	      authenticate:true, 
 	      templateProvider: function($stateParams,FormService,$templateFactory) {
 		  var template = FormService.getTemplate($stateParams.formUuid);
@@ -59,20 +59,6 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	      url:"/encounter-forms-saved",
 	      templateUrl: static_dir + 'partials/encounter-forms-saved.html',
 	      authenticate:true,
-	  })
-	  .state('encounter-form-saved',{
-	      url:"/encounter-form-saved?hash&formUuid",
-	      authenticate:true,
-	      onEnter : function($state,$stateParams) {		
-		  var formUuid = $stateParams.formUuid;
-		  var transitions = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":'outreach-form'};
-		  if(transitions[formUuid]) {		   
-		      var state = transitions[formUuid];
-		      $state.transitionTo('outreach-form',{hash:$stateParams.hash});		      
-		  }
-		  else {$state.transitionTo('apps');}
-	      },
-
 	  })
 	  .state('encounter',{
 	      url:"/encounter?encounterUuid&formUuid&patientUuid",

@@ -234,14 +234,15 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
       };
 
 
-      EncounterService.submit = function(enc) {
+      EncounterService.submit = function(enc,callback) {
 
 	  var url = OPENMRS_CONTEXT_PATH + '/ws/rest/v1/encounter/';
 	  if(enc.uuid) {
 	      url += enc.uuid; 
 	      delete enc.uuid;
 	  }
-
+	  console.log(enc);
+	  console.log(url);
 	  if(enc.personAttributes) {
 	      var attributes = enc.personAttributes;
 	      delete enc.personAttributes;
@@ -249,12 +250,14 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 		  
 	  $http.post(url,enc)
 	      .success(function(data, status, headers, config) {
+		  callback(data);
 		  console.log(data);
 		  if(data.error) {
 		      console.log(data);
 		  }
 	      })
 	      .error(function(data, status, headers, config) {
+		  callback(data);
 		  console.log(data);
 		  console.log(status);
 	      });
