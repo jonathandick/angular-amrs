@@ -208,6 +208,34 @@ openmrsServices.factory('FormService',['Form',
   }]);
 
 
+openmrsServices.factory('Obs',['$resource',   			       
+  function($resource) { 
+      var v = "custom:(uuid,concept:(uuid,uuid),value:ref)";          
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/obs/:uuid", 
+		       { uuid: '@uuid',v:v}, 
+		       { query: {method:"GET",isArray:false}}
+		      ); 
+  }]);
+
+
+
+openmrsServices.factory('ObsService',['$http','Obs',
+  function($http,Obs) {
+      var ObsService = {};
+
+      ObsService.void = function(obsToVoid,callback) {
+	  var uuid;
+	  for(var i in obsToVoid) {
+	      uuid = obsToVoid[i].uuid;
+	      Obs.delete({uuid:uuid}).$promise.then(function(data) {
+		  if(callback) { callback(data); }
+		  else {return data;}
+	      });
+	  }
+      }
+      return ObsService;
+  }]);
+
 
 
 openmrsServices.factory('Encounter',['$resource',   			       
@@ -241,8 +269,6 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 	      url += enc.uuid; 
 	      delete enc.uuid;
 	  }
-	  console.log(enc);
-	  console.log(url);
 	  if(enc.personAttributes) {
 	      var attributes = enc.personAttributes;
 	      delete enc.personAttributes;
@@ -251,12 +277,13 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 	  $http.post(url,enc)
 	      .success(function(data, status, headers, config) {
 		  callback(data);
-		  console.log(data);
 		  if(data.error) {
-		      console.log(data);
+		      console.log('EncounterService.submit() : error in rest response');
+		      
 		  }
 	      })
 	      .error(function(data, status, headers, config) {
+		  console.log("EncounterService.submit() : error:");
 		  callback(data);
 		  console.log(data);
 		  console.log(status);
@@ -331,8 +358,51 @@ openmrsServices.factory('PersonAttribute',['$resource',
 
 
 
+openmrsServices.factory('OpenmrsUser',['$resource',   			       
+  function($resource) { 
+      var v = "custom:(uuid,username,systemId,roles:(uuid,name,privileges))";
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/user/:uuid", 
+		       { uuid: '@uuid',v:v}, 
+		       { query: {method:"GET",isArray:false}}
+		      ); 
+  }]);
 
 
+
+
+openmrsServices.factory('OpenmrsUserService',['OpenmrsUser',   			       
+  function(OpenmrsUser) {
+      var OpenmrsUserService = {};
+
+      OpenmrsUserService.getRoles = function(username,callback) {
+	  OpenmrsUser.get({username:username}).$promise.then(function(data) {	     
+	      if(callback) {
+		  callback(data.results[0].roles); 
+	      }
+	      else { return data.roles; }
+	  });
+      }
+
+      //role can be either role uuid or name
+      OpenmrsUserService.hasRole = function(username,role,callback) {
+	  OpenmrsUser.get({username:username}).$promise.then(function(data) {
+	      var hasRole = false;
+	      var roles = data.results[0].roles;
+	      if(roles) {
+		  for(var i in roles) {
+		      if(roles[i].uuid === role || roles[i].name.toLowerCase() === role.toLowerCase()) {
+			  hasRole = true;
+			  break;
+		      }
+		  }
+	      }
+	      if(callback) { callback(hasRole);}
+	      else {return hasRole;}
+	  });
+      }
+
+      return OpenmrsUserService;
+  }]);
 
 
 

@@ -63,8 +63,8 @@ function getHashCode(s) {
 }
 
 
-openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','EncounterService','PersonAttribute',
-  function($http,Encounter,EncounterService) {
+openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','EncounterService','PersonAttribute','ObsService',
+  function($http,Encounter,EncounterService,PersonAttribute,ObsService) {
       var EncounterServiceFlex = {};
       EncounterServiceFlex.get = function(encounterUuid,callback) {
 	  console.log("EncounterServiceFlex.get() : " + encounterUuid);
@@ -135,71 +135,109 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	  else { return forms; }
       };
 
-      //This puts the object representing obs into the proper format required by OpenMRS RestWS
-      EncounterServiceFlex.prepareObs = function(enc,encounter) {
-	  var obsUuids = {};
-	  if(encounter && encounter.obs) {
-	      for(var i=0; i < encounter.obs.length; i++) {
-		  var o = encounter.obs[i];
-		  var concept = o.concept.uuid; 
-		  var value = o.value;
-		  if(typeof value === "object") {value = value.uuid;}
-		  
-		  if(o.concept.uuid in obsUuids) {
-		      obsUuids[concept].push({value:value,uuid:o.uuid});
+      function hasKeyValue(obj,key,value) {	 
+	  for(var i in obj) {
+	      if(obj[i].concept.uuid === key) {
+		  var v = obj[i].value;		  
+		  if(typeof v === "object" && v !== null) {
+		      v = obj[i].value.uuid;
 		  }
-		  else { obsUuids[concept] = [{value:value,uuid:o.uuid}] }; 
+		  if(v === value) {
+		      return true;
+		  }
 	      }
 	  }
+	  return false;
+      }
 
-
-	  if(enc.obs) {
-	      var t = [];
-	      for(var c in enc.obs) {		  	  
-		  var o = obsUuids[c];		  
-
-		  if(typeof enc.obs[c] == "string") {
-		      var answer = {concept:c,value:enc.obs[c]};
-		      if(o) { 
-			  answer['uuid'] = o[0].uuid; 
-		      }
-		      t.push(answer);
+      function deleteKeyValue(obj,key,value) {
+	  var v;
+	  for(var i in obj) {
+	      if(obj[i].concept.uuid == key) {
+		  v = obj[i].value;
+		  if(typeof v == "object" && v !== null) {
+		      v = obj[i].value.uuid;
 		  }
-		  else if(typeof enc.obs[c] == "object") {  // this is for an obs with multiple answers, e.g. a multi select dropbox
+		  if(v == value) {
+		      delete obj[i];
+		      break;		      
+		  }
+	      }
+	  }
+	  return obj;
+      }
+
+      
+
+      //This puts the object representing obs into the proper format required by OpenMRS RestWS.
+      //If a previous encounter exists, it identifies obs which have not been changed and removes them
+      //  from the encounter to be submitted. For any obs with a changed value, this function returns
+      //  an array of the uuid of the original obs so that it can be voided. 
+      EncounterServiceFlex.prepareObs = function(enc,origEnc) {
+	  var origObs = origEnc.obs;
+
+	  if(enc.obs) {	      
+	      var t = [];
+	      
+	      for(var c in enc.obs) {		  
+		  console.log(c + ' = ' + enc.obs[c]);
+		  console.log(enc.obs[c]);
+		  console.log(typeof enc.obs[c]);
+		  console.log(Object.prototype.toString.call(enc.obs[c]));
+		  if(enc.obs[c] === null || enc.obs[c] === "" || enc.obs[c] === undefined) {		      
+		  }
+		  else if(Object.prototype.toString.call(enc.obs[c]) !== "[object Array]") {
+		      if(hasKeyValue(origObs,c,enc.obs[c])) {
+			  origObs = deleteKeyValue(origObs,c,enc.obs[c]);
+		      } else {  			  
+			  t.push({concept:c,value:enc.obs[c]});		      
+		      }
+		  }
+		  else {  // this is for an obs with multiple answers, e.g. a multi select dropbox
 		      for(var i=0; i< enc.obs[c].length; i++) {
-			  var answer = {concept:c,value:enc.obs[c][i]};			  			  
-			  if(o) {
-			      for(var j=0; j<o.length; j++) {
-				  if(o[j].value == enc.obs[c][i]) {
-				      answer['uuid'] = o.uuid;
-				  }
-			      }
+			  if(hasKeyValue(origObs,c,enc.obs[c][i])) {
+			      origObs = deleteKeyValue(origObs,c,enc.obs[c][i]);
 			  }
-			  t.push(answer);
+			  else {
+			      t.push({concept:c,value:enc.obs[c][i]});
+			  }
 		      }
 		  }
 	      }
 	      enc.obs = t;
 	  }
-	  return enc;
+	      
+	  return [enc,origObs];
       };	  
 
-      EncounterServiceFlex.submit = function(enc,encounter,hash) {	  	  
-	  if(encounter && encounter.length > 0) {
-	      alert('Currently existing forms can not be edited');
-	  }
-	  else {
-	      enc = EncounterServiceFlex.prepareObs(enc,encounter);	  
-	      EncounterService.submit(enc,function(data) {
-		  if(data === undefined || data === null || data.error) {
-		      EncounterServiceFlex.saveLocal(enc,hash);
-		  }
-		  else if(hash !== undefined) {
-		      EncounterServiceFlex.removeLocal(hash);
-		  }
-		  return data;
-	      });
-	  }
+
+      EncounterServiceFlex.submit = function(enc,origEnc,hash) {	  	  	  
+
+	  console.log(enc);
+	  var r = EncounterServiceFlex.prepareObs(enc,origEnc);	  	      	      
+	  enc = r[0];
+	  
+	  EncounterService.submit(enc,function(data) {
+	      console.log('Finished submitting');	      
+
+	      if(data === undefined || data === null || data.error) {
+		  console.log("EncounterServiceFlex.submit() : error submitting. Saving to local");
+		  EncounterServiceFlex.saveLocal(enc,hash);
+	      }
+	      else if(hash !== undefined && hash !== "") {
+		  EncounterServiceFlex.removeLocal(hash);
+	      }
+	      else {
+		  console.log('checking for obs to void');
+		  if(origEnc && origEnc.uuid) {
+		      var obsToVoid = r[1];	      		      
+		      ObsService.void(obsToVoid,function(data) {
+			  
+		      });		      
+		  }	
+	      }	  
+	      return data;
+	  });
       };
 
 

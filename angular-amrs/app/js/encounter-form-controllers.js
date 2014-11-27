@@ -9,8 +9,6 @@ encounterFormControllers.controller('SavedFormsCtrl', ['$scope','$stateParams','
   function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex) {
       $scope.savedEncounterForms = EncounterServiceFlex.getLocal();
 
-      console.log($scope.savedEncounterForms);
-      
       $scope.loadPatient = function(hash,patientUuid) {	  
 	  PatientServiceFlex.get(patientUuid,function(p) { 	      
 	      $scope.savedEncounterForms[hash].p = p; 
@@ -47,6 +45,7 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
       $scope.encounter = {}; //represents the original resource
 
       $scope.toFormData = function(encounter) {
+
 	  $scope.enc = {uuid:encounter.uuid,
 			encounterDatetime:encounter.encounterDatetime,
 			encounterType:encounter.encounterType.uuid,
@@ -56,15 +55,17 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 			provider:encounter.provider.uuid,
 			obs:{},
 		       }
-	  for(var i=0; i< encounter.obs.length; i++) {
+	  console.log(encounter.obs);
+
+	  for(var i in encounter.obs) {
 	      var o = encounter.obs[i];	      
 	      var value = o.value;
-	      if(typeof o.value === "object") {
+	      if(typeof o.value === "object" && o.value !== null) {
 		  value = o.value.uuid;
 	      }
 	      var concept = o.concept.uuid;
 	      if($scope.enc.obs[concept]) {
-		  if(typeof $scope.enc.obs[concept] === "string") {
+		  if(typeof $scope.enc.obs[concept] !== "object") {
 		      $scope.enc.obs[concept] = [$scope.enc.obs[concept],value];
 		  }
 		  else {
@@ -78,7 +79,7 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
       };
 
       var patientUuid = $stateParams.patientUuid; 
-      if($stateParams.encounterUuid) {
+      if($stateParams.encounterUuid) {	  
 	  $scope.encounterUuid = $stateParams.encounterUuid;
 	  EncounterServiceFlex.get($stateParams.encounterUuid,function(data) {
 	      $scope.toFormData(data);
@@ -110,6 +111,7 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 
 
       $scope.submit = function() {
+
 	  EncounterServiceFlex.submit($scope.enc,$scope.encounter,$scope.hash,
 	     function(data) {
 		 if(data === undefined || data === null || data.error) {

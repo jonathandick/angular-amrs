@@ -19,7 +19,7 @@
 	  <div class="form-group">
             <label for="encounterDatetime">Encounter Date:</label>
             <input type="text" id="encounterDatetime" ng-model="enc.encounterDatetime" name="encounterDatetime"
-		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt.open" ng-click="dt.open=true"/>
+		   datepicker-popup="yyyy-MM-dd" is-open="dt.open" ng-click="dt.open=true"/>
 	  </div>
 
 	  <div>
@@ -34,9 +34,9 @@
 	  </div>
 	  
 	  <div class="form-group">
-            <label for="missed_return_visit_date">Missed appointment date:</label>
+            <label for="missedReturnVisitDate">Missed appointment date:</label>
             <input id="missedReturnVisitDate" ng-model="enc.obs['a89e3896-1350-11df-a1f1-0026b9348838']" type="text"
-		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt2.open" ng-click="dt2.open=true"/>
+		   datepicker-popup="yyyy-MM-dd" is-open="dt2.open" ng-click="dt2.open=true"/>
 	  </div>
 	</tab>
 	
@@ -45,7 +45,7 @@
 	  <div class="form-group">
 	    <label for="obs.number_of_call_attempts">Number of call attempts:</label>
 	    <select class="form-control" id="obs.number_of_call_attempts" ng-model="enc.obs['e6c52d7e-3e25-4a83-8f9c-55a03bdc653a']" 
-		    name="enc.obsbs__e6c52d7e-3e25-4a83-8f9c-55a03bdc653a">
+		    name="enc.obs__e6c52d7e-3e25-4a83-8f9c-55a03bdc653a">
 	      <option></option>
 	      <option>1</option>
 	      <option>2</option>
@@ -73,35 +73,37 @@
 	    <label for="owner_of_phone">Who does the phone belong to? :</label>
 	    <select class="form-control" id="owner_of_phone" ng-model="enc.obs['47a5988a-e5f7-424e-96cc-3b34aeea3c1a']">		    
 	      <option value="">...</option>
- 	      <option value='a899b35c-1350-11df-a1f1-0026b9348838' oldvalue="1065^YES^99DCT">Patient</option>
-	      <option value="a89cd280-1350-11df-a1f1-0026b9348838" oldvalue="1410^CARETAKER^99DCT">Caregiver</option>
-	      <option value="a8aaf234-1350-11df-a1f1-0026b9348838" oldvalue="5620^OTHER FAMILY MEMBER^99DCT">Family Member</option>
-	      <option value="a8aaf07c-1350-11df-a1f1-0026b9348838" oldvalue="5618^FRIEND^99DCT">Friend</option>
-	      <option value='a8aaf3e2-1350-11df-a1f1-0026b9348838' oldvalue='5622^OTHER NON-CODED^99DCT'>Other</option>
+ 	      <option value="a899b35c-1350-11df-a1f1-0026b9348838">Patient</option>
+	      <option value="a89cd280-1350-11df-a1f1-0026b9348838">Caregiver</option>
+	      <option value="a8aaf234-1350-11df-a1f1-0026b9348838">Family Member</option>
+	      <option value="a8aaf07c-1350-11df-a1f1-0026b9348838">Friend</option>
+	      <option value="a8aaf3e2-1350-11df-a1f1-0026b9348838">Other</option>
 	    </select>
 	  </div>
-	  <div class="form_group">
+	  <div class="form-group">
 	    <label for='refer_for_field_follow_up'>If not contacted, refer for field follow-up?</label>
-            <select class="form-control" name='refer_for_field_follow_up' ng-model="enc.obs['a89deb3e-1350-11df-a1f1-0026b9348838']">
+            <select class="form-control" name="refer_for_field_follow_up" ng-model="enc.obs['a89deb3e-1350-11df-a1f1-0026b9348838']">
 	      <option/>
-	      <option value='a899b35c-1350-11df-a1f1-0026b9348838'>Yes</option>
-	      <option value='a89de526-1350-11df-a1f1-0026b9348838'>No, in catchment but distant too far</option>
-              <option value='83df5f26-f97a-4cda-9c05-d0bdc6e4ebee'>No, out of catchment area</option>
-	      <option value='a89decc4-1350-11df-a1f1-0026b9348838'>No, locator inadequate</option>	  
+	      <option value="a899b35c-1350-11df-a1f1-0026b9348838">Yes</option>
+	      <option value="a89de526-1350-11df-a1f1-0026b9348838">No, in catchment but distant too far</option>
+              <option value="83df5f26-f97a-4cda-9c05-d0bdc6e4ebee">No, out of catchment area</option>
+	      <option value="a89decc4-1350-11df-a1f1-0026b9348838">No, locator inadequate</option>	  
 	    </select>
-	  </div>	  
+	  </div>
 	</tab>
 	
 	<tab heading="Field Follow-up">
 	  <br/>
 	  <div class="form-group">
-            <label for="contacted_in_field">Was the patient found?:</label>
+	    {{enc.obs}}
+            <label for="contacted_in_field">Was the patient found?:</label>	   
 	    <select class="form-control" name="contacted_in_field" ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']">
 	      <option/>
-	      <option value='true'>Yes</option>
-	      <option value='false'>No</option>
+	      <option value="true">Yes</option>
+	      <option value="false">No</option>
 	    </select>
 	  </div>
+
 	  <div class="form-group">
             <label for="reason_not_found_in_field">If not found, reason:</label>
 	    <select class="form-control" name="reason_not_found_in_field" ng-model="enc.obs['a89de5e4-1350-11df-a1f1-0026b9348838']">		    
@@ -126,7 +128,7 @@
 	  <div class="form-group"> 
 	    <label for="date_found">Date Found:</label>
             <input id="date_found" ng-model="enc.obs['a89df246-1350-11df-a1f1-0026b9348838']" type="text"
-		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt3.open" ng-click="dt3.open=true"/>
+		   datepicker-popup="yyyy-MM-dd" is-open="dt3.open" ng-click="dt3.open=true"/>
 	  </div>
 	  <div class="form-group">
             <label for="location_of_contact">Location of contact:</label>
@@ -312,7 +314,7 @@
 	      <div class="form-group">
 		<label for="date_of_death">Death date:</label>
 		<input name="date_of_death" id="date_of_death" ng-model="enc.obs['a89df3d6-1350-11df-a1f1-0026b9348838']" type="text"		       
-		       datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt4.open" ng-click="dt4.open=true"/>
+		       datepicker-popup="yyyy-MM-dd"  is-open="dt4.open" ng-click="dt4.open=true"/>
 	    
 	      </div>
 	      <div class="form-group">
@@ -357,7 +359,7 @@
 	      <option></option>
 	      <option value="a8af5018-1350-11df-a1f1-0026b9348838" oldvalue='6101^CONTINUE^99DCT'>Patient wishes to remain in care at AMPATH</option>
 	      <option value="a89335d6-1350-11df-a1f1-0026b9348838" oldvalue='159^DECEASED^99DCT'>Patient Dead</option>
-	      <option value="a89c2f42-1350-11df-a1f1-0026b9348838" oldvalue='1286^AMPATH^99DCT'>Transfer out - to AMPATH AMRS alinic</option>  
+	      <option value="a89c2f42-1350-11df-a1f1-0026b9348838" oldvalue='1286^AMPATH^99DCT'>Transfer out - to AMPATH AMRS alinic</option>
 	      <option value="6daff4ce-bce7-41f5-9141-17e694155180" oldvalue='9083^SELF DISENGAGED FROM CARE^99DCT'>Patient self-disengaged from care</option>
 	      <option value="7e381b07-81d5-4425-be84-f188b61b4bd1" oldvalue='9068^AMPATH, NON-AMRS^99DCT'>Transfer out - to AMPATH non-AMRS clinic</option>
 	      <option value="636b7246-51f7-4985-9430-431b09d39bea" oldvalue='9036^HIV NEGATIVE, NO LONGER AT RISK^99DCT'>Patient HIV negative</option>
@@ -373,7 +375,7 @@
 	  <div class="form-group">
 	    <label for='return_visit_date'>If patient plans to return to clinic, RTC Date:</label> 
 	    <input id="return_visit_date" ng-model="enc.obs['a8a666ba-1350-11df-a1f1-0026b9348838']" type="text"		   
-		   datepicker-popup="yyyy-MM-dd" ng-model="birthdate" is-open="dt5.open" ng-click="dt5.open=true"/>
+		   datepicker-popup="yyyy-MM-dd" is-open="dt5.open" ng-click="dt5.open=true"/>
 	  </div>
 	  <div class="form-group"> 
             <label for="likelihood_of_return">Do you think the patient will return to clinic?</label>                 

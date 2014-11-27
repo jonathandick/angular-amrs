@@ -7,8 +7,8 @@ var local = localStorage;
 
 var amrsServices = angular.module('amrsServices', ['ngResource','ngCookies','openmrsServices','amrsControllers']);
 
-amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location',
-  function (Base64, $cookieStore, $http, OpenmrsSession,$location) {
+amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location','OpenmrsUserService',
+  function (Base64, $cookieStore, $http, OpenmrsSession,$location,OpenmrsUserService) {
       // initialize to whatever is in the cookie, if anything
       $http.defaults.headers.common['Authorization'] = 'Basic ' + $cookieStore.get('authdata');
       
@@ -22,6 +22,7 @@ amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession
       
       Auth.clearCredentials = function () {
 	  sessionStorage.removeItem("sessionId");
+	  sessionStorage.removeItem("username");
           document.execCommand("ClearAuthenticationCache");
           $cookieStore.remove('authdata');
           $http.defaults.headers.common.Authorization = 'Basic ';
@@ -33,25 +34,38 @@ amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession
 	  else { return false; }
       };
 
+      Auth.hasRole = function(roleUuid,callback) {
+	  var username = sessionStorage.getItem('username');	  	  
+	  OpenmrsUserService.hasRole(username,roleUuid,function(data) { 
+	      if(callback) { callback(data); }
+	  });
+      };
 
-      Auth.authenticate = function(username,password) {
-	  console.log("Auth.authenticate() : request authentication");
+
+      Auth.getRoles = function(callback) {
+	  var username = sessionStorage.getItem('username');	  	  
+	  console.log("getting roles for " + username);
+	  OpenmrsUserService.getRoles(username,function(data) { 
+	      if(callback) { callback(data); }
+	  });
+      };
+
+
+      Auth.authenticate = function(username,password,callback) {
+	  console.log("Auth.authenticate() : request authentication");	  
 	  Auth.setCredentials(username,password);
-	  OpenmrsSession.get().$promise.then(function(data) {
-	      console.log(data);
+	  OpenmrsSession.get().$promise.then(function(data) {	      
+	      callback(data.authenticated);
 	      if(data.authenticated) {
+		  sessionStorage.setItem("username",username);
 		  sessionStorage.setItem("sessionId",data.sessionId);
 		  $location.path("/apps");		  
-	      }
-	      else {		 
-		  $location.path("/login");
 	      }
 	  });
       };
 
       Auth.logout = function() {
 	  Auth.clearCredentials();
-	  session.removeItem("sessionId");
       }
       
       

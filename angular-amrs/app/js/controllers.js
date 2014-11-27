@@ -9,10 +9,14 @@ amrsControllers.controller('LoginCtrl',['$scope','Auth',
   function($scope,Auth) {
       $scope.username = '';
       $scope.password = '';
+      $scope.errors = "";
 
       $scope.authenticate = function() {
 	  sessionStorage.removeItem("sessionId");
-	  Auth.authenticate($scope.username,$scope.password);
+	  Auth.authenticate($scope.username,$scope.password,function(isAuthenticated) {
+	      if(!isAuthenticated) { $scope.errors = "Username and password do not match. Please try again.";}
+	      console.log("errors: " + $scope.errors);
+	  });	  
       };
   }]);
       
@@ -23,7 +27,7 @@ amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Loca
       $scope.q = ""; 
       
       $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
-      //$http.defaults.headers.post['X-CSRFToken'] = "JxwegyTphLWBk8n1buQLFW3cCPoMA8Eh";
+
       
       $scope.test = function() {
 
@@ -56,8 +60,8 @@ amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Loca
 
 
 
-amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth',
-  function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth) {					      
+amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','Obs',
+  function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,Obs) {					      
       $scope.v = "";
       $scope.q = "";
       
@@ -71,6 +75,21 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
 	  });
       };
       
+      $scope.getRoles = function() {
+	  Auth.getRoles(function(data) {
+	      $scope.result = data;
+	  });
+	  Auth.hasRole("system developer",function(data) { console.log(data); });
+      };
+
+      $scope.voidObs = function() {
+	  Obs.delete({uuid:'c2892a31-11ab-4c7e-bf09-ef7f2d395c83'}).$promise.then(function(data) {
+	      $scope.result = data;
+	      console.log(data);
+	  });
+      };
+									  
+
   }]);
 
 

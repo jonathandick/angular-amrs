@@ -47,7 +47,7 @@ defaulterCohortServices.factory('DefaulterCohort',['$http',
               callback(JSON.parse(dcs));
           }
           else {
-	      console.log("getting defaulter cohorts from zerver");
+	      console.log("getting defaulter cohorts from server");
               $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function(data) {                  
                   local.setItem("defaulterCohorts",JSON.stringify(data));
 		  callback(data);
@@ -60,8 +60,9 @@ defaulterCohortServices.factory('DefaulterCohort',['$http',
 	  var cohort,numUpdated=0;
 	  if(navigator.onLine) {
 	      cohort = JSON.parse(session.getItem(uuid));
-
+	      console.log('uuid to be update: ' + uuid);
 	      var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_retired_members?defaulter_cohort_uuid=' +uuid;
+	      
 	      $http.get(url).success(function(retiredPatients) {
 		  console.log(retiredPatients);
 		  if(retiredPatients.indexOf("*") != -1) {		      

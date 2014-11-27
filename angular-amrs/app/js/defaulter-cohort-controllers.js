@@ -27,6 +27,9 @@ defaulterCohortControllers.controller('DefaulterCohortCtrl', ['$scope','$http','
 
 	  
       $scope.getDefaulterCohort = function() {
+	  if($scope.defaulterCohortUuid === undefined || $scope.defaulterCohortUuid === null || $scope.defaulterCohortUuid === "") return;
+	  console.log("Getting defaulter cohort...");
+
 	  DefaulterCohort.get($scope.defaulterCohortUuid,function(data) {
 	      $scope.defaulterCohort = data;
 	      
@@ -34,12 +37,14 @@ defaulterCohortControllers.controller('DefaulterCohortCtrl', ['$scope','$http','
 		  console.log("Getting new defaulter cohort set");		      
 		  DefaulterCohort.getDefaulterCohorts(function(cohorts) {
 		      $scope.defaulterCohorts = cohorts;
-		      $scope.defaulterCohortUuid = data.uuid			  
+		      $scope.defaulterCohortUuid = data.uuid
 		  });
 	      }
 	      setNumRetired();
 	  });
       };
+
+      //Get defaulter cohort if one exists in session
       $scope.getDefaulterCohort();
       
 
@@ -72,7 +77,7 @@ defaulterCohortControllers.controller('DefaulterCohortCtrl', ['$scope','$http','
       };
 
 
-
+      //Load defaulter cohorts
       DefaulterCohort.getDefaulterCohorts(function(data) {
 	  $scope.defaulterCohorts = data;
       });
