@@ -45,7 +45,6 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
       $scope.encounter = {}; //represents the original resource
 
       $scope.toFormData = function(encounter) {
-
 	  $scope.enc = {uuid:encounter.uuid,
 			encounterDatetime:encounter.encounterDatetime,
 			encounterType:encounter.encounterType.uuid,
@@ -55,8 +54,6 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 			provider:encounter.provider.uuid,
 			obs:{},
 		       }
-	  console.log(encounter.obs);
-
 	  for(var i in encounter.obs) {
 	      var o = encounter.obs[i];	      
 	      var value = o.value;

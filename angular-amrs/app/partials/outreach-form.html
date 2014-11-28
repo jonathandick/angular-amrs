@@ -13,6 +13,7 @@
 	  <button class="btn btn-custom btn-lg btn-block" ng-click="submit()">Submit</button><br/>
 	</div>
       </div>
+
       <tabset vertical="true" type="pills">
 	<tab heading="Encounter Info">	        
 	  <br/>
@@ -81,8 +82,8 @@
 	    </select>
 	  </div>
 	  <div class="form-group">
-	    <label for='refer_for_field_follow_up'>If not contacted, refer for field follow-up?</label>
-            <select class="form-control" name="refer_for_field_follow_up" ng-model="enc.obs['a89deb3e-1350-11df-a1f1-0026b9348838']">
+	    <label for="refer_for_field_follow_up">If not contacted, refer for field follow-up?</label>
+            <select class="form-control" name="refer_for_field_follow_up" ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']">
 	      <option/>
 	      <option value="a899b35c-1350-11df-a1f1-0026b9348838">Yes</option>
 	      <option value="a89de526-1350-11df-a1f1-0026b9348838">No, in catchment but distant too far</option>
@@ -95,12 +96,11 @@
 	<tab heading="Field Follow-up">
 	  <br/>
 	  <div class="form-group">
-	    {{enc.obs}}
             <label for="contacted_in_field">Was the patient found?:</label>	   
-	    <select class="form-control" name="contacted_in_field" ng-model="enc.obs['3cef9756-ae0e-4b35-9ee2-b0fb96556971']">
+	    <select class="form-control" name="contacted_in_field" ng-model="enc.obs['a89deb3e-1350-11df-a1f1-0026b9348838']">
 	      <option/>
-	      <option value="true">Yes</option>
-	      <option value="false">No</option>
+	      <option value="a899b35c-1350-11df-a1f1-0026b9348838">Yes</option>
+	      <option value="a899b42e-1350-11df-a1f1-0026b9348838">No</option>
 	    </select>
 	  </div>
 
@@ -149,7 +149,7 @@
 	    <div class='list-button'>
 	      <label>
       		<input checklist-model="enc.obs['a89ef11e-1350-11df-a1f1-0026b9348838']" id='obs.reason_for_missed_visit.deceased' 
-		       type='checkbox' checklist-value='a89335d6-1350-11df-a1f1-0026b9348838'/>
+		       type='checkbox' checklist-value="a89335d6-1350-11df-a1f1-0026b9348838"/>
     		<span>Deceased</span> 
 	      </label>
 	    </div>

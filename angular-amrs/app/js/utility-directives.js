@@ -20,6 +20,7 @@ angular.module('checklist-model', [])
 
   // add
   function add(arr, item) {
+      if(typeof arr === "string") { arr = [arr]; }
     arr = angular.isArray(arr) ? arr : [];
     for (var i = 0; i < arr.length; i++) {
       if (angular.equals(arr[i], item)) {
@@ -45,15 +46,18 @@ angular.module('checklist-model', [])
 
   // http://stackoverflow.com/a/19228302/1458162
   function postLinkFn(scope, elem, attrs) {
+      
     // compile with `ng-model` pointing to `checked`
     $compile(elem)(scope);
 
     // getter / setter for original model
     var getter = $parse(attrs.checklistModel);
+
     var setter = getter.assign;
 
     // value added to list
       var value = attrs.checklistValue;
+
     // watch UI checked change
     scope.$watch('checked', function(newValue, oldValue) {	
       if (newValue === oldValue) { 
@@ -67,8 +71,14 @@ angular.module('checklist-model', [])
       }
     });
 
+
+      
     // watch original model change
-    scope.$parent.$watch(attrs.checklistModel, function(newArr, oldArr) {
+    scope.$parent.$watch(attrs.checklistModel, function(newArr, oldArr) {		
+	//JJD : add this condition to convert original value to array. couldn't find a better way to do this
+	if(typeof newArr === "string") { 
+	    setter(scope.$parent,[newArr]);
+	}
       scope.checked = contains(newArr, value);
     }, true);
   }
@@ -78,6 +88,8 @@ angular.module('checklist-model', [])
 	priority: 1000,
 	terminal: true,
 	scope: true,
+	controller: function($scope,$element) { 
+	},
     compile: function(tElement, tAttrs) {
       if (tElement[0].tagName !== 'INPUT' || !tElement.attr('type', 'checkbox')) {
         throw 'checklist-model should be applied to `input[type="checkbox"]`.';
@@ -92,7 +104,7 @@ angular.module('checklist-model', [])
       
       // local scope var storing individual checkbox model
       tElement.attr('ng-model', 'checked');
-
+	
       return postLinkFn;
     }
   };

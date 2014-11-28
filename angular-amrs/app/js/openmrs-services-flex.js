@@ -180,10 +180,6 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	      var t = [];
 	      
 	      for(var c in enc.obs) {		  
-		  console.log(c + ' = ' + enc.obs[c]);
-		  console.log(enc.obs[c]);
-		  console.log(typeof enc.obs[c]);
-		  console.log(Object.prototype.toString.call(enc.obs[c]));
 		  if(enc.obs[c] === null || enc.obs[c] === "" || enc.obs[c] === undefined) {		      
 		  }
 		  else if(Object.prototype.toString.call(enc.obs[c]) !== "[object Array]") {
