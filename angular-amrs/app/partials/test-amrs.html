@@ -14,6 +14,27 @@
     <br/>
     <br/>
     <button ng-click="voidObs()">Void Obs</button>
+    <br/><br/>
+
+    <select obs concept-uuid="a" obs-group-id="1">
+      <option value='1'>1</option>
+      <option value='2'>2</option>
+    </select>
+    <br/>
+
+    <select class="form-control" obs concept-uuid="47a5988a-e5f7-424e-96cc-3b34aeea3c1a" obs-group-id='1'>		 
+      <option value="">...</option>
+      <option value="a899b35c-1350-11df-a1f1-0026b9348838">Patient</option>
+      <option value="a89cd280-1350-11df-a1f1-0026b9348838">Caregiver</option>
+      <option value="a8aaf234-1350-11df-a1f1-0026b9348838">Family Member</option>
+      <option value="a8aaf07c-1350-11df-a1f1-0026b9348838">Friend</option>
+      <option value="a8aaf3e2-1350-11df-a1f1-0026b9348838">Other</option>
+    </select>
+
+
+    {{enc.obs}}
+
+    <input type='text'"/>
 
     <div>{{result}}</div>
   </div>

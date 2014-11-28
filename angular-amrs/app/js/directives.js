@@ -5,27 +5,6 @@
 var static_dir = 'js/angular-amrs/app/';
 
 angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
-    .directive('customDatepicker',function($compile,$timeout){
-        return {
-            replace:true,
-            templateUrl:'custom-datepicker.html',
-            scope: {
-                ngModel: '=',
-                dateOptions: '@',
-                dateDisabled: '@',
-                opened: '=',
-                min: '@',
-                max: '@',
-                popup: '@',
-                options: '@',
-                name: '@',
-                id: '@'
-            },
-            link: function($scope, $element, $attrs, $controller){
-
-            }    
-        };
-    })
     .directive('openmrsLogin', [ function() {
 	return {
 	    restrict : "E",
@@ -214,6 +193,85 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 	    templateUrl : static_dir + "directive-templates/infinitePane.html",
 	}
     }])
+    .directive('obs', ['$parse', '$compile', function($parse, $compile) {
 
+	function postLinkFn(scope,elem,attrs) {
+	    $compile(elem)(scope);
+
+	    var conceptUuid = attrs.conceptUuid;
+	    var obsGetter = $parse('enc.obs');
+	    var obsSetter = obsGetter.assign;
+
+	    var obs = obsGetter(scope.$parent);
+
+	    function getIndex() {
+		var cur = -1;
+		for(var i in obs) {
+		    var o = obs[i];
+		    if(o.concept === conceptUuid) {			
+			cur = i;
+			break;
+		    }
+		}
+		return cur;
+	    }
+	    var index = getIndex();
+
+	    var f = {concept:attrs.conceptUuid,obsGroupId:attrs.obsGroupId};	    
+	    if(index != -1) {
+		f.value = obs[index].value;
+		scope.selected = obs[index].value;
+		
+	    }
+
+	    console.log(scope.selected);
+	    function setValue(newValue) {
+		console.log('setting new value: ' + newValue);
+		if(newValue === undefined) return;
+
+		if(newValue != "") {
+		    f.value = newValue;
+		    if(index != -1) { obs[index] = f}
+		    else {
+			obs.push(f);
+			index = getIndex();
+		    }		
+		}
+		else {
+		    obs.splice(index,1);
+		    index = -1;
+		}
+		obsSetter(scope.$parent,obs);		
+	    }
+
+
+	    scope.$watch('selected',function(newValue,oldValue) {
+		console.log('new: ' + newValue);
+		setValue(newValue);
+		console.log(obsGetter(scope.$parent));
+	    });
+
+	    
+	    scope.$parent.$watch(attrs.model, function(newValue,oldValue) {
+		if(index != -1) {
+		    f.value = obs[index].value;
+		    scope.selected = obs[index].value;		
+		}
+	    });			 
+	}
+
+	return {
+	    restrict: "A",
+	    scope: true,
+	    terminal: true,
+	    priority: 1000,
+	    compile: function(tElement,attrs) {
+		tElement.removeAttr('obs');
+		tElement.attr('ng-model','selected');
+		return postLinkFn;
+	    },
+
+	}
+    }])		
 ;
 

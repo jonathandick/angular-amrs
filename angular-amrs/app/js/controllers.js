@@ -64,7 +64,10 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,Obs) {					      
       $scope.v = "";
       $scope.q = "";
-      
+      $scope.enc = {obs:[{concept:'a',obsGroupId:'1',value:"2"},
+			 {concept:'b',obsGroupId:'2',value:"2"},
+			]};
+
       $scope.test = function() {
 	  var params = {q:$scope.q};
 	  if($scope.v != "") { params["v"] = $scope.v };	  
