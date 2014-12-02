@@ -193,85 +193,181 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 	    templateUrl : static_dir + "directive-templates/infinitePane.html",
 	}
     }])
-    .directive('obs', ['$parse', '$compile', function($parse, $compile) {
+    .directive('encounterForm',['$parse','$compile',function($parse,$compile) {
+	return {
+	    restrict: "E",
+	    scope:false,
+	    link: function(scope,element,attrs,ctrl,transclude) {
 
-	function postLinkFn(scope,elem,attrs) {
-	    $compile(elem)(scope);
+		function loadData(obs,curSchema) {
+		    for(var j in obs) {			
+			var schema, concept = obs[j].concept, id = scope.getId();
+			if(obs[j].value) schema = curSchema + " > obs[concept-uuid='" + concept + "']";	    
+			else schema = curSchema +  " > obs-group[concept-uuid='" + concept + "']";	    
+			    
+			var matching = $(schema + ":last");
+			var lineage = matching.attr('lineage');
+			var getter = $parse(lineage);			
 
-	    var conceptUuid = attrs.conceptUuid;
-	    var obsGetter = $parse('enc.obs');
-	    var obsSetter = obsGetter.assign;
-
-	    var obs = obsGetter(scope.$parent);
-
-	    function getIndex() {
-		var cur = -1;
-		for(var i in obs) {
-		    var o = obs[i];
-		    if(o.concept === conceptUuid) {			
-			cur = i;
-			break;
+			//The node in the DOM is occupied by a prior obs/obsSet. We need to create a cloned dom element and add to the dom.
+			if(getter(scope) !== undefined) {
+			    var e = angular.element(matching[0].outerHTML);
+			    matching.after(e);
+			    $compile(e)(scope);
+			    getter = $parse(e.attr('lineage'));
+			}
+			var setter = getter.assign;				    
+			if(obs[j].value) setter(scope,{concept:concept,value:obs[j].value});
+			else if(obs[j].obs){
+			    setter(scope,{concept:concept,obs:{}});
+			    loadData(obs[j].obs,schema + ":last");
+			}	
 		    }
 		}
-		return cur;
+		scope.$watch('encounter',function(newValue,oldValue){
+		    loadData(newValue.obs,'encounter-form');		    
+		});
 	    }
-	    var index = getIndex();
-
-	    var f = {concept:attrs.conceptUuid,obsGroupId:attrs.obsGroupId};	    
-	    if(index != -1) {
-		f.value = obs[index].value;
-		scope.selected = obs[index].value;
-		
-	    }
-
-	    console.log(scope.selected);
-	    function setValue(newValue) {
-		console.log('setting new value: ' + newValue);
-		if(newValue === undefined) return;
-
-		if(newValue != "") {
-		    f.value = newValue;
-		    if(index != -1) { obs[index] = f}
-		    else {
-			obs.push(f);
-			index = getIndex();
-		    }		
-		}
-		else {
-		    obs.splice(index,1);
-		    index = -1;
-		}
-		obsSetter(scope.$parent,obs);		
-	    }
-
-
-	    scope.$watch('selected',function(newValue,oldValue) {
-		console.log('new: ' + newValue);
-		setValue(newValue);
-		console.log(obsGetter(scope.$parent));
-	    });
-
-	    
-	    scope.$parent.$watch(attrs.model, function(newValue,oldValue) {
-		if(index != -1) {
-		    f.value = obs[index].value;
-		    scope.selected = obs[index].value;		
-		}
-	    });			 
 	}
+    }])
 
+    .directive('obsGroup',['$parse','$compile',function($parse,$compile) {
 	return {
-	    restrict: "A",
-	    scope: true,
-	    terminal: true,
-	    priority: 1000,
-	    compile: function(tElement,attrs) {
-		tElement.removeAttr('obs');
-		tElement.attr('ng-model','selected');
-		return postLinkFn;
-	    },
+	    restrict: "E",
+	    scope: {},
+	    transclude:true,
+	    replace:true,	   
+	    link: function(scope,element,attrs,ctrl,transclude) {
 
+		function getId() {
+		    var getIdGetter = $parse('getId');
+		    var getId = getIdGetter(scope.$parent);		
+		    var parent = scope.$parent;
+		    while(getId === undefined) {
+			parent = parent.$parent;
+			getId = getIdGetter(parent);		
+		    }
+		    var id = getId();
+		    return id + "";
+		}
+		var id = getId();
+
+		var conceptUuid = attrs['conceptUuid'];
+		var lineage = angular.element(element).parent().attr('lineage');
+		//setObs(lineage,id,conceptUuid);
+
+		if(lineage) lineage += '.obs[' + id + ']';
+		else lineage = 'enc.obs[' + id + ']';
+		element.attr('lineage',lineage);
+	
+		transclude(scope,function(clone,scope){		    		    
+		    if(element[0].attributes['repeat']) {			
+			var b = angular.element("<button ng-click='getClone()'>Repeat</button><br/>");
+			$compile(b)(scope);
+			element.before(b);
+		    }
+		    element.append(clone);
+		}); 
+
+		if(element[0].attributes['repeat']) {			
+		    var e = element.clone();
+		    e.removeAttr('lineage class repeat');
+		    e.find('*').removeAttr('lineage class');
+		    e.find('select').attr('obs',""); 
+		    scope.template = e[0].outerHTML;
+		    scope.$parent.templates[lineage] = e[0].outerHTML;
+		}
+
+		scope.getClone = function() {
+		    
+		    var node = $compile(scope.template)(scope);
+		    element.append('<br/>');
+		    element.after(node);
+		};		
+				
+	    },
+	}
+    }])
+
+    .directive('obs', ['$parse', '$compile', function($parse, $compile) {	
+	return {
+	    restrict: "E",
+	    scope: true,
+	    priority: 1000,	    
+	    link: function(scope,elem,attrs,ctrl,transclude) {
+		function getId() {
+		    var getIdGetter = $parse('getId');
+		    var getId = getIdGetter(scope.$parent);		
+		    var parent = scope.$parent;
+		    while(getId === undefined) {			
+			parent = parent.$parent;
+			getId = getIdGetter(parent);		
+		    }
+		    var id = getId();
+		    return id;
+		}	
+
+
+		var f = {concept:attrs.conceptUuid};	    
+
+		function setValue(newValue) {
+		    
+		    if(newValue === undefined) return;
+
+		    var obsGetter = $parse('enc.obs');
+		    var parent = scope.$parent;
+		    var obs = obsGetter(parent);		
+		    while(obs === undefined) {
+			parent = parent.$parent;
+			obs = obsGetter(parent);
+		    }
+
+		    var s = lineage.replace('[' + id + ']',"")
+		    var o = $parse(s)(parent);
+		    var oSetter = $parse(s).assign;
+
+		    if(newValue != "") {
+			f.value = newValue;		    			
+			o[id] = f;
+		    }
+		    else { delete o[id]; }
+		    oSetter(parent,o);		
+		}
+		
+
+		var template = elem[0].outerHTML;
+		var e = elem.find('select');
+		e.attr('ng-model','selected');
+		$compile(e)(scope);
+
+		var id = getId();			
+		var lineage = angular.element(elem).parent().attr('lineage');
+		if(lineage) lineage += '.obs[' + id + ']';
+		else lineage = 'enc.obs[' + id + ']';
+		elem.attr('lineage',lineage);
+		
+
+		scope.$watch('selected',function(newValue,oldValue) {
+		    setValue(newValue);
+		});
+		
+		var obsGetter = $parse('enc.obs');
+		var parent = scope.$parent;
+		var obs = obsGetter(parent);		
+		while(obs === undefined) {
+		    parent = parent.$parent;
+		    obs = obsGetter(parent);
+		}
+		
+		parent.$watch(lineage, function(newValue,oldValue) {
+		    if(newValue && newValue.value) {
+			scope.selected = newValue.value;
+		    }
+		});			 
+
+	    }
 	}
     }])		
+
 ;
 

@@ -1,6 +1,65 @@
 <div ng-controller="AmrsCtrl">
   <div class="container-fluid">
     Test AMRS<br/>
+
+    {{enc.obs}}
+    <br/>
+
+    <p>Obs group test</p>
+
+    <encounter-form>
+
+      <obs concept-uuid="t">
+	<select>
+	  <option/>
+	  <option value='i'>i</option>
+	  <option value='2'>2</option>
+	</select>
+      </obs>
+      <br/>
+      <obs concept-uuid="w">
+	<select>
+	  <option/>
+	  <option value='i'>i</option>
+	  <option value='2'>2</option>
+	</select>
+      </obs>
+
+      <br/>
+      
+      <obs-group concept-uuid="z" repeat>
+	<obs concept-uuid="y">
+	  <select>
+	    <option/>
+	    <option value='b'>b</option>
+	    <option value='2'>2</option>
+	  </select>
+	</obs>
+	<obs concept-uuid="x">
+	  <select>
+	    <option/>
+	    <option value='c'>c</option>
+	    <option value='2'>2</option>
+	  </select>
+	</obs>
+	
+	<obs-group concept-uuid="w">
+	  <obs concept-uuid="v">
+	    <select>
+	      <option/>
+	      <option value='e'>e</option>
+	      <option value='2'>2</option>
+	    </select>
+	  </obs>
+
+	</obs-group>
+      </obs-group>
+
+
+    </encounter-form>
+    
+                                         
+ 
     <label for="query">Query:</label>
     <input type="text" name="query" id="query" ng-model="q"/>
     <label for="custom">Custom:</label>
@@ -16,12 +75,7 @@
     <button ng-click="voidObs()">Void Obs</button>
     <br/><br/>
 
-    <select obs concept-uuid="a" obs-group-id="1">
-      <option value='1'>1</option>
-      <option value='2'>2</option>
-    </select>
     <br/>
-
     <select class="form-control" obs concept-uuid="47a5988a-e5f7-424e-96cc-3b34aeea3c1a" obs-group-id='1'>		 
       <option value="">...</option>
       <option value="a899b35c-1350-11df-a1f1-0026b9348838">Patient</option>
@@ -31,10 +85,9 @@
       <option value="a8aaf3e2-1350-11df-a1f1-0026b9348838">Other</option>
     </select>
 
-
     {{enc.obs}}
 
-    <input type='text'"/>
+    
 
     <div>{{result}}</div>
   </div>
