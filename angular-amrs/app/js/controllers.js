@@ -64,8 +64,7 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,Obs) {					      
       $scope.v = "";
       $scope.q = "";
-      $scope.id = 3; //0;
-      $scope.enc = {obs:{}};
+      $scope.id = 3; //0;      
       $scope.templates = {};
 
       $scope.test = function() {
@@ -140,7 +139,7 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
 	  }
       }
 
-
+      /*
       var encounter = {obs:[
 	  {concept:"t",value:"i"},
 	  {concept:"t",value:"2"},
@@ -151,11 +150,12 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
 			   ]
 	  }]
 		      };      
+      */
 
       var model = {"1":{concept:"z",obs:{"2":{concept:"w",obs:{}}}}};
 
       //loadData(encounter.obs,model);
-      $scope.encounter = encounter;
+      //$scope.encounter = encounter;
 
   }]);
 

@@ -41,7 +41,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	  })	  
 	  .state('amrs',{
 	      url: "/amrs",
-	      templateUrl: static_dir + 'partials/test-amrs.html',	      
+	      templateUrl: static_dir + 'partials/outreach-form2.html',	      
 	      controller: 'AmrsCtrl',
 	      authenticate:true,
 	  })

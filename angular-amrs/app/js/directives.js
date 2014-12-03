@@ -193,20 +193,21 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 	    templateUrl : static_dir + "directive-templates/infinitePane.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile',function($parse,$compile) {
+    .directive('encounterForm',['$parse','$compile','EncounterServiceFlex',function($parse,$compile,EncounterServiceFlex) {
 	return {
 	    restrict: "E",
 	    scope:false,
 	    link: function(scope,element,attrs,ctrl,transclude) {
 
 		function loadData(obs,curSchema) {
-		    for(var j in obs) {			
-			var schema, concept = obs[j].concept, id = scope.getId();
-			if(obs[j].value) schema = curSchema + " > obs[concept-uuid='" + concept + "']";	    
-			else schema = curSchema +  " > obs-group[concept-uuid='" + concept + "']";	    
-			    
+		    for(var j in obs) {		
+			var schema, concept = obs[j].concept.uuid, id = scope.getId();
+			if(obs[j].value) schema = curSchema + " obs[concept-uuid='" + concept + "']";	    
+			else schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
+			console.log('schema: ' + schema);
 			var matching = $(schema + ":last");
 			var lineage = matching.attr('lineage');
+			console.log('lineage: ' + lineage);
 			var getter = $parse(lineage);			
 
 			//The node in the DOM is occupied by a prior obs/obsSet. We need to create a cloned dom element and add to the dom.
@@ -217,13 +218,105 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 			    getter = $parse(e.attr('lineage'));
 			}
 			var setter = getter.assign;				    
-			if(obs[j].value) setter(scope,{concept:concept,value:obs[j].value});
-			else if(obs[j].obs){
+			if(obs[j].value) {			    
+			    var value = obs[j].value;
+			    if(Object.prototype.toString.call(obs[j].value) === "[object Object]") value = obs[j].value.uuid;			    
+			    setter(scope,{concept:concept,value:value});
+			} else if(obs[j].obs){
 			    setter(scope,{concept:concept,obs:{}});
 			    loadData(obs[j].obs,schema + ":last");
 			}	
 		    }
 		}
+
+		function prepareObs(obs,restObs) {
+		    for(var i in obs) {
+			var o = obs[i];
+			if(o.value) {
+			    restObs.push(o);
+			}
+			else {
+			    var obsSet = {concept:o.concept,obs:[]};
+			    prepareObs(o.obs,obsSet.obs);
+			    restObs.push(obsSet);
+			}
+		    }
+		}
+
+		function compare(a,b) {
+ 		    if(a.concept.uuid) {
+			if(a.concept.uuid < b.concept.uuid) return -1;
+			if(a.concept.uuid > b.concept.uuid) return 1;
+			return 0;
+		    }
+		    else {
+			if(a.concept < b.concept) return -1;
+			if(a.concept > b.concept) return 1;
+			return 0;
+		    }
+		}						
+
+
+		//assumes obs1 is a restws object and obs2 is a payload object. 
+		function isIdentical(obs1,obs2) {
+		    if(obs1.value) {
+			if(Object.prototype.toString.call(obs1.value) == "[object Object]") {
+			    return obs1.value.uuid === obs2.value;
+			}
+			else return obs1.value === obs2.value;
+
+		    }
+		    else if(obs2.obs === undefined) return false;
+		    else if(obs1.obs.length != obs2.obs.length) return false;
+		    else {			
+			obs1.obs.sort(compare);
+			obs2.obs.sort(compare);			
+			for(var i in obs1.obs) {
+			    if(!isIdentical(obs1.obs[i],obs2.obs[i])) {
+				return false;
+			    }
+			}
+		    }
+		    return true;
+		}
+
+
+		function getObsToVoid(originalObs,obs) {
+		    var obsToVoid;
+		    for(var i in originalObs) {
+			for(var j in obs) {
+			    if(originalObs[i].concept.uuid == obs[j].concept) {
+				if(isIdentical(obs[i],obs[j])) {
+				    delete obs[j]; //don't resubmit
+				}
+				else {
+				    obsToVoid.push(obs[i].uuid); //void as key=value is not the saem
+				}
+				break;
+			    }
+			}
+		    }
+		    return obsToVoid;
+		}
+
+
+		scope.submit = function() {
+		    var obs = [];
+		    prepareObs(scope.enc.obs,obs);
+		    scope.enc.obs = obs;
+		    console.log(obs);
+		    //EncounterServiceFlex.submit(enc);
+
+		    var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
+		    //EncounterServiceFlex.voidObs(obsToVoid);
+		};
+
+
+		var encounterUuid = "b68c9c0f-2423-4956-acaf-b6087f7bd7ec";
+		EncounterServiceFlex.get(encounterUuid,function(data) {
+		    scope.encounter = data;
+		});
+
 		scope.$watch('encounter',function(newValue,oldValue){
 		    loadData(newValue.obs,'encounter-form');		    
 		});
@@ -254,7 +347,6 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 
 		var conceptUuid = attrs['conceptUuid'];
 		var lineage = angular.element(element).parent().attr('lineage');
-		//setObs(lineage,id,conceptUuid);
 
 		if(lineage) lineage += '.obs[' + id + ']';
 		else lineage = 'enc.obs[' + id + ']';
@@ -293,7 +385,7 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 	return {
 	    restrict: "E",
 	    scope: true,
-	    priority: 1000,	    
+	    priority: 100000,	    
 	    link: function(scope,elem,attrs,ctrl,transclude) {
 		function getId() {
 		    var getIdGetter = $parse('getId');
@@ -311,7 +403,7 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		var f = {concept:attrs.conceptUuid};	    
 
 		function setValue(newValue) {
-		    
+		    console.log('setting value: ' + newValue);
 		    if(newValue === undefined) return;
 
 		    var obsGetter = $parse('enc.obs');
@@ -321,12 +413,19 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 			parent = parent.$parent;
 			obs = obsGetter(parent);
 		    }
-
+		    
 		    var s = lineage.replace('[' + id + ']',"")
 		    var o = $parse(s)(parent);
 		    var oSetter = $parse(s).assign;
 
-		    if(newValue != "") {
+		    if(checkboxValue) {
+			if(newValue === true) f.value = checkboxValue;
+			else f.value=checkboxValue;			
+			o[id] = f;
+		    }
+
+		    else if(newValue != "") {
+
 			f.value = newValue;		    			
 			o[id] = f;
 		    }
@@ -336,8 +435,13 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		
 
 		var template = elem[0].outerHTML;
-		var e = elem.find('select');
+		var e = elem.find('select,input');
 		e.attr('ng-model','selected');
+		var checkboxValue;
+		if(e.attr('type') === 'checkbox') {
+		    checkboxValue = e.attr('value');
+		}
+
 		$compile(e)(scope);
 
 		var id = getId();			
@@ -346,8 +450,9 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		else lineage = 'enc.obs[' + id + ']';
 		elem.attr('lineage',lineage);
 		
+		
 
-		scope.$watch('selected',function(newValue,oldValue) {
+		scope.$watch('selected',function(newValue,oldValue) {		    
 		    setValue(newValue);
 		});
 		
