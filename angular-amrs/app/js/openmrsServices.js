@@ -4,6 +4,7 @@ var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies
 
 
 var OPENMRS_CONTEXT_PATH = "http://10.50.110.67:8080/amrs";
+//var OPENMRS_CONTEXT_PATH = "http://41.89.173.32:8080/amrs";
 
 
 

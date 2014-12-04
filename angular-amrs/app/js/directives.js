@@ -199,33 +199,41 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 	    scope:false,
 	    link: function(scope,element,attrs,ctrl,transclude) {
 
+		scope.enc = {obs:{}};
+
 		function loadData(obs,curSchema) {
 		    for(var j in obs) {		
 			var schema, concept = obs[j].concept.uuid, id = scope.getId();
-			if(obs[j].value) schema = curSchema + " obs[concept-uuid='" + concept + "']";	    
-			else schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
-			console.log('schema: ' + schema);
-			var matching = $(schema + ":last");
-			var lineage = matching.attr('lineage');
-			console.log('lineage: ' + lineage);
-			var getter = $parse(lineage);			
-
-			//The node in the DOM is occupied by a prior obs/obsSet. We need to create a cloned dom element and add to the dom.
+			if(obs[j].obs) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
+			else schema = curSchema + " obs[concept-uuid='" + concept + "']";
+			var matching = $(schema);
+			var getter;
+			matching.each(function(index) {			    
+			    var lineage = $(this).attr('lineage');
+			    getter = $parse(lineage);						    
+			    if(getter(scope) === undefined) {
+				return false;
+			    }
+			});
+			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
 			if(getter(scope) !== undefined) {
 			    var e = angular.element(matching[0].outerHTML);
 			    matching.after(e);
 			    $compile(e)(scope);
 			    getter = $parse(e.attr('lineage'));
 			}
+
 			var setter = getter.assign;				    
-			if(obs[j].value) {			    
+			if(obs[j].value) {			    			    
 			    var value = obs[j].value;
 			    if(Object.prototype.toString.call(obs[j].value) === "[object Object]") value = obs[j].value.uuid;			    
-			    setter(scope,{concept:concept,value:value});
+			    if(setter) setter(scope,{concept:concept,value:value});
 			} else if(obs[j].obs){
+			    console.log('obs: ' + JSON.stringify(scope.enc.obs));			    
 			    setter(scope,{concept:concept,obs:{}});
 			    loadData(obs[j].obs,schema + ":last");
-			}	
+			}
+			
 		    }
 		}
 
@@ -243,11 +251,28 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		    }
 		}
 
+		function getValue(obs) {
+		    if(obs.value) {
+			var v = obs.value;
+			if(Object.prototype.toString.call(v) == "[object Object]") {
+			    v = obs.value.uuid;
+			}
+			return v;
+		    } 
+		    else return undefined;
+		}
+
 		function compare(a,b) {
  		    if(a.concept.uuid) {
 			if(a.concept.uuid < b.concept.uuid) return -1;
 			if(a.concept.uuid > b.concept.uuid) return 1;
-			return 0;
+			if(a.concept.uuid === b.concept.uuid) {
+			    var aValue = getValue(a);
+			    var bValue = getValue(b);
+			    if(aValue < bValue) return -1;
+			    if(aValue > bValue) return 1;
+			    return 0;
+			}
 		    }
 		    else {
 			if(a.concept < b.concept) return -1;
@@ -280,20 +305,22 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		    return true;
 		}
 
-
 		function getObsToVoid(originalObs,obs) {
-		    var obsToVoid;
+		    var obsToVoid = [];
 		    for(var i in originalObs) {
+			//var e = _.filter(obs,function(e) { return e.concept === uuid; });			    
+			var found = false;
 			for(var j in obs) {
-			    if(originalObs[i].concept.uuid == obs[j].concept) {
-				if(isIdentical(obs[i],obs[j])) {
-				    delete obs[j]; //don't resubmit
+			    if(originalObs[i].concept.uuid === obs[j].concept) {
+				if(isIdentical(originalObs[i],obs[j])) {
+				    obs.splice(j,1); //don't resubmit
+				    found = true;
+				    break;
 				}
-				else {
-				    obsToVoid.push(obs[i].uuid); //void as key=value is not the saem
-				}
-				break;
 			    }
+			}
+			if(!found) {
+			    obsToVoid.push(originalObs[i].uuid); //void as key=value is not the same
 			}
 		    }
 		    return obsToVoid;
@@ -303,23 +330,28 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		scope.submit = function() {
 		    var obs = [];
 		    prepareObs(scope.enc.obs,obs);
-		    scope.enc.obs = obs;
-		    console.log(obs);
+		    
+		    scope.enc.obs = obs;		    
+		    var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
+		    console.log('obs: ' + JSON.stringify(scope.enc.obs));
+		    console.log('obs to void: ' + JSON.stringify(obsToVoid));
 		    //EncounterServiceFlex.submit(enc);
 
-		    var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
 		    //EncounterServiceFlex.voidObs(obsToVoid);
 		};
 
 
 		var encounterUuid = "b68c9c0f-2423-4956-acaf-b6087f7bd7ec";
-		EncounterServiceFlex.get(encounterUuid,function(data) {
+		EncounterServiceFlex.get(encounterUuid,function(data) {		    
 		    scope.encounter = data;
 		});
 
 		scope.$watch('encounter',function(newValue,oldValue){
-		    loadData(newValue.obs,'encounter-form');		    
+		    if(newValue !== undefined && newValue !== null && newValue !== "")
+			loadData(newValue.obs,'encounter-form');
 		});
+
+
 	    }
 	}
     }])
@@ -403,7 +435,7 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		var f = {concept:attrs.conceptUuid};	    
 
 		function setValue(newValue) {
-		    console.log('setting value: ' + newValue);
+		    //console.log('setting value: ' + newValue);
 		    if(newValue === undefined) return;
 
 		    var obsGetter = $parse('enc.obs');
@@ -436,6 +468,7 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 
 		var template = elem[0].outerHTML;
 		var e = elem.find('select,input');
+		
 		e.attr('ng-model','selected');
 		var checkboxValue;
 		if(e.attr('type') === 'checkbox') {
@@ -459,14 +492,19 @@ angular.module('openmrs.widgets',['openmrsServices','openmrsServicesFlex'])
 		var obsGetter = $parse('enc.obs');
 		var parent = scope.$parent;
 		var obs = obsGetter(parent);		
-		while(obs === undefined) {
+		while(obs === undefined && parent.$parent) {
 		    parent = parent.$parent;
 		    obs = obsGetter(parent);
 		}
 		
 		parent.$watch(lineage, function(newValue,oldValue) {
+
 		    if(newValue && newValue.value) {
 			scope.selected = newValue.value;
+			if(checkboxValue) {
+			    console.log('checkboxnew: ' + JSON.stringify(newValue));
+			    elem.find("input").attr("checked",true);
+			}
 		    }
 		});			 
 
