@@ -64,7 +64,6 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,Obs) {					      
       $scope.v = "";
       $scope.q = "";
-      $scope.id = 3; //0;      
       $scope.templates = {};
 
       $scope.test = function() {
@@ -84,60 +83,6 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
 	  Auth.hasRole("system developer",function(data) { console.log(data); });
       };
 
-      $scope.voidObs = function() {
-	  Obs.delete({uuid:'c2892a31-11ab-4c7e-bf09-ef7f2d395c83'}).$promise.then(function(data) {
-	      $scope.result = data;
-	      console.log(data);
-	  });
-      };
-
-      $scope.getId = function() {
-	  $scope.id++;
-	  return $scope.id;
-      }
-
-
-      function loadData(obs,model) {
-	  //console.log('obs: ' + JSON.stringify(obs));
-	  //console.log('pre-model: ' + JSON.stringify(model));
-	  for(var j in obs) {
-	      
-	      var concept = obs[j].concept;
-	      var id = $scope.getId();	
-	      if(obs[j].value) {
-		  model[id] = {concept:obs[j].concept,value:obs[j].value};		      
-	      }
-	      else if(obs[j].obs){
-		  var newObs;
-		  var isInvalid = true;
-		  for(var i in model) {
-		      if(model[i].concept === concept) { 
-			  //console.log('i model: ' + JSON.stringify(model[i].obs));
-			  
-			  //This identifies if the obsGroup already exists. If so, then a new obsGroup is created. 
-			  for(var k in model[i].obs) {
-			      if(model[i].obs[k] && model[i].obs[k].value) {
-				  i = $scope.getId();
-				  model[i] = {concept:concept,obs:{}};
-				  console.log($scope.templates);
-				  break;
-			      }
-			  }
-			  isInvalid = false;
-			  break;
-		      }
-		  }
-		  if(isInvalid) {
-		      console.log('invalid schema');
-		      return "ERROR: schema in valid";
-		  }
-		  
-		  //console.log('enc subset: ' + JSON.stringify(obs[j].obs));
-		  
-		  loadData(obs[j].obs,model[i].obs);
-	      }	
-	  }
-      }
 
       /*
       var encounter = {obs:[
