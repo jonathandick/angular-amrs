@@ -1,4 +1,6 @@
-
+{{encounter}}<br/><br/>
+{{enc}}
+<div ng-controller='EncounterFormCtrl'>
    <div class="container-fluid">
     <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
 
@@ -61,7 +63,7 @@
 		</select>
 	      </obs>
 	    </div>
-
+	    
 	    <div class="form-group">	
 	      <obs concept-uuid="2b90dbd2-8897-49fd-9784-e5999e7312fa">
 		<label for="contacted_by_phone">Was the patient contacted by phone?</label>
@@ -76,7 +78,7 @@
 		</select>
 	      </obs>
 	    </div>
-	  
+	    
 	    <div class="form-group">
 	      <obs concept-uuid="47a5988a-e5f7-424e-96cc-3b34aeea3c1a">
 		<label for="owner_of_phone">Who does the phone belong to? :</label>
@@ -130,14 +132,14 @@
 		  <option value='a8aaf3e2-1350-11df-a1f1-0026b9348838'>Other</option>		    
 		</select>
 	      </obs>
-	  </div>	    
-	  <div class="form-group">
-	    <obs concept-uuid="a89fe006-1350-11df-a1f1-0026b9348838">
+	    </div>	    
+	    <div class="form-group">
+	      <obs concept-uuid="a89fe006-1350-11df-a1f1-0026b9348838">
 	      <label for="obs.number_of_days_of_remaining_arv_medication">Does the patient have medications remaining? If yes, # of days worth:</label>
 	      <input id="obs.number_of_days_of_remaining_arv_medication" type="text"/>
-	    </obs>
-	  </div>
-	</tab>
+	      </obs>
+	    </div>
+	  </tab>
 
 	  <tab heading="If Found">
 	    <br/>
@@ -172,7 +174,7 @@
 		  <span>Deceased</span> 
 		</obs>		
 	      </div>
-
+	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.ampath_clinic_transfer' type='checkbox' value="a89ef060-1350-11df-a1f1-0026b9348838"/>
@@ -235,7 +237,7 @@
     		  <span>Forgot appointment</span>
 		</obs>
 	      </div>  
-	    
+	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.health_issues' type='checkbox' value="a89de2d8-1350-11df-a1f1-0026b9348838"/>
@@ -410,4 +412,4 @@
       </form>
     </encounter-form>
   </div>
-
+</div>

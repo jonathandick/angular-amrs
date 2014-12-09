@@ -4,23 +4,7 @@
 
 
 var amrsControllers = angular.module('amrsControllers',[]);
-
-amrsControllers.controller('LoginCtrl',['$scope','Auth',
-  function($scope,Auth) {
-      $scope.username = '';
-      $scope.password = '';
-      $scope.errors = "";
-
-      $scope.authenticate = function() {
-	  sessionStorage.removeItem("sessionId");
-	  Auth.authenticate($scope.username,$scope.password,function(isAuthenticated) {
-	      if(!isAuthenticated) { $scope.errors = "Username and password do not match. Please try again.";}
-	      console.log("errors: " + $scope.errors);
-	  });	  
-      };
-  }]);
-      
-
+       
 amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','$cookies',
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,$cookies) {					      
       $scope.v = "";
@@ -57,7 +41,6 @@ amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Loca
       };
       
   }]);
-
 
 
 amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','Obs',
@@ -125,11 +108,3 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patien
    }]);
 
 
-amrsControllers.controller('PatientDashboardCtrl',['$scope','$stateParams','PatientServiceFlex','$state',
-  function($scope,$stateParams,PatientServiceFlex,$state) {
-      $scope.patient = {};
-      PatientServiceFlex.get($stateParams.uuid,function(data) {
-	  $scope.patient = data;
-      });
-
-  }]);

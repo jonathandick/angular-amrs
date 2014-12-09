@@ -2,10 +2,9 @@
 
 /* Controllers */
 
+var formentry = angular.module('openmrs.formentry');
 
-var encounterFormControllers = angular.module('encounterFormControllers',['ngRoute','openmrsServices','openmrsServicesFlex']);
-
-encounterFormControllers.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex',
+formentry.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex',
   function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex) {
       $scope.savedEncounterForms = EncounterServiceFlex.getLocal();
 
@@ -33,7 +32,7 @@ encounterFormControllers.controller('SavedFormsCtrl', ['$scope','$stateParams','
 
 
 
-encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex','FormService',
+formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex','FormService',
   function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex,FormService) {	
       $scope.patient = "";
       $scope.encounterUuid = "";
@@ -76,11 +75,12 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
       };
 
       var patientUuid = $stateParams.patientUuid; 
-      if($stateParams.encounterUuid) {	  
+      if($stateParams.encounterUuid) {	
+	  console.log('Getting from server');
 	  $scope.encounterUuid = $stateParams.encounterUuid;
 	  EncounterServiceFlex.get($stateParams.encounterUuid,function(data) {
-	      $scope.toFormData(data);
-	      $scope.encounter = data;
+	      //$scope.toFormData(data);
+	      $scope.encounter = data;	      	      
 	  });
       }
       else if($stateParams.hash) {
@@ -89,9 +89,11 @@ encounterFormControllers.controller('EncounterFormCtrl', ['$scope','$stateParams
 	  patientUuid = $scope.enc.patient;
       }
       else {
+	  /*
 	  $scope.enc = {encounterType: FormService.getEncounterType($scope.formUuid),
 			form:$scope.formUuid,
 			patient:patientUuid};
+	  */
       }
 
       $scope.errors = {};      

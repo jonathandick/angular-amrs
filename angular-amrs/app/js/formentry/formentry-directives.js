@@ -5,6 +5,17 @@
 var static_dir = 'js/angular-amrs/app/';
 
 angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex'])
+    .directive('patientDemographics', [function() {
+	return {
+	    restrict : "E",
+	    scope : {
+		patient:'='
+	    },
+	    link : function($scope,element,attrs) {		
+	    },	    
+	    templateUrl: static_dir + "js/formentry/views/patient-demographics.html",	    
+	}
+    }])
     .directive('clinicLocationsDropdown',['LocationServiceFlex',function() {
 	return {
 	    restrict: "E",
@@ -218,11 +229,12 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex'])
 		    //EncounterServiceFlex.voidObs(obsToVoid);
 		};
 
-
+		/*
 		var encounterUuid = "b68c9c0f-2423-4956-acaf-b6087f7bd7ec";
 		EncounterServiceFlex.get(encounterUuid,function(data) {		    
 		    scope.encounter = data;
 		});
+		*/
 
 		scope.$watch('encounter',function(newValue,oldValue){
 		    if(newValue !== undefined && newValue !== null && newValue !== "")

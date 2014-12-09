@@ -3,10 +3,9 @@
 /* Controllers */
 
 
-var defaulterCohortControllers = angular.module('defaulterCohortControllers',['defaulterCohortServices','ngRoute']);
-
+var dc = angular.module('defaulterCohort');
       
-defaulterCohortControllers.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
+dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
   function($scope,$http,Auth,DefaulterCohort) {	
       $scope.defaulterCohorts = "";
       $scope.defaulterCohortUuid = "";

@@ -191,7 +191,7 @@ openmrsServices.factory('FormService',['Form',
   function() {
       var FormService = {};
       var formMap = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":
-                     {name: 'outreach form',template:'partials/outreach-form.html',encounterType:"df5547bc-1350-11df-a1f1-0026b9348838"},     
+                     {name: 'outreach form',template:'js/formentry/forms/outreach-form2.html',encounterType:"df5547bc-1350-11df-a1f1-0026b9348838"},     
 		    }; 
       
       FormService.getTemplate = function(formUuid) {

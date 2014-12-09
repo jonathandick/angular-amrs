@@ -5,9 +5,9 @@
 var session = sessionStorage;
 var local = localStorage;
 
-var amrsServices = angular.module('amrsServices', ['ngResource','ngCookies','openmrsServices','amrsControllers']);
+var auth = angular.module('openmrs.auth', ['ngResource','ngCookies','openmrsServices']);
 
-amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location','OpenmrsUserService',
+auth.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location','OpenmrsUserService',
   function (Base64, $cookieStore, $http, OpenmrsSession,$location,OpenmrsUserService) {
       // initialize to whatever is in the cookie, if anything
       $http.defaults.headers.common['Authorization'] = 'Basic ' + $cookieStore.get('authdata');
@@ -73,15 +73,7 @@ amrsServices.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession
   }]);
 
 
-amrsServices.factory('Amrs',['$http','Auth',
-  function($http,Auth,Base64) {
-      var Amrs = {};
-
-      return Amrs;
-  }]);
-
-
-amrsServices.factory('Base64', function() {
+auth.factory('Base64', function() {
     var keyStr = 'ABCDEFGHIJKLMNOP' +
         'QRSTUVWXYZabcdef' +
         'ghijklmnopqrstuv' +

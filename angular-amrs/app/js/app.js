@@ -2,10 +2,16 @@
 
 /* App Module */
 
-var amrsApp = angular.module('amrsApp', ['ui.router','amrsServices','defaulterCohortControllers','openmrsServices',
-					 'ui.bootstrap','openmrs.widgets','outreachForm.validators',
-					 'encounterFormControllers','checklist-model','infinite-scroll',
- 					 'openmrs.formentry',]);
+var amrsApp = angular.module('amrsApp', ['ui.router',
+					 'ui.bootstrap',					 
+					 'defaulterCohort',
+					 'openmrs.auth',
+					 'openmrs.formentry',
+					 'openmrsServices',
+					 'openmrsServicesFlex',
+					 'patientDashboard',
+					 'amrsControllers',
+ 					]);
 
 var static_dir = 'js/angular-amrs/app/';
 
@@ -14,7 +20,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
       $stateProvider
 	  .state('login', {
 	      url: "/login",
-              templateUrl: static_dir + 'partials/login.html',
+              templateUrl:  static_dir + 'js/auth/views/login.html',
 	  })
 	  .state('apps', {
 	      url: "/apps",
@@ -29,20 +35,20 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	  })
 	  .state('patient', {
 	      url: '/patient/:uuid',
-	      templateUrl: static_dir + 'partials/patient-dashboard.html',
+	      templateUrl: static_dir + 'js/patient-dashboard/views/patient-dashboard.html',
 	      controller: 'PatientDashboardCtrl',
 	      authenticate:true,
 	  })
 
 	  .state('defaulter-cohort',{
 	      url: "/defaulter-cohort",
-	      templateUrl: static_dir + 'partials/defaulter-cohort.html',	      
+	      templateUrl: static_dir + 'js/defaulter-cohort/views/defaulter-cohort.html',	      
 	      controller: 'DefaulterCohortCtrl',
 	      authenticate:true,	      
 	  })	  
 	  .state('amrs',{
 	      url: "/amrs",
-	      templateUrl: static_dir + 'partials/outreach-form2.html',	      
+	      templateUrl: static_dir + 'js/formentry/forms/outreach-form2.html',	      
 	      controller: 'AmrsCtrl',
 	      authenticate:true,
 	  })
@@ -58,7 +64,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 	  })      
 	  .state('encounter-forms-saved',{
 	      url:"/encounter-forms-saved",
-	      templateUrl: static_dir + 'partials/encounter-forms-saved.html',
+	      templateUrl: static_dir + 'js/formentry/views/encounter-forms-saved.html',
 	      authenticate:true,
 	  })
 	  .state('encounter',{

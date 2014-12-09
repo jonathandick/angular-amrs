@@ -6,10 +6,10 @@ var session = sessionStorage;
 var local = localStorage;
 var DEFAULTER_COHORT_CONTEXT  = "https://testserver1.ampath.or.ke";
 
-var defaulterCohortServices = angular.module('defaulterCohortServices', ['ngResource','ngCookies','openmrsServices']);
+var dc = angular.module('defaulterCohort', ['ngResource','ngCookies','openmrsServices']);
 
 
-defaulterCohortServices.factory('DefaulterCohort',['$http',
+dc.factory('DefaulterCohort',['$http',
   function($http) {
       var DefaulterCohort = {};
       DefaulterCohort.get = function(uuid,callback) {
