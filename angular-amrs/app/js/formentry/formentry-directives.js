@@ -4,7 +4,7 @@
 
 var static_dir = 'js/angular-amrs/app/';
 
-angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex'])
+angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.bootstrap'])
     .directive('patientDemographics', [function() {
 	return {
 	    restrict : "E",

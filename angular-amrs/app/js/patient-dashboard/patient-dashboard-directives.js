@@ -4,7 +4,7 @@
 
 var static_dir = 'js/angular-amrs/app/';
 
-angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex'])
+angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infinite-scroll','utility.widgets'])
     .directive('encountersPane',['EncounterServiceFlex','OpenmrsUtilityService','$state',
       function(EncounterServiceFlex,OpenmrsUtilityService,$state) {
 	return {
@@ -27,26 +27,6 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex'])
 		    $state.go('encounter',{encounterUuid:encUuid,patientUuid:$scope.patientUuid,formUuid:formUuid});
 		};
 
-		$scope.loadMore = function() {		    
-		    if($scope.busy === true) return; 
-		    $scope.busy = true;
-
-		    //NOTE: $scope.busy does not seem to be persisting, 
-		    //so the use of startIndexes as a set is meant to overcome this.
-		    if($scope.nextStartIndex !== undefined && !$scope.startIndexes.has($scope.nextStartIndex)) {
-			$scope.startIndexes.add($scope.nextStartIndex);
-			
-			var params = {startIndex:$scope.nextStartIndex, patient:$scope.patientUuid,limit:10};
-			EncounterServiceFlex.patientQuery(params,function(data) {		
-			    $scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);
-			    for(var e in data.results) {
-				$scope.encounters.push(data.results[e]); 
-			    }			
-			});
-		    }
-
-		    if($scope.nextStartIndex !== undefined){ $scope.busy = false;}
-		};
 	    },
 
 	    link: function(scope, element, attrs) {		
@@ -58,7 +38,25 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex'])
 			scope.loadMore();			
 		    }		    
 		});
-		console.log('static dir: ' + static_dir);
+
+		scope.loadMore = function() {	
+		    console.log("busy: " + scope.busy);
+		    if(scope.busy === true) return; 
+		    scope.busy = true;
+
+		    var params = {startIndex:scope.nextStartIndex, patient:scope.patientUuid,limit:10};
+		    EncounterServiceFlex.patientQuery(params,function(data) {		
+			console.log('querying server');
+			scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);
+			console.log('nextStartIndex: ' + scope.nextStartIndex);
+			for(var e in data.results) {
+			    scope.encounters.push(data.results[e]); 
+			}			
+			if(scope.nextStartIndex !== undefined){ scope.busy = false;}
+
+		    });
+		};
+
 	    },
 	    templateUrl : static_dir + "js/patient-dashboard/views/encountersPane.html",
 	}
