@@ -1,10 +1,13 @@
-{{encounter}}<br/><br/>
-{{enc}}
+<script>
+  var outreachFormRules = {
+      "": 'hello world',
+  }
+</script>
+
 <div ng-controller='EncounterFormCtrl'>
    <div class="container-fluid">
     <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
-
-    <encounter-form>
+    <encounter-form rules='outreachFormRules'>
       <form novalidate class="simple-form" id="outreach_form" name="outreach_form" method='post'>
 	<patient-demographics patient="patient"></patient-demographics>	        
 	<br/>

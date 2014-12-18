@@ -28,7 +28,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    $scope.locations = locations;		    		    		    
 		});
 	    },
-	    templateUrl : static_dir + "/directive-templates/locations.html",
+	    templateUrl : static_dir + "js/formentry/views/locations.html",
 	}
     }])
     .directive('providersDropdown',['ProviderServiceFlex',function() {
@@ -43,7 +43,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    $scope.providers = providers;		    
 		});
 	    },
-	    templateUrl : static_dir + "/directive-templates/providersDropdown.html",
+	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
     }])
     .directive('encounterForm',['$parse','$compile','EncounterServiceFlex',function($parse,$compile,EncounterServiceFlex) {
@@ -65,27 +65,15 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		}		
 
 		this.setObs = function(lineage, value) {
-		    var obj = $scope.enc;
-
-		    if (typeof prop === "string")
-			prop = prop.split(".");
-		    
-		    if (prop.length > 1) {
-			var e = prop.shift();
-			assign(obj[e] =
-			       Object.prototype.toString.call(obj[e]) === "[object Object]" ? obj[e] : {},
-			       prop,
-			       value);
-		    } else
-			obj[prop[0]] = value;
+                    var oSetter = $parse(lineage).assign;
+		    oSetter($scope,oSetter);
 		}
 
 	    },
 	    link: function(scope,element,attrs,ctrl,transclude) {
 
 		scope.enc = {obs:{}};
-
-
+		
 		function getValue(obs) {
 		    if(obs.value) {
 			var v = obs.value;
@@ -97,7 +85,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    else return undefined;
 		}
 
-		function loadData(obs,curSchema) {
+		function loadObs(obs,curSchema) {
 		    for(var j in obs) {		
 			var schema, concept = obs[j].concept.uuid, id = ctrl.getId(),value;
 			if(obs[j].obs) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
@@ -128,22 +116,37 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			    getter = $parse(e.attr('lineage'));
 			}
 
-			var setter = getter.assign;				    
+			var setter = getter.assign;			    
 			if(obs[j].value) {
 			    if(setter) setter(scope,{concept:concept,value:value});
 			} else if(obs[j].obs){
 			    setter(scope,{concept:concept,obs:{}});
-			    loadData(obs[j].obs,schema + ":last");
+			    loadObs(obs[j].obs,schema + ":last");
 			}
 			
 		    }
 		}
 
+		function loadEncounter(encounter) {
+		    scope.enc.uuid = encounter.uuid;
+		    scope.enc.encounterDatetime = encounter.encounterDatetime;
+		    scope.enc.encounterType = encounter.encounterType.uuid; //encounter.encounterType.uuid;
+		    scope.enc.location = encounter.location.uuid;
+		    scope.enc.provider = encounter.provider.uuid;
+		    scope.enc.form = encounter.form.uuid;		
+		    //console.log(scope.enc);
+		    loadObs(encounter.obs,'encounter-form');			
+		}
+
 		function prepareObs(obs,restObs) {
 		    for(var i in obs) {
 			var o = obs[i];
-			if(o.value) {
-			    restObs.push(o);
+			console.log(o);
+			if('value' in o) {
+			    if(o.value.toString().trim() !== "") {
+				//No empty values will be saved
+				restObs.push(o);
+			    }
 			}
 			else {
 			    var obsSet = {concept:o.concept,obs:[]};
@@ -213,32 +216,34 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			    obsToVoid.push(originalObs[i].uuid); //void as key=value is not the same
 			}
 		    }
+		    console.log(obsToVoid);
 		    return obsToVoid;
 		}
-
+		
+		function validate() {
+		    var rules = window[attrs.rules];
+		    if(rules) {
+			console.log(rules);
+		    }
+		}
 
 		scope.submit = function() {
-		    var obs = [];
-		    prepareObs(scope.enc.obs,obs);
-		    
-		    scope.enc.obs = obs;		    
-		    var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
-		    console.log('obs: ' + JSON.stringify(scope.enc.obs));
-		    console.log('obs to void: ' + JSON.stringify(obsToVoid));
-		    //EncounterServiceFlex.submit(enc);
-		    //EncounterServiceFlex.voidObs(obsToVoid);
+		    if(validate()) {
+			var obs = [];
+			prepareObs(scope.enc.obs,obs);		    
+			scope.enc.obs = obs;		    
+			console.log(scope.enc);
+			var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
+			console.log('obs: ' + JSON.stringify(scope.enc.obs));
+			console.log('obs to void: ' + JSON.stringify(obsToVoid));
+			EncounterServiceFlex.submit(scope.enc,obsToVoid);
+		    }			
 		};
 
-		/*
-		var encounterUuid = "b68c9c0f-2423-4956-acaf-b6087f7bd7ec";
-		EncounterServiceFlex.get(encounterUuid,function(data) {		    
-		    scope.encounter = data;
-		});
-		*/
-
-		scope.$watch('encounter',function(newValue,oldValue){
-		    if(newValue !== undefined && newValue !== null && newValue !== "")
-			loadData(newValue.obs,'encounter-form');
+		scope.$watch('encounter',function(newEncounter,oldValue){
+		    if(newEncounter !== undefined && newEncounter !== null && newEncounter !== "") {
+			loadEncounter(newEncounter);
+		    }
 		});
 
 
@@ -315,7 +320,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 
 		    if(checkboxValue) {
 			if(newValue === true) f.value = checkboxValue;
-			else f.value=checkboxValue;			
+			else f.value = "";
 			o[id] = f;
 		    }
 		    else if(newValue != "") {
@@ -346,7 +351,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		elem.attr('lineage',lineage);
 				
 		
-		scope.$watch('selected',function(newValue,oldValue) {		    
+		scope.$watch('selected',function(newValue,oldValue) {		   
 		    setValue(newValue);
 		});
 		
@@ -354,9 +359,12 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		var encScope = ctrl.getEncounterFormScope();
 		encScope.$watch(lineage, function(newValue,oldValue) {		    
 		    if(newValue && newValue.value) {
-			scope.selected = newValue.value;
 			if(checkboxValue) {
 			    elem.find("input").attr("checked",true);
+			    scope.selected = true;
+			}
+			else {
+			    scope.selected = newValue.value;
 			}
 		    }
 		});			 

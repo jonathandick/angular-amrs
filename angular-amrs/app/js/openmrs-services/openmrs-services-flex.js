@@ -207,11 +207,11 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
       };	  
 
 
-      EncounterServiceFlex.submit = function(enc,origEnc,hash) {	  	  	  
-
+      EncounterServiceFlex.submit = function(enc,obsToVoid,hash) {	  	  	  
+	  console.log('EncounterServiceFlex.submit() : submitting encounter');
 	  console.log(enc);
-	  var r = EncounterServiceFlex.prepareObs(enc,origEnc);	  	      	      
-	  enc = r[0];
+	  //var r = EncounterServiceFlex.prepareObs(enc,origEnc);	  	      	      
+	  //enc = r[0];
 	  
 	  EncounterService.submit(enc,function(data) {
 	      console.log('Finished submitting');	      
@@ -224,13 +224,10 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 		  EncounterServiceFlex.removeLocal(hash);
 	      }
 	      else {
-		  console.log('checking for obs to void');
-		  if(origEnc && origEnc.uuid) {
-		      var obsToVoid = r[1];	      		      
-		      ObsService.void(obsToVoid,function(data) {
-			  
-		      });		      
-		  }	
+		  console.log('EncounterServiceFlex.submit() : checking for obs to void');
+		  ObsService.void(obsToVoid,function(data) {			  
+		      console.log(data);
+		  });		      
 	      }	  
 	      return data;
 	  });

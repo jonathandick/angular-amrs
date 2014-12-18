@@ -226,9 +226,18 @@ openmrsServices.factory('ObsService',['$http','Obs',
       var ObsService = {};
 
       ObsService.void = function(obsToVoid,callback) {
+	  /*
 	  var uuid;
 	  for(var i in obsToVoid) {
 	      uuid = obsToVoid[i].uuid;
+	      Obs.delete({uuid:uuid}).$promise.then(function(data) {
+		  if(callback) { callback(data); }
+		  else {return data;}
+	      });
+	  }
+	  */
+	  for(var i in obsToVoid) {
+	      var uuid = obsToVoid[i];
 	      Obs.delete({uuid:uuid}).$promise.then(function(data) {
 		  if(callback) { callback(data); }
 		  else {return data;}
