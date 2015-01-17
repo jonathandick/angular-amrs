@@ -16,7 +16,7 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
 
       PatientServiceFlex.get = function(patientUuid,callback) {
 	  console.log("PatientServiceFlex.get() : " + patientUuid);
-	  var patient = angular.fromJson(session.getItem(patientUuid));
+	  var patient = angular.fromJson(session.getItem(patientUuid);)
 
 	  //patient.patientData temporary. DefaulterCohort returns inappropriately formatted patient. Needs to be changed. 
 	  if(patient && patient.patientData) {

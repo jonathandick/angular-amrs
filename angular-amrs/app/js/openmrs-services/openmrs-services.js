@@ -277,9 +277,10 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 
 	  var url = OPENMRS_CONTEXT_PATH + '/ws/rest/v1/encounter/';
 	  if(enc.uuid) {
-	      url += enc.uuid; 
-	      delete enc.uuid;
+	      url += enc.uuid; 	      
 	  }
+	  delete enc.uuid;
+
 	  if(enc.personAttributes) {
 	      var attributes = enc.personAttributes;
 	      delete enc.personAttributes;

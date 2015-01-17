@@ -22,8 +22,10 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    scope: {
 		model:'=',
 		label:'@',
+		name:'@',
 	    },
 	    controller : function($scope,LocationServiceFlex) {
+		console.log('name: ' + $scope.name);
 		LocationServiceFlex.getAll(function(locations) { 		    
 		    $scope.locations = locations;		    		    		    
 		});
@@ -37,6 +39,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    scope: {
 		model:'=',
 		label:'@',
+		name:'@',
 	    },
 	    controller : function($scope,ProviderServiceFlex) {
 		ProviderServiceFlex.query(function(providers) {
@@ -46,7 +49,8 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile','EncounterServiceFlex',function($parse,$compile,EncounterServiceFlex) {
+    .directive('encounterForm',['$parse','$compile','EncounterServiceFlex','$state','FormService',
+       function($parse,$compile,EncounterServiceFlex,$state,FormService) {
 	return {
 	    restrict: "E",
 	    scope:false,
@@ -72,7 +76,11 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    },
 	    link: function(scope,element,attrs,ctrl,transclude) {
 
-		scope.enc = {obs:{}};
+		scope.enc = {patient:$state.params.patientUuid,
+			     form:$state.params.formUuid,			     
+			     encounterType:FormService.getEncounterType($state.params.formUuid),
+			     obs:{}
+			    };
 		
 		function getValue(obs) {
 		    if(obs.value) {
@@ -129,12 +137,13 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 
 		function loadEncounter(encounter) {
 		    scope.enc.uuid = encounter.uuid;
+		    scope.enc.patient = encounter.patient.uuid;
 		    scope.enc.encounterDatetime = encounter.encounterDatetime;
 		    scope.enc.encounterType = encounter.encounterType.uuid; //encounter.encounterType.uuid;
 		    scope.enc.location = encounter.location.uuid;
 		    scope.enc.provider = encounter.provider.uuid;
-		    scope.enc.form = encounter.form.uuid;		
-		    //console.log(scope.enc);
+		    scope.enc.form = encounter.form.uuid;
+		    
 		    loadObs(encounter.obs,'encounter-form');			
 		}
 
@@ -143,7 +152,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			var o = obs[i];
 			console.log(o);
 			if('value' in o) {
-			    if(o.value.toString().trim() !== "") {
+			    if(o.value && o.value.toString().trim() !== "") {
 				//No empty values will be saved
 				restObs.push(o);
 			    }
@@ -220,11 +229,10 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    return obsToVoid;
 		}
 		
-		function validate() {
-		    var rules = window[attrs.rules];
-		    if(rules) {
-			console.log(rules);
-		    }
+		function validate() {		    
+		    var isValid = $("form").valid();
+		    console.log('form is valid: ' + isValid);
+		    return isValid;
 		}
 
 		scope.submit = function() {
@@ -232,12 +240,13 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			var obs = [];
 			prepareObs(scope.enc.obs,obs);		    
 			scope.enc.obs = obs;		    
-			console.log(scope.enc);
 			var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
-			console.log('obs: ' + JSON.stringify(scope.enc.obs));
-			console.log('obs to void: ' + JSON.stringify(obsToVoid));
+			//console.log('obs: ' + JSON.stringify(scope.enc.obs));
+			//console.log('obs to void: ' + JSON.stringify(obsToVoid));
 			EncounterServiceFlex.submit(scope.enc,obsToVoid);
-		    }			
+			//console.log(scope.enc);
+			$state.go("patient",{uuid:scope.enc.patient});
+		    }		    
 		};
 
 		scope.$watch('encounter',function(newEncounter,oldValue){
@@ -245,7 +254,6 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			loadEncounter(newEncounter);
 		    }
 		});
-
 
 	    }
 	}

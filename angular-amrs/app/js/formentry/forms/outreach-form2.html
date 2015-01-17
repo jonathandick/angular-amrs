@@ -1,8 +1,4 @@
-<script>
-  var outreachFormRules = {
-      "": 'hello world',
-  }
-</script>
+<script src="../js/angular-amrs/app/js/formentry/forms/outreach_validation.js"></script>
 
 <div ng-controller='EncounterFormCtrl'>
    <div class="container-fluid">
@@ -31,20 +27,20 @@
 	    </div>
 
 	    <div>
-	      <clinic-locations-dropdown model="enc.location" label="Clinic Location">
+	      <clinic-locations-dropdown name="location" model="enc.location" label="Clinic Location">
 	      </clinic-locations-dropdown>
 	    </div>
 	  
 	    <div class="form-group">
 	      <label for="phoneNumber">Phone:</label>
-	      <input id="phoneNumber" ng-model="enc.personAttributes['72a759a8-1359-11df-a1f1-0026b9348838']" 
+	      <input name="phone_number" id="phoneNumber" ng-model="enc.personAttributes['72a759a8-1359-11df-a1f1-0026b9348838']" 
 		     type="tel" value="{{patient.phone_number}}"/>
 	    </div>
 	  
 	    <div class="form-group">
 	      <obs concept-uuid="a89e3896-1350-11df-a1f1-0026b9348838">
 		<label for="missedReturnVisitDate">Missed appointment date:</label>	      
-		<input id="missedReturnVisitDate" type="text" 
+		<input name="missed_return_visit_date" id="missedReturnVisitDate" type="text" 
 		       ng-model="selected" datepicker-popup="yyyy-MM-dd" is-open="dt2.open" ng-click="dt2.open=true"/>		    
 	      </obs>
 	    </div>
@@ -149,7 +145,7 @@
 	    <div class="form-group"> 
 	      <obs concept-uuid="a89df246-1350-11df-a1f1-0026b9348838">
 		<label for="date_found">Date Found:</label>
-		<input id="date_found" type="text" datepicker-popup="yyyy-MM-dd" ng-model='selected' is-open="dt3.open" ng-click="dt3.open=true"/>
+		<input name='date_found' id="date_found" type="text" datepicker-popup="yyyy-MM-dd" ng-model='selected' is-open="dt3.open" ng-click="dt3.open=true"/>
 	      </obs>
 	    </div>
 	    
@@ -157,7 +153,7 @@
 	    <div class="form-group">
 	      <obs concept-uuid="a89df30e-1350-11df-a1f1-0026b9348838">
 		<label for="location_of_contact">Location of contact:</label>
-		<select class="form-control" id="location_of_contact">
+		<select class="form-control" name="location_of_contact" id="location_of_contact">
 		  <option value="">...</option>
  		  <option value="a89df17e-1350-11df-a1f1-0026b9348838" oldvalue="1567^HOME^99DCT">Home</option>
 		  <option value="a8a087c2-1350-11df-a1f1-0026b9348838" oldvalue="1947^WORK^99DCT">Work</option>
@@ -329,7 +325,7 @@
 	      <div class="form-group">
 		<obs concept-uuid="a89df750-1350-11df-a1f1-0026b9348838">
 		  <label for="cause_for_death">Cause of death:</label>
-		  <select class="form-control" id="cause_for_death"> 
+		  <select class="form-control" name="cause_for_death" id="cause_for_death"> 
 		    <option value="">...</option>
 		    <option value="a89de2d8-1350-11df-a1f1-0026b9348838" oldvalue="1548^HEALTH ISSUES^99DCT">Illness</option>
  		    <option value="a89df49e-1350-11df-a1f1-0026b9348838" oldvalue="1571^SUICIDE^99DCT">Suicide</option>
@@ -367,7 +363,7 @@
 	    <div class="form-group">
 	      <obs concept-uuid="7c579743-5ef7-4e2c-839f-5b95597cb01c">
 		<label for='patient_status'>What's the patients clinical status?</label>
-		<select name='patientStatus' class="form-control" id='patient_status' required>
+		<select name='patient_status' class="form-control" id='patient_status'>
 		  <option></option>
 		  <option value="a8af5018-1350-11df-a1f1-0026b9348838" oldvalue='6101^CONTINUE^99DCT'>Patient wishes to remain in care at AMPATH</option>
 		  <option value="a89335d6-1350-11df-a1f1-0026b9348838" oldvalue='159^DECEASED^99DCT'>Patient Dead</option>
@@ -381,22 +377,22 @@
 		  </option>
 		  <option value="07c536bc-19f2-4296-9c4a-edd85f070095" oldvalue='9080^PROCESS OF BEING TRACED^99DCT'>Patient in process of being traced</option>
 	      </select></obs>
-	      <span style="color:red" ng-show="outreach_form.patientStatus.$error.test">{{errors.patientStatus.errors}}</span>
 	    </div>
 	    
 	    <div class="form-group">
 	      <obs concept-uuid="a8a666ba-1350-11df-a1f1-0026b9348838"> 
 		<label for='return_visit_date'>If patient plans to return to clinic, RTC Date:</label>
-		<input id="return_visit_date" ng-model="selected" type="text"		   
+		<input name="return_visit_date" id="return_visit_date" ng-model="selected" type="text"		   
 		       datepicker-popup="yyyy-MM-dd" is-open="dt5.open" ng-click="dt5.open=true"/>
 	      </obs>
 	    </div>
 	    <div class="form-group"> 
-	      <obs concept-uuid="">
+	      <obs concept-uuid="683347ee-cebe-4eac-b366-ef62d68b91c7">
 		<label for="likelihood_of_return">Do you think the patient will return to clinic?</label>
-		<select class="form-control" id="likelihood_of_return" 
-			ng-model="enc.obs['683347ee-cebe-4eac-b366-ef62d68b91c7']" data-concept="9077^LIKELIHOOD OF PATIENT RETURNING TO CLINIC^99DCT">
+		<select class="form-control" name="likelihood_of_return" id="likelihood_of_return" 
+			data-concept="9077^LIKELIHOOD OF PATIENT RETURNING TO CLINIC^99DCT">
 		  <option value=""></option>
+
 		  <option value="9407c0db-5cdc-48a9-8750-85961cf9804f" oldvalue="7248^VERY LOW^99DCT">No</option>
 		  <option value="7a260efe-bd7e-4926-87d9-b9e008956873" oldvalue="9078^VERY HIGH^99DCT">Yes</option>
 		</select>
@@ -404,11 +400,11 @@
 	    </div>
 	    
 	    <div class="form-group">
-	      <clinic-locations-dropdown model="enc.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" label="Transfer Location">
+	      <clinic-locations-dropdown name="transfer_location" model="enc.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" label="Transfer Location">
 	      </clinic-locations-dropdown>	    
 	    </div>
 	    <div class="form-group">
-	      <providers-dropdown model="enc.provider" label="Provider:"></providers-dropdown>
+	      <providers-dropdown name="provider" model="enc.provider" label="Provider:"></providers-dropdown>
 	    </div> 
 	  </tab>
 	</tabset>
