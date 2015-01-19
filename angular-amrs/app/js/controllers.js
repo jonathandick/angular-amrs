@@ -89,8 +89,8 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
 
 
 
-amrsControllers.controller('PatientSearchCtrl', ['$scope','$http','Auth','Patient',
-  function($scope,$http,Auth,Patient,Person) {
+amrsControllers.controller('PatientSearchCtrl', ['$scope','Patient',
+  function($scope,Patient) {
       $scope.filter = "";
       $scope.patients = [];
 

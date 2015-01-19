@@ -9,22 +9,17 @@ var auth = angular.module('openmrs.auth', ['ngResource','ngCookies','openmrsServ
 
 auth.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location','OpenmrsUserService',
   function (Base64, $cookieStore, $http, OpenmrsSession,$location,OpenmrsUserService) {
-      // initialize to whatever is in the cookie, if anything
-      $http.defaults.headers.common['Authorization'] = 'Basic ' + $cookieStore.get('authdata');
-      
       var Auth = {}
 	  
       Auth.setCredentials = function (username, password) {	  
           var encoded = Base64.encode(username + ':' + password);
           $http.defaults.headers.common.Authorization = 'Basic ' + encoded;
-          $cookieStore.put('authdata', encoded);
       };
       
       Auth.clearCredentials = function () {
 	  sessionStorage.removeItem("sessionId");
 	  sessionStorage.removeItem("username");
           document.execCommand("ClearAuthenticationCache");
-          $cookieStore.remove('authdata');
           $http.defaults.headers.common.Authorization = 'Basic ';
       };
 
@@ -59,7 +54,7 @@ auth.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$loca
 	      if(data.authenticated) {
 		  sessionStorage.setItem("username",username);
 		  sessionStorage.setItem("sessionId",data.sessionId);
-		  $location.path("/apps");		  
+		  $location.path("/apps");
 	      }
 	  });
       };

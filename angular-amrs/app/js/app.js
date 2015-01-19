@@ -11,6 +11,7 @@ var amrsApp = angular.module('amrsApp', ['ui.router',
 					 'openmrsServicesFlex',
 					 'patientDashboard',
 					 'amrsControllers',
+					 'dexieServices',
  					]);
 
 var static_dir = 'js/angular-amrs/app/';
@@ -89,8 +90,8 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 
       $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth',
-	  function ($rootScope, $state, Auth) {
+    .run(['$rootScope','$state','Auth','ngDexie',
+	  function ($rootScope, $state, Auth,ngDexie) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
@@ -99,5 +100,10 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 		  if (toState.url == "/logout") {		      
 		      Auth.logout();
 		  } 
-	      });	      
+	      });
+
+	      ngDexie.test();
+
+
+	      
 	  }]);

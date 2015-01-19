@@ -5,6 +5,7 @@ var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','n
 var session = sessionStorage;
 var local = localStorage;
 
+
 openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
   function($http,PatientService) {
       var PatientServiceFlex = {};
@@ -16,7 +17,7 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
 
       PatientServiceFlex.get = function(patientUuid,callback) {
 	  console.log("PatientServiceFlex.get() : " + patientUuid);
-	  var patient = angular.fromJson(session.getItem(patientUuid);)
+	  var patient = angular.fromJson(session.getItem(patientUuid));
 
 	  //patient.patientData temporary. DefaulterCohort returns inappropriately formatted patient. Needs to be changed. 
 	  if(patient && patient.patientData) {
@@ -32,6 +33,27 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
 		  if(callback) { callback(p); }
 		  else { return p;}
 		      
+	      });
+	  }
+      };
+
+
+      PatientServiceFlex.getDexie = function(patientUuid,callback) {
+	  console.log("PatientServiceFlex.get() : " + patientUuid);
+	  var patient = db.patient.where('uuid').equals(patientUuid);	  
+
+	  if(patient && patient.patientData) {
+	      patient = PatientService.abstractPatient.clone(patient);	      
+	      console.log("PatientServiceFlex.get() : Patient in session");
+	      //patient = PatientService.abstractPatient.clone(JSON.parse(patient));	      
+	      callback(patient);
+	  }
+	  else {
+	      console.log("PatientServiceFlex.get() : Querying server for patient");
+	      PatientService.get(patientUuid, function(p){
+		  db.patient.put(p);		  
+		  if(callback) { callback(p); }
+		  else { return p;}		      
 	      });
 	  }
       };
