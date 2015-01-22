@@ -8,7 +8,7 @@ openmrsServicesFlex.factory('OpenmrsFlexSettings',[
   function() {
       var service = {};
       service.init = function() {
-	  var tables = ['amrs.patient','expiration','amrs.provider','amrs.location'];
+	  var tables = ['amrs.patient','expiration','amrs.provider','amrs.location','amrs.encounter','amrs.formentry'];
 	  for(var i in tables) {
 	      var t = localStorage.getItem(tables[i]);
 	      if(!t) localStorage.setItem(tables[i],"{}");
@@ -19,8 +19,8 @@ openmrsServicesFlex.factory('OpenmrsFlexSettings',[
   }]);
 
 
-openmrsServicesFlex.factory('ProviderServiceFlex',['$http','ProviderService','localStorage.utils',
-  function($http,ProviderService) {
+openmrsServicesFlex.factory('ProviderServiceFlex',['ProviderService','localStorage.utils',
+  function(ProviderService,local) {
       var psf = {};
       
 
@@ -94,8 +94,8 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
   }]);
 
 
-openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','EncounterService','PersonAttribute','ObsService',
-  function($http,Encounter,EncounterService,PersonAttribute,ObsService) {
+openmrsServicesFlex.factory('EncounterServiceFlex',['EncounterService','Auth','localStorage.utils',
+  function(EncounterService,Auth,local) {
       var EncounterServiceFlex = {};
 
       function getFromServer(encounterUuid,setOffline,callback) {
@@ -112,7 +112,7 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 
       EncounterServiceFlex.get = function(encounterUuid,callback) {
 	  console.log("EncounterServiceFlex.get() : " + encounterUuid);
-	  var e = local.get("amrs.encounter",encounterUuid,Auth.getPassword(),7);
+	  //var e = local.get("amrs.encounter",encounterUuid,Auth.getPassword(),7);
 	  var e = local.get("amrs.encounter",encounterUuid,"12345",7);
 	  if(e) {
 	      console.log('Got encounter locally');
@@ -158,6 +158,7 @@ openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','Encount
 	  }
       }
 
+
       FormEntryServiceFlex.submitAllLocal = function() {
 	  var forms = FormEntryServiceFlex.getLocal();
 	  var errors = 0;
@@ -188,6 +189,7 @@ openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','Encount
 	  forms[hash] = enc;
 	  local.setItem("savedEncounterForms",JSON.stringify(forms));
       }
+
 
       FormEntryServiceFlex.submit = function(enc,obsToVoid,hash) {	  	  	  
 	  console.log('FormEntryServiceFlex.submit() : submitting encounter');

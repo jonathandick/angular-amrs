@@ -24,7 +24,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infi
 			if($scope.encounters[i].uuid === encUuid) { formUuid = $scope.encounters[i].form.uuid;}
 		    }
 
-		    $state.go('encounter',{encounterUuid:encUuid,patientUuid:$scope.patientUuid,formUuid:formUuid});
+		    $state.go('formentry',{encounterUuid:encUuid,patientUuid:$scope.patientUuid,formUuid:formUuid});
 		};
 
 	    },

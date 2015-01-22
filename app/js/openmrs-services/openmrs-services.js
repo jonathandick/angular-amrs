@@ -160,7 +160,7 @@ openmrsServices.factory('interceptor',function($q) {
 
 
 openmrsServices.config(['$httpProvider',function($httpProvider) {
-    $httpProvider.interceptors.push('interceptor');
+    //$httpProvider.interceptors.push('interceptor');
 }]);
 
 
@@ -366,6 +366,16 @@ openmrsServices.factory('Encounter',['$resource',
 openmrsServices.factory('EncounterService',['$http','Encounter',
   function($http,Encounter) {
       var EncounterService = {};
+
+      
+      EncounterService.get = function(encounterUuid,callback) {
+	  Encounter.get({uuid:encounterUuid},function(data,status,headers) {
+	      if(callback) { return callback(data); }
+	      else { return data};
+	  });
+      };
+      
+
 
       EncounterService.patientQuery = function(params,callback) {
 	  Encounter.get(params).$promise.then(function(data) {

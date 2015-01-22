@@ -68,8 +68,8 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      templateUrl: static_dir + 'js/formentry/views/encounter-forms-saved.html',
 	      authenticate:true,
 	  })
-	  .state('encounter',{
-	      url:"/encounter?encounterUuid&formUuid&patientUuid",
+	  .state('formentry',{
+	      url:"/formentry?encounterUuid&formUuid&patientUuid",
 	      authenticate:true, 
 	      templateProvider: function($stateParams,FormService,$templateFactory) {
 		  var template = FormService.getTemplate($stateParams.formUuid);

@@ -2,10 +2,11 @@
 
 /* Directives */
 
-var static_dir = 'js/angular-amrs/app/';
 
 angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.bootstrap'])
     .directive('patientDemographics', [function() {
+	var static_dir = 'app/';
+
 	return {
 	    restrict : "E",
 	    scope : {
@@ -17,6 +18,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	}
     }])
     .directive('clinicLocationsDropdown',['LocationServiceFlex',function() {
+	var static_dir = 'app/';
 	return {
 	    restrict: "E",
 	    scope: {
@@ -34,6 +36,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	}
     }])
     .directive('providersDropdown',['ProviderServiceFlex',function() {
+	var static_dir = 'app/';
 	return {
 	    restrict: "E",
 	    scope: {
@@ -136,6 +139,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		}
 
 		function loadEncounter(encounter) {
+		    console.log(encounter);
 		    scope.enc.uuid = encounter.uuid;
 		    scope.enc.patient = encounter.patient.uuid;
 		    scope.enc.encounterDatetime = encounter.encounterDatetime;
