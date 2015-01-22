@@ -1,13 +1,11 @@
 'use strict';
 
-var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','ngCookies','openmrsServices','dexieServices','openmrs.auth']);
-
-var session = sessionStorage;
-var local = localStorage;
+var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','ngCookies','openmrsServices','dexieServices','openmrs.auth',
+								 'localStorageServices']);
 
 
-openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDexie','Auth',
-  function($http,PatientService,ngDexie,Auth) {
+openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDexie','Auth','localStorage.utils',
+  function($http,PatientService,ngDexie,Auth,local) {
       var PatientServiceFlex = {};
 
       PatientServiceFlex.clone = function(data) {
@@ -29,40 +27,6 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
 	  });
       };
 	 
-
-
-      function setExpirationDate(store,key,expirationDate)
-
-
-      function getLocal(store,key,withEncryption,expirationDate,callback) {
-	  var table = angular.fromJson(localStorage.getItem(store));
-
-	  if(key in table) {
-	      var item = table[key];
-	      if(withEncryption) {
-		  item = CryptoJS.Rabbit.decrypt(item,Auth.getPassword()).toString(CryptJS.enc.Utf8);		  
-	      }
-	      item = angular.fromJson(item);
-	      if(callback) callback(item)
-	      else return item;
-	  }
-	  else return null;	  
-      }
-	  
-
-      function setLocal(store,key,item,withEncryption,callback) {
-	  var table = angular.fromJson(localStorage.getItem(store));
-	  item = angular.toJson(item);
-	  if(withEncryption) {
-	      item = CryptoJS.Rabbit.encrypt(item,Auth.getPassword()).toString();
-	  }
-	  table[key] = item;
-	  localStorage.setItem(store,table);
-      }
-	      
-	  
- 
-      
       function getLocalDexie(patientUuid,fallback,callback) {	  
 	  var db = ngDexie.getDb();	  
 	  db.patient.get(patientUuid).then(function(patient) {
@@ -82,11 +46,13 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
 		  fallback(patientUuid,callback);
 	      });
 
-      }   
+      }
 
       PatientServiceFlex.get = function(patientUuid,callback) {
 	  console.log("PatientServiceFlex.getDexie() : " + patientUuid);
-	  getLocal(patientUuid,getRemote,callback);
+	  var p = local.get('patient',patientUuid,true,7);
+	  if(p) callback(p);
+	  else this.getRemote.get(patientUuid,callback);
       };
 
 	  

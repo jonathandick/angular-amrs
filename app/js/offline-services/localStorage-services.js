@@ -1,9 +1,9 @@
 'use strict';
 
-var localServices = angular.module('localServices', ['dexieServices','openmrs.auth']);
+var localStorageServices = angular.module('localStorageServices', ['dexieServices','openmrs.auth']);
 
 
-localServices.factory('localStorage.utils',['ngDexie','Auth',
+localStorageServices.factory('localStorage.utils',['ngDexie','Auth',
   function(ngDexie,Auth) {
       var service = {};
       
@@ -71,7 +71,10 @@ localServices.factory('localStorage.utils',['ngDexie','Auth',
       };	  
 
 
-      service.getLocal(tableName,key,withEncryption,expiration,callback) {
+      /*
+	Returns null if key not in table
+      */
+      service.get(tableName,key,withEncryption,expiration) {
 	  var table = angular.fromJson(localStorage.getItem(tableName));
 	  
 	  if(key in table) {
@@ -80,14 +83,13 @@ localServices.factory('localStorage.utils',['ngDexie','Auth',
 		  item = CryptoJS.Rabbit.decrypt(item,Auth.getPassword()).toString(CryptJS.enc.Utf8);		  
 	      }
 	      item = angular.fromJson(item);
-	      if(callback) callback(item)
-	      else return item;
+	      return item;
 	  }
 	  else return null;	  
       }
 	  
 
-      service.setLocal = function(tableName,key,item,withEncryption,callback) {
+      service.set = function(tableName,key,item,withEncryption,callback) {
 	  var table = getTable(tableName);
 	  item = angular.toJson(item);
 	  if(withEncryption) {
