@@ -4,6 +4,50 @@ var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','n
 								 'localStorageServices']);
 
 
+openmrsServicesFlex.factory('OpenmrsFlexSettings',[
+  function() {
+      var service = {};
+      service.init = function() {
+	  var tables = ['amrs.patient','expiration','amrs.provider','amrs.location'];
+	  for(var i in tables) {
+	      var t = localStorage.getItem(tables[i]);
+	      if(!t) localStorage.setItem(tables[i],"{}");
+	  }
+      }
+      return service;
+
+  }]);
+
+
+openmrsServicesFlex.factory('ProviderServiceFlex',['$http','ProviderService',
+  function($http,ProviderService) {
+      var psf = {};
+      
+
+      function getFromServer(setLocal,callback) {
+	  ProviderService.query(function(providers){
+	      if(setLocal) {
+		  for(p in providers) {
+		      //Need to write code to make an object [{uuid:provider},...]
+		  }
+		  setLocal("amrs.provider",providers);
+	      }
+	      callback(p);
+	  });
+      };	    
+
+      psf.query = function(callback) {
+	  var providers = local.getAll("amrs.provider");
+	  if(providers.keys().length > 0 ) {	      
+	      callback(providers);
+	  }
+	  else getFromServer(local.setAll,callback);
+      };
+      return psf;
+  }]);
+
+
+
 openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDexie','Auth','localStorage.utils',
   function($http,PatientService,ngDexie,Auth,local) {
       var PatientServiceFlex = {};
@@ -11,50 +55,30 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
       PatientServiceFlex.clone = function(data) {
 	  return PatientService.abstractPatient.clone(data);
       };
-
       
-      function getRemote(patientUuid,callback) {
-	  console.log("PatientServiceFlex.get() : Querying server for patient");
-	  alert("PatientServiceFlex.get() : Querying server for patient");
-	  PatientService.get(patientUuid, function(p){		      
-	      var encrypted = CryptoJS.Rabbit.encrypt(angular.toJson(p.getPatient()),Auth.getPassword()).toString();		      
-	      var db = ngDexie.getDb();	  
-	      db.open();
-	      db.patient.put({uuid:patientUuid,patient:encrypted})
-		  .catch(function(e) { alert("db error: " + e); });
-	      if(callback) { callback(p); }
-	      else { return p;}
-	  });
-      };
-	 
-      function getLocalDexie(patientUuid,fallback,callback) {	  
-	  var db = ngDexie.getDb();	  
-	  db.patient.get(patientUuid).then(function(patient) {
-	      if(patient) {
-		  var decrypted = CryptoJS.Rabbit.decrypt(patient.patient,Auth.getPassword()).toString(CryptoJS.enc.Utf8);
-		  patient = angular.fromJson(decrypted);
-		  patient = PatientService.abstractPatient.clone(patient);
-		  if(callback) { callback(patient); }
-		  else { return patient;}
-	      }
-	      else {
-		  fallback(patientUuid,callback);
-	      }
-	  })
-	      .catch(function(e) {
-		  alert('db failure: couldnt find patient');
-		  fallback(patientUuid,callback);
-	      });
 
-      }
+      function getRemote(patientUuid,setLocal,callback) {
+	  console.log("PatientServiceFlex.get() : Querying server for patient");
+	  PatientService.get(patientUuid, function(p){
+	      if(setLocal) {
+		  //setLocal("patient",patientUuid,p,Auth.getPassword());
+		  setLocal("amrs.patient",patientUuid,p,"12345");
+	      }
+	      callback(p);
+	  });
+      };	    
 
       PatientServiceFlex.get = function(patientUuid,callback) {
-	  console.log("PatientServiceFlex.getDexie() : " + patientUuid);
-	  var p = local.get('patient',patientUuid,true,7);
-	  if(p) callback(p);
-	  else this.getRemote.get(patientUuid,callback);
+	  console.log("PatientServiceFlex.get() : " + patientUuid);
+	  //var p = local.get("patient",patientUuid,Auth.getPassword(),7);
+	  var p = local.get("amrs.patient",patientUuid,"12345",7);
+	  if(p) {
+	      console.log('Got patient locally');
+	      p = PatientServiceFlex.clone(p.patientData);
+	      callback(p);
+	  }
+	  else getRemote(patientUuid,local.set,callback);
       };
-
 	  
 
       PatientServiceFlex.search = function(searchString,callback){
@@ -298,25 +322,3 @@ openmrsServicesFlex.factory('LocationServiceFlex',['$http','LocationService',
   }]);
 
 
-openmrsServicesFlex.factory('ProviderServiceFlex',['$http','ProviderService',
-  function($http,ProviderService) {
-      var psf = {};
-      
-      psf.query = function(callback) {
-	  var providers = local.getItem('openmrsProviders');
-	  if(providers) {
-	      providers = JSON.parse(providers);
-	      if(callback) { return callback(providers) }		  
-	      else { return providers; }
-	  }
-	  else {		  
-	      ProviderService.query(function(providers) {
-		  local.setItem('openmrsProviders',JSON.stringify(providers));
-		  if(callback) { return callback(providers); }		  
-		  else { return providers; }
-	      });
-	  }
-      };
-
-      return psf;
-  }]);

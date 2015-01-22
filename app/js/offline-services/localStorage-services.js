@@ -1,29 +1,42 @@
 'use strict';
 
-var localStorageServices = angular.module('localStorageServices', ['dexieServices','openmrs.auth']);
+var localStorageServices = angular.module('localStorageServices', []);
 
 
-localStorageServices.factory('localStorage.utils',['ngDexie','Auth',
-  function(ngDexie,Auth) {
+localStorageServices.factory('localStorage.utils',[
+  function() {
       var service = {};
       
       function getTable(name) {
+	  console.log('getting table: ' + name);
 	  return angular.fromJson(localStorage.getItem(name));
       }
 
       function setTable(name,table) {
 	  localStorage.setItem(name,angular.toJson(table));
       }
+
+
+      //expects message to be a string
+      function encrypt(message,password) {
+	  return CryptoJS.Rabbit.encrypt(message,password).toString();		  
+      }
+
+      function decrypt(message,password) {
+	  return CryptoJS.Rabbit.decrypt(message,password).toString(CryptoJS.enc.Utf8);		  
+      }
+      
       
 
       //expiration : number of days until expiration
       service.setExpirationDate = function(tableName,key,expiration) {
-	  var default = 7;
+	  var defaultDays = 7;
 	  var table = getTable("expiration")
 	  var expKey = tableName + "##" + key;
 	  var expDate = new Date();
+
 	  if(expiration) expDate.setDate(expDate.getDate() + expiration);
-	  else expDate.setDate(expDate.getDate() + default);
+	  else expDate.setDate(expDate.getDate() + defaultDays);
 	  
 	  var dateKey = expDate.toISOString().substring(0,10);
 	  var group = [expKey];
@@ -31,6 +44,7 @@ localStorageServices.factory('localStorage.utils',['ngDexie','Auth',
 	      group = table[dateKey];
 	      group.push(expKey);
 	  }
+	  else table[dateKey] = group;
 	  setTable("expiration",table);
       }
 
@@ -74,29 +88,56 @@ localStorageServices.factory('localStorage.utils',['ngDexie','Auth',
       /*
 	Returns null if key not in table
       */
-      service.get(tableName,key,withEncryption,expiration) {
-	  var table = angular.fromJson(localStorage.getItem(tableName));
-	  
+      service.get = function(tableName,key,encryptionPassword) {
+	  console.log('LocalStorageServices.get() : table: ' + tableName + " key: " + key);
+	  var table = getTable(tableName);	  
 	  if(key in table) {
 	      var item = table[key];
-	      if(withEncryption) {
-		  item = CryptoJS.Rabbit.decrypt(item,Auth.getPassword()).toString(CryptJS.enc.Utf8);		  
+	      if(encryptionPassword) {
+		  item = encrypt(item,encryptionPassword);
 	      }
 	      item = angular.fromJson(item);
 	      return item;
 	  }
 	  else return null;	  
-      }
+      };
 	  
 
-      service.set = function(tableName,key,item,withEncryption,callback) {
+      service.getAll = function(tableName,encryptionPassword) {
+	  var table = getTable(tableName);
+	  var resultSet = table;
+	  if(encryptionPassword) {
+	      resultSet = {};
+	      for(var key in table) {
+		  var item = table[key];
+		  item = decrypt(item,encryptionPassword);
+		  resultSet[key] = item;
+	      }
+	  }
+	  return resultSet;
+      }	      
+
+      service.set = function(tableName,key,item,encryptionPassword,callback) {
 	  var table = getTable(tableName);
 	  item = angular.toJson(item);
-	  if(withEncryption) {
-	      item = CryptoJS.Rabbit.encrypt(item,Auth.getPassword()).toString();
+	  if(encryptionPassword) {
+	      item = encrypt(item,encryptionPassword);
 	  }
 	  table[key] = item;
 	  setTable(tableName,table);
+	  service.setExpirationDate(tableName,key);
+      }
+
+      service.setAll = function(tableName,items,encryptionPassword) {
+	  var table = {};
+	  for(var key in items) {
+	      var item = angular.toJson(table[key]);
+	      if(encryptionPassword) {
+		  item = encrypt(item,encryptionPassword);
+	      }
+	      table[key] = item;
+	  }
+	  localStorage.setItem(tableName,angular.toJson(table));
       }
 
       return service;

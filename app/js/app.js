@@ -90,8 +90,8 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
       $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth','ngDexie',
-	  function ($rootScope, $state, Auth,ngDexie) {
+    .run(['$rootScope','$state','Auth','ngDexie','OpenmrsFlexSettings',
+	  function ($rootScope, $state, Auth,ngDexie,OpenmrsFlexSettings) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  console.log('is authenticated: ' + Auth.isAuthenticated());
 		  if (toState.authenticate && !Auth.isAuthenticated()){
@@ -116,7 +116,9 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 		  defaulterCohort: 'uuid,name,dateCreated',
 		  defaulterCohortMember: 'uuid,patientUuid,defaulterCohortUuid,dateCreated'
               };
-	      ngDexie.init('openmrs-database',stores,true);	      
+	      //ngDexie.init('openmrs-database',stores,true);	      
+
+	      OpenmrsFlexSettings.init();
 
 	      
 	  }]);
