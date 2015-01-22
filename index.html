@@ -1,0 +1,75 @@
+<!doctype html>
+
+<html lang="en" ng-app="amrsApp">
+<head>
+  <title>Angular AMRS</title>
+  <meta charset="utf-8">
+  <meta content='initial-scale=1.0, maximum-scale=1.0, user-scalable=no' name='viewport' />   
+
+  <link rel="stylesheet" href="app/bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="app/css/app.css">
+
+  <!--script src="app/bower_components/xdomain/xdomain.min.js" slave="http://etl1.ampath.or.ke:8080/xdomain/proxy.html"></script-->
+  <script src="app/bower_components/jquery/jquery.js"></script>
+  <script src="app/bower_components/angular/angular.js"></script>
+  <script src="app/bower_components/angular-ui-router.js"></script>
+  <script src="app/bower_components/angular-cookies/angular-cookies.js"></script>
+  <script src="app/bower_components/angular-route/angular-route.js"></script>
+  <script src="app/bower_components/angular-resource/angular-resource.js"></script>
+  <script src="app/bower_components/ng-infinite-scroll/ng-infinite-scroll.min.js"></script>
+  <script src="app/bower_components/underscore/underscore-min.js"></script>
+  <script src="app/bower_components/ui.bootstrap/ui-bootstrap.min.js"></script>
+  <script src="app/bower_components/ui.bootstrap/ui-bootstrap-tpls.min.js"></script>
+  <script src="app/bower_components/ng-infinite-scroll/ng-infinite-scroll.min.js"></script>
+  <script src="app/bower_components/dexie/Dexie.min.js"></script>
+  
+  <script src="app/bower_components/cryptojs/rollups/rabbit.js"></script>
+  <script src="app/bower_components/cryptojs/rollups/tripledes.js"></script>
+  
+
+ 
+  <script src="app/bower_components/jquery-validation/dist/jquery.validate.min.js"></script>
+
+
+  <script src="app/js/app.js"></script>
+  <script src="app/js/controllers.js"></script>
+  <script src="app/js/utility-directives.js"></script>
+ 
+  <script src="app/js/openmrs-services/openmrs-services.js"></script>
+  <script src="app/js/openmrs-services/openmrs-services-flex.js"></script>
+
+  <script src="app/js/dexie/dexie-services.js"></script>
+  
+  <script src="app/js/patient-dashboard/patient-dashboard-directives.js"></script>
+  <script src="app/js/patient-dashboard/patient-dashboard-controllers.js"></script>
+
+  <script src="app/js/formentry/formentry-directives.js"></script>
+  <script src="app/js/formentry/formentry-controllers.js"></script>
+
+  <script src="app/js/auth/auth-services.js"></script>
+  <script src="app/js/auth/auth-controllers.js"></script>
+
+  <script src="app/js/defaulter-cohort/defaulter-cohort-services.js"></script>
+  <script src="app/js/defaulter-cohort/defaulter-cohort-controllers.js"></script>
+
+
+
+    
+</script>
+</head>
+<body>
+  <div ng-include="'app/partials/header.html'"></div>
+  <div class="view-container">    
+    <div ui-view class="view-frame">      
+    </div>
+  </div>
+
+  <!--div style="display:none">
+    <ng-include src="'app/partials/test-amrs.html'"/>
+    <ng-include src="'app/partials/defaulter-cohort.html'"/>
+    <ng-include src="'app/partials/patient-search.html'"/>
+    <ng-include src="'app/partials/patient-dashboard.html'"/>
+  </div-->
+
+</body>
+</html>
