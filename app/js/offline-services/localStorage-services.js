@@ -94,7 +94,7 @@ localStorageServices.factory('localStorage.utils',[
 	  if(key in table) {
 	      var item = table[key];
 	      if(encryptionPassword) {
-		  item = encrypt(item,encryptionPassword);
+		  item = decrypt(item,encryptionPassword);
 	      }
 	      item = angular.fromJson(item);
 	      return item;

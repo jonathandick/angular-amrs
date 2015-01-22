@@ -19,18 +19,18 @@ openmrsServicesFlex.factory('OpenmrsFlexSettings',[
   }]);
 
 
-openmrsServicesFlex.factory('ProviderServiceFlex',['$http','ProviderService',
+openmrsServicesFlex.factory('ProviderServiceFlex',['$http','ProviderService','localStorage.utils',
   function($http,ProviderService) {
       var psf = {};
       
 
-      function getFromServer(setLocal,callback) {
+      function getFromServer(setOffline,callback) {
 	  ProviderService.query(function(providers){
-	      if(setLocal) {
+	      if(setOffline) {
 		  for(p in providers) {
 		      //Need to write code to make an object [{uuid:provider},...]
 		  }
-		  setLocal("amrs.provider",providers);
+		  setOffline("amrs.provider",providers);
 	      }
 	      callback(p);
 	  });
@@ -57,12 +57,12 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
       };
       
 
-      function getRemote(patientUuid,setLocal,callback) {
+      function getFromServer(patientUuid,setOffline,callback) {
 	  console.log("PatientServiceFlex.get() : Querying server for patient");
 	  PatientService.get(patientUuid, function(p){
-	      if(setLocal) {
-		  //setLocal("patient",patientUuid,p,Auth.getPassword());
-		  setLocal("amrs.patient",patientUuid,p,"12345");
+	      if(setOffline) {
+		  //setOffline("patient",patientUuid,p,Auth.getPassword());
+		  setOffline("amrs.patient",patientUuid,p,"12345");
 	      }
 	      callback(p);
 	  });
@@ -77,7 +77,7 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
 	      p = PatientServiceFlex.clone(p.patientData);
 	      callback(p);
 	  }
-	  else getRemote(patientUuid,local.set,callback);
+	  else getFromServer(patientUuid,local.set,callback);
       };
 	  
 
@@ -94,41 +94,62 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
   }]);
 
 
-function getHashCode(s) {
-    var hash = 0, i, chr, len;
-    if (s.length == 0) return hash;
-    for (i = 0, len = s.length; i < len; i++) {
-	chr   = s.charCodeAt(i);
-	hash  = ((hash << 5) - hash) + chr;
-	hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-}
-
-
 openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','EncounterService','PersonAttribute','ObsService',
   function($http,Encounter,EncounterService,PersonAttribute,ObsService) {
       var EncounterServiceFlex = {};
+
+      function getFromServer(encounterUuid,setOffline,callback) {
+	  console.log("EncounterServiceFlex.get() : Querying server for patient");
+	  EncounterService.get(encounterUuid, function(e){
+	      if(setOffline) {
+		  //setOffline("amrs.encounter",encounterUuid,e,Auth.getPassword());
+		  setOffline("amrs.encounter",encounterUuid,e,"12345");
+	      }
+	      callback(e);
+	  });
+
+      }
+
       EncounterServiceFlex.get = function(encounterUuid,callback) {
 	  console.log("EncounterServiceFlex.get() : " + encounterUuid);
-	  var enc = session.getItem(encounterUuid);
-	  var enc = undefined;
-	  if(enc) {
-	      console.log("EncounterServiceFlex.get() : Encounter in session");
-	      callback(JSON.parse(enc));
+	  var e = local.get("amrs.encounter",encounterUuid,Auth.getPassword(),7);
+	  var e = local.get("amrs.encounter",encounterUuid,"12345",7);
+	  if(e) {
+	      console.log('Got encounter locally');
+	      callback(e);
 	  }
-	  else {
-	      console.log("Querying server for encounter data...");
-	      Encounter.get({uuid:encounterUuid}).$promise.then(function(data){ 	      
-		  console.log('Encounter.get()');
-		  session.setItem(encounterUuid,JSON.stringify(data));
-		  callback(data);
-	      });
-	  }
+	  else getFromServer(encounterUuid,local.set,callback);
       };
 
 
-      EncounterServiceFlex.removeLocal = function(hash) {
+
+      EncounterServiceFlex.patientQuery = function(params,callback) {
+	  EncounterService.patientQuery(params,callback);
+      };								  	 
+
+      return EncounterServiceFlex;
+           
+  }]);
+
+
+
+
+openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','EncounterService','PersonAttribute','ObsService',
+  function($http,Encounter,EncounterService,PersonAttribute,ObsService) {
+      var FormEntryServiceFlex = {};
+      
+      function getHashCode(s) {
+	  var hash = 0, i, chr, len;
+	  if (s.length == 0) return hash;
+	  for (i = 0, len = s.length; i < len; i++) {
+	      chr   = s.charCodeAt(i);
+	      hash  = ((hash << 5) - hash) + chr;
+	      hash |= 0; // Convert to 32bit integer
+	  }
+	  return hash;
+      }
+
+      FormEntryServiceFlex.removeLocal = function(hash) {
 	  var forms = local.getItem('savedEncounterForms');
 	  if(forms) { 
 	      forms = JSON.parse(forms);
@@ -137,13 +158,13 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	  }
       }
 
-      EncounterServiceFlex.submitAllLocal = function() {
-	  var forms = EncounterServiceFlex.getLocal();
+      FormEntryServiceFlex.submitAllLocal = function() {
+	  var forms = FormEntryServiceFlex.getLocal();
 	  var errors = 0;
 	  var successes = 0;
 	  for(var hash in forms) {
 	      var enc = forms[hash];
-	      var data = EncounterServiceFlex.submit(enc,{},hash);
+	      var data = FormEntryServiceFlex.submit(enc,{},hash);
 	      if(data === undefined || data === null || data.error) {	      
 		  errors++;
 	      }
@@ -154,7 +175,7 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	      
 	  
 
-      EncounterServiceFlex.saveLocal = function(enc,hash) {
+      FormEntryServiceFlex.saveLocal = function(enc,hash) {
 	  if(!hash) { 
 	      var s = JSON.stringify(enc);             
 	      var hash = getHashCode(s);
@@ -168,8 +189,35 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
 	  local.setItem("savedEncounterForms",JSON.stringify(forms));
       }
 
+      FormEntryServiceFlex.submit = function(enc,obsToVoid,hash) {	  	  	  
+	  console.log('FormEntryServiceFlex.submit() : submitting encounter');
+	  console.log(enc);
+	  //var r = FormEntryServiceFlex.prepareObs(enc,origEnc);	  	      	      
+	  //enc = r[0];
+	  
+	  FormEntryService.submit(enc,function(data) {
+	      console.log('Finished submitting');	      
+
+	      if(data === undefined || data === null || data.error) {
+		  console.log("FormEntryServiceFlex.submit() : error submitting. Saving to local");
+		  FormEntryServiceFlex.saveLocal(enc,hash);
+	      }
+	      else if(hash !== undefined && hash !== "") {
+		  FormEntryServiceFlex.removeLocal(hash);
+	      }
+	      else {
+		  console.log('FormEntryServiceFlex.submit() : checking for obs to void');
+		  ObsService.void(obsToVoid,function(data) {			  
+		      console.log(data);
+		  });		      
+	      }	  
+	      return data;
+	  });
+      };
+
+
       //If hash provided, return individual form. Otherwrise return all forms.
-      EncounterServiceFlex.getLocal = function(hash) {
+      FormEntryServiceFlex.getLocal = function(hash) {
 	  var forms = JSON.parse(local.getItem("savedEncounterForms"));	  
 	  if(hash) {
 	      if(hash in forms) { return forms[hash]; }
@@ -216,7 +264,7 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
       //If a previous encounter exists, it identifies obs which have not been changed and removes them
       //  from the encounter to be submitted. For any obs with a changed value, this function returns
       //  an array of the uuid of the original obs so that it can be voided. 
-      EncounterServiceFlex.prepareObs = function(enc,origEnc) {
+      FormEntryServiceFlex.prepareObs = function(enc,origEnc) {
 	  var origObs = origEnc.obs;
 
 	  if(enc.obs) {	      
@@ -250,40 +298,10 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['$http','Encounter','Encount
       };	  
 
 
-      EncounterServiceFlex.submit = function(enc,obsToVoid,hash) {	  	  	  
-	  console.log('EncounterServiceFlex.submit() : submitting encounter');
-	  console.log(enc);
-	  //var r = EncounterServiceFlex.prepareObs(enc,origEnc);	  	      	      
-	  //enc = r[0];
-	  
-	  EncounterService.submit(enc,function(data) {
-	      console.log('Finished submitting');	      
-
-	      if(data === undefined || data === null || data.error) {
-		  console.log("EncounterServiceFlex.submit() : error submitting. Saving to local");
-		  EncounterServiceFlex.saveLocal(enc,hash);
-	      }
-	      else if(hash !== undefined && hash !== "") {
-		  EncounterServiceFlex.removeLocal(hash);
-	      }
-	      else {
-		  console.log('EncounterServiceFlex.submit() : checking for obs to void');
-		  ObsService.void(obsToVoid,function(data) {			  
-		      console.log(data);
-		  });		      
-	      }	  
-	      return data;
-	  });
-      };
-
-
-      EncounterServiceFlex.patientQuery = function(params,callback) {
-	  EncounterService.patientQuery(params,callback);
-      };								  	 
-
-      return EncounterServiceFlex;
-           
+      return FormEntryServiceFlex;
   }]);
+
+
 
 
 openmrsServicesFlex.factory('EncounterFormServiceFlex',['$http','Encounter','EncounterService','PersonAttribute',
