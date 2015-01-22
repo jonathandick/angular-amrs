@@ -14,39 +14,59 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
 	  return PatientService.abstractPatient.clone(data);
       };
 
-
-      PatientServiceFlex.getOld = function(patientUuid,callback) {
-	  console.log("PatientServiceFlex.get() : " + patientUuid);
-	  var patient = angular.fromJson(session.getItem(patientUuid));
-
-	  //patient.patientData temporary. DefaulterCohort returns inappropriately formatted patient. Needs to be changed. 
-	  if(patient && patient.patientData) {
-	      patient = PatientService.abstractPatient.clone(patient);	      
-	      console.log("PatientServiceFlex.get() : Patient in session");
-	      //patient = PatientService.abstractPatient.clone(JSON.parse(patient));	      
-	      callback(patient);
-	  }
-	  else {
-	      console.log("PatientServiceFlex.get() : Querying server for patient");
-	      PatientService.get(patientUuid, function(p){
-		  session.setItem(patientUuid,JSON.stringify(p.getPatient()));
-		  if(callback) { callback(p); }
-		  else { return p;}
-		      
-	      });
-	  }
+      
+      function getRemote(patientUuid,callback) {
+	  console.log("PatientServiceFlex.get() : Querying server for patient");
+	  alert("PatientServiceFlex.get() : Querying server for patient");
+	  PatientService.get(patientUuid, function(p){		      
+	      var encrypted = CryptoJS.Rabbit.encrypt(angular.toJson(p.getPatient()),Auth.getPassword()).toString();		      
+	      var db = ngDexie.getDb();	  
+	      db.open();
+	      db.patient.put({uuid:patientUuid,patient:encrypted})
+		  .catch(function(e) { alert("db error: " + e); });
+	      if(callback) { callback(p); }
+	      else { return p;}
+	  });
       };
+	 
 
 
-      PatientServiceFlex.get = function(patientUuid,callback) {
-	  console.log("PatientServiceFlex.getDexie() : " + patientUuid);
+      function setExpirationDate(store,key,expirationDate)
 
-	  var db = ngDexie.getDb();
+
+      function getLocal(store,key,withEncryption,expirationDate,callback) {
+	  var table = angular.fromJson(localStorage.getItem(store));
+
+	  if(key in table) {
+	      var item = table[key];
+	      if(withEncryption) {
+		  item = CryptoJS.Rabbit.decrypt(item,Auth.getPassword()).toString(CryptJS.enc.Utf8);		  
+	      }
+	      item = angular.fromJson(item);
+	      if(callback) callback(item)
+	      else return item;
+	  }
+	  else return null;	  
+      }
 	  
 
+      function setLocal(store,key,item,withEncryption,callback) {
+	  var table = angular.fromJson(localStorage.getItem(store));
+	  item = angular.toJson(item);
+	  if(withEncryption) {
+	      item = CryptoJS.Rabbit.encrypt(item,Auth.getPassword()).toString();
+	  }
+	  table[key] = item;
+	  localStorage.setItem(store,table);
+      }
+	      
+	  
+ 
+      
+      function getLocalDexie(patientUuid,fallback,callback) {	  
+	  var db = ngDexie.getDb();	  
 	  db.patient.get(patientUuid).then(function(patient) {
-	      if(patient) {  
-		  console.log("PatientServiceFlex.get() : Patient in db");
+	      if(patient) {
 		  var decrypted = CryptoJS.Rabbit.decrypt(patient.patient,Auth.getPassword()).toString(CryptoJS.enc.Utf8);
 		  patient = angular.fromJson(decrypted);
 		  patient = PatientService.abstractPatient.clone(patient);
@@ -54,15 +74,19 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
 		  else { return patient;}
 	      }
 	      else {
-		  console.log("PatientServiceFlex.get() : Querying server for patient");
-		  PatientService.get(patientUuid, function(p){
-		      var encrypted = CryptoJS.Rabbit.encrypt(angular.toJson(p.getPatient()),Auth.getPassword()).toString();		      
-		      db.patient.put({uuid:patientUuid,patient:encrypted});		      
-		      if(callback) { callback(p); }
-		      else { return p;}		      
-		  });
+		  fallback(patientUuid,callback);
 	      }
-	  });
+	  })
+	      .catch(function(e) {
+		  alert('db failure: couldnt find patient');
+		  fallback(patientUuid,callback);
+	      });
+
+      }   
+
+      PatientServiceFlex.get = function(patientUuid,callback) {
+	  console.log("PatientServiceFlex.getDexie() : " + patientUuid);
+	  getLocal(patientUuid,getRemote,callback);
       };
 
 	  

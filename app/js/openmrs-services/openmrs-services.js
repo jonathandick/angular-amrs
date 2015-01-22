@@ -115,7 +115,6 @@ openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
 	  
 
 	  return OpenmrsSession.get({},function(data,status,headers) {
-	      alert(".get() got result");
 	      alert(angular.toJson(data,true));
 	      callback(data);
 	  });
@@ -132,9 +131,9 @@ openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
 
 openmrsServices.factory('interceptor',function($q) {
     return {
+
 	'request': function(config) {
-	    alert('request config');
-	    alert(angular.toJson(config,true));
+	    //alert(angular.toJson(config,true));
 	    return config;
 	},
 
@@ -144,8 +143,7 @@ openmrsServices.factory('interceptor',function($q) {
 	},
 
 	'response':function(response) {
-	    alert('response');
-	    alert(angular.toJson(response,true));
+	    //alert(angular.toJson(response,true));
 	    return response;
 	},
 
@@ -162,7 +160,7 @@ openmrsServices.factory('interceptor',function($q) {
 
 
 openmrsServices.config(['$httpProvider',function($httpProvider) {
-    //$httpProvider.interceptors.push('interceptor');
+    $httpProvider.interceptors.push('interceptor');
 }]);
 
 
@@ -267,7 +265,8 @@ openmrsServices.factory('PatientService',['$http','Patient',
 
      
       PatientService.get = function(patientUuid,callback) {
-	  Patient.get({uuid:patientUuid}).$promise.then(function(data) {
+	  Patient.get({uuid:patientUuid},function(data,status,headers) {
+	      alert(data);
 	      var p = PatientService.abstractPatient.clone(data);
 	      if(callback) { return callback(p); }
 	      else { return p};
