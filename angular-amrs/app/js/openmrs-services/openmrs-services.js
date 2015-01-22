@@ -2,7 +2,6 @@
 
 var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies']);
 
-
 //var OPENMRS_CONTEXT_PATH = "http://10.50.110.67:8080/amrs";
 //var OPENMRS_CONTEXT_PATH = "http://41.89.173.32:8080/amrs";
 var OPENMRS_CONTEXT_PATH = "http://etl1.ampath.or.ke:8080/amrs";
@@ -61,6 +60,110 @@ openmrsServices.factory('OpenmrsSession',['$resource',
 		      ); 
   }]);
 
+
+openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
+  function(OpenmrsSession,$http) {
+      var service = {};
+      service.getSession = function(callback) {
+	  console.log($http.defaults);
+	  //alert(angular.toJson($http.defaults));
+	  
+	  /*
+
+	  $.ajax({
+	      type: "GET",	      
+	      url: OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",
+	      crossDomain: true,
+	      xhrFields: {
+		  withCredentials: true
+	      }
+	  })
+	      .fail(function(jqXHR, textStatus) {
+		  alert("error in ajax");
+		  alert(angular.toJson(jqXHR,true));
+		  alert(textStatus);
+	      })
+	      .done(function(msg) {
+		  alert('got it in ajax');
+		  alert(angular.toJson(msg));	      
+	      });
+
+	  var req = {url: OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",
+		     method:"get",
+		     
+		    };
+
+	  $.get(req.url).done(function(data) {
+	      alert("got result: ", data);
+	  });
+
+	  $http(req)
+	      .success(function(data,status, headers, config) {
+		  console.log(headers());
+		  alert('$http sucess');
+		  alert(status);
+		  alert(angular.toJson(data,true));
+		  })
+	      .error(function(data, status, headers, config) {
+		  alert('error');
+		  alert(status);
+		  alert(angular.toJson(headers()));
+		  console.log(headers);
+	      });
+	  */
+
+	  
+
+	  return OpenmrsSession.get({},function(data,status,headers) {
+	      alert(".get() got result");
+	      alert(angular.toJson(data,true));
+	      callback(data);
+	  });
+	      
+	  /*
+	  return OpenmrsSession.get().$promise.then(function(data) {	      
+	      callback(data);
+	  });
+	  */
+      }
+      return service;
+  }]);
+
+
+openmrsServices.factory('interceptor',function($q) {
+    return {
+	'request': function(config) {
+	    alert('request config');
+	    alert(angular.toJson(config,true));
+	    return config;
+	},
+
+	'requestError': function(rejection) {
+	    alert('requestError');
+	    alert(rejection);
+	},
+
+	'response':function(response) {
+	    alert('response');
+	    alert(angular.toJson(response,true));
+	    return response;
+	},
+
+	'responseError': function(rejection) {
+	    alert('responseError');
+	    alert(angular.toJson(rejection,true));
+	}
+
+
+
+    }
+    
+});
+
+
+openmrsServices.config(['$httpProvider',function($httpProvider) {
+    //$httpProvider.interceptors.push('interceptor');
+}]);
 
 
 openmrsServices.factory('Person',['$resource',   			       

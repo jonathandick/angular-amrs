@@ -2,31 +2,34 @@
 
 /* Services */
 
-var session = sessionStorage;
-var local = localStorage;
+var auth = angular.module('openmrs.auth', ['ngResource','openmrsServices','dexieServices']);
 
-var auth = angular.module('openmrs.auth', ['ngResource','ngCookies','openmrsServices']);
-
-auth.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$location','OpenmrsUserService',
-  function (Base64, $cookieStore, $http, OpenmrsSession,$location,OpenmrsUserService) {
+auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','OpenmrsUserService','ngDexie',
+  function (Base64, $http, $location, OpenmrsSessionService,OpenmrsUserService,ngDexie) {
       var Auth = {}
-	  
+
+      Auth.authenticated = null;
+      Auth.setAuthenticated = function(authenticated) { this.authenticated = authenticated; }
+      Auth.isAuthenticated = function() { return this.authenticated; }
+
+      Auth.curPassword = null;
+      Auth.setPassword = function(password) { this.curPassword = password; }
+      Auth.getPassword = function() { return this.curPassword; }
+
+      Auth.authType = null;
+      Auth.setAuthType = function(authType) { this.authType = authType; }
+      Auth.getAuthType = function() { return this.authType; }
+
+
+
       Auth.setCredentials = function (username, password) {	  
           var encoded = Base64.encode(username + ':' + password);
           $http.defaults.headers.common.Authorization = 'Basic ' + encoded;
       };
       
       Auth.clearCredentials = function () {
-	  sessionStorage.removeItem("sessionId");
-	  sessionStorage.removeItem("username");
           document.execCommand("ClearAuthenticationCache");
           $http.defaults.headers.common.Authorization = 'Basic ';
-      };
-
-      Auth.isAuthenticated = function() {	  
-	  var id = sessionStorage.getItem("sessionId");
-	  if(id) { return true; }
-	  else { return false; }
       };
 
       Auth.hasRole = function(roleUuid,callback) {
@@ -45,25 +48,84 @@ auth.factory('Auth', ['Base64', '$cookieStore', '$http', 'OpenmrsSession','$loca
 	  });
       };
 
+      
+      Auth.authenticateLocal = function(username,password,callback) {
+	  console.log('Auth.authenticateLocal() : authenticating locally');
+	  Auth.setAuthType('local');
+	  var db = ngDexie.getDb();
+	  
+	  db.user.get(username)
+	      .then(function(user) {
+		  console.log('got user');
+		  console.log(user);
+		  if(user) {
+		      var decrypted = CryptoJS.Rabbit.decrypt(user.password,password).toString(CryptoJS.enc.Utf8);		  		  
+		      var doesMatch = (decrypted == password);
 
-      Auth.authenticate = function(username,password,callback) {
-	  console.log("Auth.authenticate() : request authentication");	  
+		      if(doesMatch) {
+			  console.log('Authenticated: true');
+			  Auth.setAuthenticated(true);
+			  Auth.setPassword(password);
+			  //Auth.clearCredentials();
+			  $location.path("/apps");
+		      }
+		      else {
+			  console.log('Local password does not match');
+			  Auth.setAuthenticated(false);
+			  Auth.setPassword(null);
+			  callback(false);
+		      }
+		  }
+		  else { callback(false); }
+	      });
+      };
+
+
+      Auth.authenticateRemote = function(username,password,callback) {
+	  console.log('Auth.authenticateRemote() : authenticate on server');
+	  //alert('Auth.authenticateRemote() : authenticate on server');
+	  Auth.setAuthType('remote');
+	  
+	  var db = ngDexie.getDb();
 	  Auth.setCredentials(username,password);
-	  OpenmrsSession.get().$promise.then(function(data) {	      
-	      callback(data.authenticated);
-	      if(data.authenticated) {
-		  sessionStorage.setItem("username",username);
-		  sessionStorage.setItem("sessionId",data.sessionId);
+
+	  //OpenmrsSession.get().$promise.then(function(data) {
+	  OpenmrsSessionService.getSession(function(data) {
+	      //alert(angular.toJson(data));
+	      if(data.authenticated) {		  
+		  var encrypted = CryptoJS.Rabbit.encrypt(password,password);
+		  db.user.put({username:username,password:encrypted.toString()})
+		  .catch(function(error) {
+		      console.log('db error: ' + error);
+		  });
+		  Auth.setAuthenticated(true);
+		  Auth.setPassword(password);
 		  $location.path("/apps");
 	      }
+	      else {
+		  Auth.setAuthenticated(false);
+		  Auth.setPassword(null);
+		  callback(false);
+	      }
 	  });
+      }
+
+
+      Auth.authenticate = function(username,password,callback) {
+	  if(navigator.onLine) {
+	      Auth.authenticateRemote(username,password,callback);	  
+	  }
+	  else {
+	      Auth.authenticateLocal(username,password,callback);
+	  }
       };
 
       Auth.logout = function() {
 	  Auth.clearCredentials();
+	  Auth.setPassword(null);
+	  Auth.setAuthenticated(false);
       }
-      
-      
+            
       return Auth;
   }]);
 

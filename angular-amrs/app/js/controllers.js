@@ -95,6 +95,7 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','Patient',
       $scope.patients = [];
 
       $scope.$watch('searchString',function(value) {
+	  
 	  var v = "custom:(uuid,";
 	  v += "person:(uuid,gender,birthdate,preferredName:(givenName,middleName,familyName),birthdate,attributes:(attributeType:(uuid),uuid)))";
 

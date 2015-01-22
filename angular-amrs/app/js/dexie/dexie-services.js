@@ -11,13 +11,16 @@ dexieServices.factory("ngDexie", [
 	
 	dex.init = function(name,stores,debug) {
 	    var db = new Dexie(name);	    
-	    db.delete();	    
+	    if(debug) db.delete();
+
+		
 	    db.version(1).stores(stores);
 	    db.open();
 	    db.on('error', function (err) {
                 // Catch all uncatched DB-related errors and exceptions
                 //$log.error("db error", err);
 		console.log("dexie error: " + err);
+		alert("dexie error: " + err);
             });
 	    this.db = db;	   
 	};
@@ -52,7 +55,7 @@ dexieServices.factory("ngDexie", [
 		patient:'++id,uuid,givenName,familyName,phoneNumber',
 		*/
 	    };
-	    this.init('openmrs-database',stores,true);
+ 	    this.init('openmrs-database',stores,true);
 	    
 	    var db = this.getDb();	    	    
 

@@ -12,10 +12,10 @@ auth.controller('LoginCtrl',['$scope','Auth',
       $scope.errors = "";
 
       $scope.authenticate = function() {
-	  sessionStorage.removeItem("sessionId");
+	  
 	  Auth.authenticate($scope.username,$scope.password,function(isAuthenticated) {
 	      if(!isAuthenticated) { $scope.errors = "Username and password do not match. Please try again.";}
 	      console.log("errors: " + $scope.errors);
-	  });	  
+	  });
       };
   }]);

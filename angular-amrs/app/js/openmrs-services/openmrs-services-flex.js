@@ -1,13 +1,13 @@
 'use strict';
 
-var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','ngCookies','openmrsServices']);
+var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','ngCookies','openmrsServices','dexieServices','openmrs.auth']);
 
 var session = sessionStorage;
 var local = localStorage;
 
 
-openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
-  function($http,PatientService) {
+openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDexie','Auth',
+  function($http,PatientService,ngDexie,Auth) {
       var PatientServiceFlex = {};
 
       PatientServiceFlex.clone = function(data) {
@@ -15,7 +15,7 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
       };
 
 
-      PatientServiceFlex.get = function(patientUuid,callback) {
+      PatientServiceFlex.getOld = function(patientUuid,callback) {
 	  console.log("PatientServiceFlex.get() : " + patientUuid);
 	  var patient = angular.fromJson(session.getItem(patientUuid));
 
@@ -38,30 +38,37 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService',
       };
 
 
-      PatientServiceFlex.getDexie = function(patientUuid,callback) {
-	  console.log("PatientServiceFlex.get() : " + patientUuid);
-	  var patient = db.patient.where('uuid').equals(patientUuid);	  
+      PatientServiceFlex.get = function(patientUuid,callback) {
+	  console.log("PatientServiceFlex.getDexie() : " + patientUuid);
 
-	  if(patient && patient.patientData) {
-	      patient = PatientService.abstractPatient.clone(patient);	      
-	      console.log("PatientServiceFlex.get() : Patient in session");
-	      //patient = PatientService.abstractPatient.clone(JSON.parse(patient));	      
-	      callback(patient);
-	  }
-	  else {
-	      console.log("PatientServiceFlex.get() : Querying server for patient");
-	      PatientService.get(patientUuid, function(p){
-		  db.patient.put(p);		  
-		  if(callback) { callback(p); }
-		  else { return p;}		      
-	      });
-	  }
+	  var db = ngDexie.getDb();
+	  
+
+	  db.patient.get(patientUuid).then(function(patient) {
+	      if(patient) {  
+		  console.log("PatientServiceFlex.get() : Patient in db");
+		  var decrypted = CryptoJS.Rabbit.decrypt(patient.patient,Auth.getPassword()).toString(CryptoJS.enc.Utf8);
+		  patient = angular.fromJson(decrypted);
+		  patient = PatientService.abstractPatient.clone(patient);
+		  if(callback) { callback(patient); }
+		  else { return patient;}
+	      }
+	      else {
+		  console.log("PatientServiceFlex.get() : Querying server for patient");
+		  PatientService.get(patientUuid, function(p){
+		      var encrypted = CryptoJS.Rabbit.encrypt(angular.toJson(p.getPatient()),Auth.getPassword()).toString();		      
+		      db.patient.put({uuid:patientUuid,patient:encrypted});		      
+		      if(callback) { callback(p); }
+		      else { return p;}		      
+		  });
+	      }
+	  });
       };
 
 	  
 
       PatientServiceFlex.search = function(searchString,callback){
-	  if(searchString && searchString.length > 3) {	      
+	  if(searchString && searchString.length > 3) {
 	      Patient.query({q:searchString}).$promise.then(function(data){
                   callback(data);
               });

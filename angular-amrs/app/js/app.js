@@ -16,8 +16,11 @@ var amrsApp = angular.module('amrsApp', ['ui.router',
 
 var static_dir = 'js/angular-amrs/app/';
 
-amrsApp.config(['$stateProvider', '$urlRouterProvider',
-  function($stateProvider, $urlRouterProvider) {
+amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
+  function($stateProvider, $urlRouterProvider,$httpProvider) {
+      $httpProvider.defaults.useXDomain = true;
+
+
       $stateProvider
 	  .state('login', {
 	      url: "/login",
@@ -93,6 +96,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
     .run(['$rootScope','$state','Auth','ngDexie',
 	  function ($rootScope, $state, Auth,ngDexie) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
+		  console.log('is authenticated: ' + Auth.isAuthenticated());
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
 		      event.preventDefault(); 
@@ -102,8 +106,20 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider',
 		  } 
 	      });
 
-	      ngDexie.test();
-
+ 
+	      /* Setting up the indexedDB. This is not in the right place but leaving it here for now (2015-01-20)
+	       */
+	      var stores = {
+		  user:'username',
+                  provider:'uuid,givenName,familyName,providerId,dateCreated',
+                  location:'uuid,name,dateCreated',
+                  encounter: '++id,uuid,patientUuid,encounterDatetime,dateCreated',
+                  savedEncounter: '++id,uuid,patientUuid,encounterDatetime,dateCreated',
+                  patient:'uuid,dateCreated',
+		  defaulterCohort: 'uuid,name,dateCreated',
+		  defaulterCohortMember: 'uuid,patientUuid,defaulterCohortUuid,dateCreated'
+              };
+	      ngDexie.init('openmrs-database',stores,true);	      
 
 	      
 	  }]);
