@@ -14,12 +14,9 @@ var amrsApp = angular.module('amrsApp', ['ui.router',
 					 'dexieServices',
  					]);
 
-var static_dir = 'js/angular-amrs/app/';
-
 amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
   function($stateProvider, $urlRouterProvider,$httpProvider) {
-      $httpProvider.defaults.useXDomain = true;
-
+      var static_dir = 'app/';            
 
       $stateProvider
 	  .state('login', {
@@ -88,7 +85,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	  })
 	  .state('logout',{
 	      url: "/logout",
-	      templateUrl: static_dir + 'partials/login.html',
+	      templateUrl: static_dir + 'js/auth/views/login.html',
 	  });
 
       $urlRouterProvider.otherwise("/apps");

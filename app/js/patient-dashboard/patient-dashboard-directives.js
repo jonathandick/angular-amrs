@@ -2,12 +2,12 @@
 
 /* Directives */
 
-var static_dir = 'js/angular-amrs/app/';
 
 angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infinite-scroll','utility.widgets'])
     .directive('encountersPane',['EncounterServiceFlex','OpenmrsUtilityService','$state',
       function(EncounterServiceFlex,OpenmrsUtilityService,$state) {
-	return {
+	  var static_dir = "app/js/patient-dashboard/";
+	  return {
 	    restrict: "E",
 	    scope: {
 		patientUuid : "@",
@@ -58,10 +58,11 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infi
 		};
 
 	    },
-	    templateUrl : static_dir + "js/patient-dashboard/views/encountersPane.html",
+	    templateUrl : static_dir + "views/encountersPane.html",
 	}
     }])
     .directive('formsPane',['FormService',function(FormService) {
+	var static_dir = "app/js/patient-dashboard/";
 	return {
 	    restrict: "E",
 	    scope: {patientUuid:"@",},
@@ -78,7 +79,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infi
 		});
 		*/
 	    },
-	    templateUrl : static_dir + "js/patient-dashboard/views/formsPane.html",
+	    templateUrl : static_dir + "views/formsPane.html",
 	}
     }])
 ;
