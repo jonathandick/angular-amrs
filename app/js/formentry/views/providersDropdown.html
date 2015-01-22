@@ -1,0 +1,4 @@
+<label for="provider">{{label}}</label>
+<select class="form-control" name="{{name}}" id="provider" ng-model='model' ng-options="p.person.uuid as (p.person.display + ' (' + p.identifier + ')' ) for p in providers">
+  <option/>
+</select>

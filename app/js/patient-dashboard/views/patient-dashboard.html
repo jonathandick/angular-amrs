@@ -1,0 +1,55 @@
+
+<div ng-controller="PatientDashboardCtrl">
+  {{patient}}
+  <div class="container-fluid">
+    <input type="hidden" name="patient_uuid" id="dash_patient_uuid"/>
+    <input type="hidden" name="dash_cohort_key" id="dash_cohort_key"/>
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
+
+    <ul class="list-group">
+      <li class="list-group-item" style="font-size:large">
+	Patient Name: {{patient.getName()}}
+      </li>
+      <li class="list-group-item" style="font-size:large">Identifier(s): <span ng-repeat="i in patient.getIdentifiers()">{{i.display}}; </span></li>
+      <li class="list-group-item" style="font-size:large">Birthdate: {{patient.getBirthdate().substring(0,10)}}</li>
+      <li class="list-group-item">
+	  <div style="font-size:large;width:100%;">
+	  <div class="row">
+	    <div class="col-md-6">
+	      Phone Number: <input style="font-size:large;" name="phone_number" id="dash_phone_number" type="tel" size="10" value="{{patient.getPhoneNumber()}}"/>
+	    </div>	
+	    <div class="col-md-6">
+	      <button class="btn btn-custom btn-lg btn-block" ng-click="">Update</button>
+	    </div>
+	  </div>
+      </li>
+      <li class="list-group-item" style="font-size:large">
+	Last Appt Date: {{patient.last_appt_date}}<br/>
+	Last Appt Type: {{patient.last_appt_type}}<br/>
+	Last RTC Date: {{patient.rtc_date}}<br/>	
+      </li>	
+    </ul>
+
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="encounterHistory = !encounterHistory">Encounter History</button>
+    <div collapse="encounterHistory" >
+      <h3>Encounter History</h3>              
+      <div style="height:350px; overflow:scroll;">
+	<encounters-pane patient-uuid="{{patient.getUuid()}}"></encounters-pane>
+      </div>      
+
+    </div>
+
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="tbHistory = !tbHistory">TB History</button>
+    <div collapse="!tbHistory" >
+      <h3>TB History</h3>              
+    </div>
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="forms = !forms">Forms</button>
+    <div collapse="!forms" style="height:350px; overflow:scroll;">
+      <forms-pane patient-uuid="{{patient.getUuid()}}"></forms-pane>
+    </div>
+    
+  </div>
+</div>
