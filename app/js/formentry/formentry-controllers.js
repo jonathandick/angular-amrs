@@ -32,8 +32,8 @@ formentry.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceF
 
 
 
-formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex','FormService',
-  function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex,FormService) {	
+formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex','FormService','Flex','EncounterService',
+  function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex,FormService,Flex,EncounterService) {	
       $scope.patient = "";
       $scope.encounterUuid = "";
       $scope.provider = "";
@@ -78,10 +78,19 @@ formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServi
       if($stateParams.encounterUuid) {	
 	  console.log('Getting from server');
 	  $scope.encounterUuid = $stateParams.encounterUuid;
+
+	  /*
 	  EncounterServiceFlex.get($stateParams.encounterUuid,function(data) {
 	      //$scope.toFormData(data);
 	      $scope.encounter = data;	      	      
 	  });
+	  */
+
+	  Flex.get(EncounterService,$stateParams.encounterUuid,false,null,function(data) {	      
+	      $scope.encounter = data;
+	  });
+
+	  
       }
       else if($stateParams.hash) {
 	  $scope.hash = $stateParams.hash;

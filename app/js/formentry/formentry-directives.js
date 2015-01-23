@@ -52,8 +52,8 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile','EncounterServiceFlex','$state','FormService',
-       function($parse,$compile,EncounterServiceFlex,$state,FormService) {
+    .directive('encounterForm',['$parse','$compile','FormEntryServiceFlex','$state','FormService',
+       function($parse,$compile,FormEntryServiceFlex,$state,FormService) {
 	return {
 	    restrict: "E",
 	    scope:false,
@@ -97,7 +97,8 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		}
 
 		function loadObs(obs,curSchema) {
-		    for(var j in obs) {		
+		    console.log(obs);
+		    for(var j in obs) {
 			var schema, concept = obs[j].concept.uuid, id = ctrl.getId(),value;
 			if(obs[j].obs) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
 			else {
@@ -247,7 +248,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
 			//console.log('obs: ' + JSON.stringify(scope.enc.obs));
 			//console.log('obs to void: ' + JSON.stringify(obsToVoid));
-			EncounterServiceFlex.submit(scope.enc,obsToVoid);
+			FormEntryServiceFlex.submit(scope.enc,obsToVoid);
 			//console.log(scope.enc);
 			$state.go("patient",{uuid:scope.enc.patient});
 		    }		    

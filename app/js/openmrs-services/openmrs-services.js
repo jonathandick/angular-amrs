@@ -64,66 +64,12 @@ openmrsServices.factory('OpenmrsSession',['$resource',
 openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
   function(OpenmrsSession,$http) {
       var service = {};
-      service.getSession = function(callback) {
-	  console.log($http.defaults);
-	  //alert(angular.toJson($http.defaults));
-	  
-	  /*
-
-	  $.ajax({
-	      type: "GET",	      
-	      url: OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",
-	      crossDomain: true,
-	      xhrFields: {
-		  withCredentials: true
-	      }
-	  })
-	      .fail(function(jqXHR, textStatus) {
-		  alert("error in ajax");
-		  alert(angular.toJson(jqXHR,true));
-		  alert(textStatus);
-	      })
-	      .done(function(msg) {
-		  alert('got it in ajax');
-		  alert(angular.toJson(msg));	      
-	      });
-
-	  var req = {url: OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",
-		     method:"get",
-		     
-		    };
-
-	  $.get(req.url).done(function(data) {
-	      alert("got result: ", data);
-	  });
-
-	  $http(req)
-	      .success(function(data,status, headers, config) {
-		  console.log(headers());
-		  alert('$http sucess');
-		  alert(status);
-		  alert(angular.toJson(data,true));
-		  })
-	      .error(function(data, status, headers, config) {
-		  alert('error');
-		  alert(status);
-		  alert(angular.toJson(headers()));
-		  console.log(headers);
-	      });
-	  */
-
-	  
+      service.getSession = function(callback) {	  
 
 	  return OpenmrsSession.get({},function(data,status,headers) {
 	      alert(angular.toJson(data,true));
 	      callback(data);
 	  });
-	      
-	  /*
-	  return OpenmrsSession.get().$promise.then(function(data) {	      
-	      callback(data);
-	  });
-	  */
       }
       return service;
   }]);
@@ -212,6 +158,10 @@ openmrsServices.factory('Patient',['$resource',
 openmrsServices.factory('PatientService',['$http','Patient',
   function($http,Patient) {
       var PatientService = {};
+
+      PatientService.getName = function() {
+	  return 'patient';
+      }
 
       PatientService.abstractPatient = {
 	  patientData: {},
@@ -367,6 +317,7 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
   function($http,Encounter) {
       var EncounterService = {};
 
+      EncounterService.getName = function() {return "encounter";};
       
       EncounterService.get = function(encounterUuid,callback) {
 	  Encounter.get({uuid:encounterUuid},function(data,status,headers) {

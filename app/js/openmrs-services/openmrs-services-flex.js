@@ -19,6 +19,121 @@ openmrsServicesFlex.factory('OpenmrsFlexSettings',[
   }]);
 
 
+
+openmrsServicesFlex.factory('Flex',['localStorage.utils',
+  function(local) {
+      var flexService = {};
+
+      function getFromServer(service,key,storeOffline,encryptionPassword,callback) {
+	  service.get(key,function(item){
+	      if(storeOffline) {
+		  var tableName = "amrs." + service.getName();
+		  local.set(tableName,key,item,encryptionPassword);
+	      }
+	      callback(item);
+	  });
+      };	    
+
+
+      function getAllFromServer(service,keyGetter,storeOffline,encryptionPassword,callback) {
+	  service.getAll(function(items){
+	      if(storeOffline) {
+		  var tableName = "amrs." + service.getName();
+		  local.setAll(tableName,items,keyGetter,encryptionPassword);
+	      }
+	      callback(item);
+	  });
+      };
+
+      function queryServer(service,searchString,keyGetter,storeOffline,encryptionPassword,callback) {
+	  service.query({q:searchString},function(items){
+	      if(storeOffline) {
+		  var tableName = "amrs." + service.getName();
+		  local.setQuerySet(tableName,items,keyGetter,encryptionPassword);
+	      }
+              callback(items);
+          });
+      }
+      
+      flexService.init = function() {
+	  var tables = ['amrs.patient','expiration','amrs.provider','amrs.location','amrs.encounter','amrs.formentry'];
+	  for(var i in tables) {
+	      var t = localStorage.getItem(tables[i]);
+	      if(!t) localStorage.setItem(tables[i],"{}");
+	  }
+      }
+
+
+      flexService.get = function(service,key,storeOffline,encryptionPassword,callback) {
+	  var tableName = "amrs." + service.getName();	  
+	  var item = local.get(tableName,key,encryptionPassword);
+	  if(item) { callback(item); }
+	  else getFromServer(service,key,storeOffline,encryptionPassword,callback);
+      }
+
+
+      flexService.query = function(service,searchString,keyGetter,storeOffline,encryptionPassword,callback) {
+	  var tableName = "amrs." + service.getName();	  
+	  var item = local.get(tableName,key,encryptionPassword);
+	  queryServer(service,searchString,keyGetter,storeOffline,encryptionPassword,callback);
+      }
+
+      flexService.getAll = function(service,keyGetter,storeOffline,encryptionPassword,callback) {
+	  var tableName = "amrs." + service.getName();	  
+	  var items = local.getAll(tableName);
+	  if(Object.keys(items).length > 0 ) {	      
+	      callback(items);
+	  }
+	  else getFromServer(service,keyGetter,storeOffline,encryptionPassword,callback);
+      };
+
+      flexService.remove = function(service,key,callback) {
+	  var tableName = "amrs." + service.getName();	  
+	  local.remove(tableName,key);
+	  callback();
+      }
+
+
+      /*
+	Save : only store locally, do not communicate with server. 
+	For example, if data collection is complete, and form to completed later.
+      */
+      flexService.save = function(service,key,item,encryptionPassword,callback) {
+	  var tableName = "amrs." + service.getName();
+	  local.set(tableName,key,item,encryptionPassword);
+	  callback();
+      }
+
+      return flexService;
+
+  }]);
+
+
+openmrsServicesFlex.factory('LocationServiceFlex',['$http','LocationService','localStorage.utils',
+  function($http,LocationService,local) {
+      var lsf = {};
+      
+      function getFromServer(setOffline,callback) {
+	  LocationService.getAll(function(locations){
+	      if(setOffline) {
+		  setOffline("amrs.location",locations,function(location) {return location.uuid;});
+	      }
+	      callback(locations);
+	  });
+      };	    
+
+      lsf.getAll = function(callback) {
+	  var locations = local.getAll("amrs.location");
+	  if(Object.keys(locations).length > 0 ) {	      
+	      callback(locations);
+	  }
+	  else getFromServer(local.setAll,callback);
+      };
+
+      return lsf;
+  }]);
+
+
 openmrsServicesFlex.factory('ProviderServiceFlex',['ProviderService','localStorage.utils',
   function(ProviderService,local) {
       var psf = {};
@@ -27,18 +142,15 @@ openmrsServicesFlex.factory('ProviderServiceFlex',['ProviderService','localStora
       function getFromServer(setOffline,callback) {
 	  ProviderService.query(function(providers){
 	      if(setOffline) {
-		  for(p in providers) {
-		      //Need to write code to make an object [{uuid:provider},...]
-		  }
-		  setOffline("amrs.provider",providers);
+		  setOffline("amrs.provider",providers,function(provider) {return provider.uuid;});
 	      }
-	      callback(p);
+	      callback(providers);
 	  });
       };	    
 
       psf.query = function(callback) {
 	  var providers = local.getAll("amrs.provider");
-	  if(providers.keys().length > 0 ) {	      
+	  if(Object.keys(providers).length > 0 ) {	      
 	      callback(providers);
 	  }
 	  else getFromServer(local.setAll,callback);
@@ -58,7 +170,7 @@ openmrsServicesFlex.factory('PatientServiceFlex',['$http','PatientService','ngDe
       
 
       function getFromServer(patientUuid,setOffline,callback) {
-	  console.log("PatientServiceFlex.get() : Querying server for patient");
+	  console.log("PatientServiceFlex.getFromServer() : Querying server for patient");
 	  PatientService.get(patientUuid, function(p){
 	      if(setOffline) {
 		  //setOffline("patient",patientUuid,p,Auth.getPassword());
@@ -197,7 +309,7 @@ openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','Encount
 	  //var r = FormEntryServiceFlex.prepareObs(enc,origEnc);	  	      	      
 	  //enc = r[0];
 	  
-	  FormEntryService.submit(enc,function(data) {
+	  EncounterService.submit(enc,function(data) {
 	      console.log('Finished submitting');	      
 
 	      if(data === undefined || data === null || data.error) {
@@ -318,27 +430,5 @@ openmrsServicesFlex.factory('EncounterFormServiceFlex',['$http','Encounter','Enc
 
 
 
-openmrsServicesFlex.factory('LocationServiceFlex',['$http','LocationService',
-  function($http,LocationService) {
-      var lsf = {};
-      
-      lsf.getAll = function(callback) {
-	  var locations = local.getItem('openmrsLocations');
-	  if(locations) {
-	      locations = JSON.parse(locations);
-	      if(callback) { return callback(locations) }		  
-	      else { return locations; }
-	  }
-	  else {		  
-	      LocationService.getAll(function(locations) {
-		  local.setItem('openmrsLocations',JSON.stringify(locations));
-		  if(callback) { return callback(locations); }		  
-		  else { return locations; }
-	      });
-	  }
-      };
-
-      return lsf;
-  }]);
 
 

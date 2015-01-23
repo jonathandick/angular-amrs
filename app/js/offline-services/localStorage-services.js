@@ -8,7 +8,6 @@ localStorageServices.factory('localStorage.utils',[
       var service = {};
       
       function getTable(name) {
-	  console.log('getting table: ' + name);
 	  return angular.fromJson(localStorage.getItem(name));
       }
 
@@ -85,6 +84,14 @@ localStorageServices.factory('localStorage.utils',[
       };	  
 
 
+
+
+      service.remove = function(tableName,key) {
+	  var table = getTable(tableName);
+	  delete table.key;
+	  setTable(tableName,table);
+      }
+
       /*
 	Returns null if key not in table
       */
@@ -105,22 +112,22 @@ localStorageServices.factory('localStorage.utils',[
 
       service.getAll = function(tableName,encryptionPassword) {
 	  var table = getTable(tableName);
-	  var resultSet = table;
-	  if(encryptionPassword) {
-	      resultSet = {};
-	      for(var key in table) {
-		  var item = table[key];
+	  var resultSet = new Array;
+	  for(var key in table) {
+	      var item = table[key];
+	      if(encryptionPassword) {
 		  item = decrypt(item,encryptionPassword);
-		  resultSet[key] = item;
 	      }
+	      item = angular.fromJson(item);
+	      resultSet.push(item);
 	  }
 	  return resultSet;
       }	      
 
-      service.set = function(tableName,key,item,encryptionPassword,callback) {
+      service.set = function(tableName,key,item,encryptionPassword) {
 	  var table = getTable(tableName);
 	  item = angular.toJson(item);
-	  if(encryptionPassword) {
+ 	  if(encryptionPassword) {
 	      item = encrypt(item,encryptionPassword);
 	  }
 	  table[key] = item;
@@ -128,10 +135,35 @@ localStorageServices.factory('localStorage.utils',[
 	  service.setExpirationDate(tableName,key);
       }
 
-      service.setAll = function(tableName,items,encryptionPassword) {
+
+      /*
+	This will not overwrite but add each item in items to the table.
+      */
+      service.setQuerySet = function(tableName,items,keyGetter,encryptionPassword) {
+	  var table = getTable(tableName);
+	  for(var i in items) {
+	      var item = items[i];
+	      var key = keyGetter(item);
+	      item = angular.toJson(item);
+ 	      if(encryptionPassword) {
+		  item = encrypt(item,encryptionPassword);
+	      }
+	      table[key] = item;
+	  }
+      }
+
+
+      /*
+	tableName: name of the object in localStorage
+	items: an array of items to be put into the table. This maps to a rest result which is typically an array of items.
+	keyGetter: a function to pull the key from an array item. this is used to store within the table
+	encryptionPassword: if this is is to be encrypted, the password to encrypt with.
+      */
+      service.setAll = function(tableName,items,keyGetter,encryptionPassword) {
 	  var table = {};
-	  for(var key in items) {
-	      var item = angular.toJson(table[key]);
+	  for(var i in items) {
+	      var key = keyGetter(items[i]);
+	      var item = angular.toJson(items[i]);
 	      if(encryptionPassword) {
 		  item = encrypt(item,encryptionPassword);
 	      }
