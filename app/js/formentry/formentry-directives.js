@@ -27,7 +27,6 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		name:'@',
 	    },
 	    controller : function($scope,LocationServiceFlex) {
-		console.log('name: ' + $scope.name);
 		LocationServiceFlex.getAll(function(locations) { 		    
 		    $scope.locations = locations;		    		    		    
 		});
@@ -52,8 +51,8 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile','FormEntryServiceFlex','$state','FormService',
-       function($parse,$compile,FormEntryServiceFlex,$state,FormService) {
+    .directive('encounterForm',['$parse','$compile','FormEntryServiceFlex','$state','FormService','$timeout',
+       function($parse,$compile,FormEntryServiceFlex,$state,FormService,$timeout) {
 	return {
 	    restrict: "E",
 	    scope:false,
@@ -97,9 +96,9 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		}
 
 		function loadObs(obs,curSchema) {
-		    console.log(obs);
 		    for(var j in obs) {
 			var schema, concept = obs[j].concept.uuid, id = ctrl.getId(),value;
+			
 			if(obs[j].obs) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
 			else {
 			    schema = curSchema + " obs[concept-uuid='" + concept + "']";			    			
@@ -108,6 +107,8 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			var matching = $(schema);
 			var getter;
 			var lineage;
+
+			
 
 			matching.each(function(index) {
 			    var c = $(this).find('input[type="checkbox"]');
@@ -119,6 +120,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 				}
 			    }
 			});
+
 			
 			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
 			if(getter(scope) !== undefined) {
@@ -140,7 +142,6 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		}
 
 		function loadEncounter(encounter) {
-		    console.log(encounter);
 		    scope.enc.uuid = encounter.uuid;
 		    scope.enc.patient = encounter.patient.uuid;
 		    scope.enc.encounterDatetime = encounter.encounterDatetime;
@@ -148,14 +149,16 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    scope.enc.location = encounter.location.uuid;
 		    scope.enc.provider = encounter.provider.uuid;
 		    scope.enc.form = encounter.form.uuid;
-		    
-		    loadObs(encounter.obs,'encounter-form');			
+
+		    //need to wait for the DOM to finish loading before we populate with obs
+		    $timeout(function() {
+			loadObs(encounter.obs,'encounter-form');			
+		    });
 		}
 
 		function prepareObs(obs,restObs) {
 		    for(var i in obs) {
 			var o = obs[i];
-			console.log(o);
 			if('value' in o) {
 			    if(o.value && o.value.toString().trim() !== "") {
 				//No empty values will be saved
@@ -230,7 +233,6 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 			    obsToVoid.push(originalObs[i].uuid); //void as key=value is not the same
 			}
 		    }
-		    console.log(obsToVoid);
 		    return obsToVoid;
 		}
 		

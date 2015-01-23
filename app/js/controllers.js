@@ -94,8 +94,6 @@ amrsControllers.controller('PatientSearchCtrl', ['$scope','Patient','LocationSer
       $scope.filter = "";
       $scope.patients = [];
 
-      lsf.getAll(function(locations) { console.log(locations); });
-
       $scope.$watch('searchString',function(value) {
 	  
 	  var v = "custom:(uuid,";

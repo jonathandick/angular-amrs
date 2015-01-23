@@ -84,11 +84,13 @@ localStorageServices.factory('localStorage.utils',[
       };	  
 
 
-
-
       service.remove = function(tableName,key) {
 	  var table = getTable(tableName);
-	  delete table.key;
+	  console.log(table);
+	  console.log("removing: " + key);
+
+	  delete table[key];
+	  console.log(table);
 	  setTable(tableName,table);
       }
 

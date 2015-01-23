@@ -76,17 +76,9 @@ formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServi
 
       var patientUuid = $stateParams.patientUuid; 
       if($stateParams.encounterUuid) {	
-	  console.log('Getting from server');
 	  $scope.encounterUuid = $stateParams.encounterUuid;
 
-	  /*
-	  EncounterServiceFlex.get($stateParams.encounterUuid,function(data) {
-	      //$scope.toFormData(data);
-	      $scope.encounter = data;	      	      
-	  });
-	  */
-
-	  Flex.get(EncounterService,$stateParams.encounterUuid,false,null,function(data) {	      
+	  Flex.get(EncounterService,$stateParams.encounterUuid,true,null,function(data) {	      
 	      $scope.encounter = data;
 	  });
 
@@ -113,7 +105,7 @@ formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServi
 
 
       $scope.save = function() {
-	  console.log("hash: " + $scope.hash);
+	  
 	  EncounterServiceFlex.saveLocal($scope.enc,$scope.hash);
       }
 

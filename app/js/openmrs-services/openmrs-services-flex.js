@@ -90,7 +90,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
       flexService.remove = function(service,key,callback) {
 	  var tableName = "amrs." + service.getName();	  
 	  local.remove(tableName,key);
-	  callback();
+	  if(callback) callback();
       }
 
 
@@ -246,8 +246,8 @@ openmrsServicesFlex.factory('EncounterServiceFlex',['EncounterService','Auth','l
 
 
 
-openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','EncounterService','PersonAttribute','ObsService',
-  function($http,Encounter,EncounterService,PersonAttribute,ObsService) {
+openmrsServicesFlex.factory('FormEntryServiceFlex',['EncounterService','PersonAttribute','ObsService','Flex',
+  function(EncounterService,PersonAttribute,ObsService,Flex) {
       var FormEntryServiceFlex = {};
       
       function getHashCode(s) {
@@ -305,12 +305,9 @@ openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','Encount
 
       FormEntryServiceFlex.submit = function(enc,obsToVoid,hash) {	  	  	  
 	  console.log('FormEntryServiceFlex.submit() : submitting encounter');
-	  console.log(enc);
-	  //var r = FormEntryServiceFlex.prepareObs(enc,origEnc);	  	      	      
-	  //enc = r[0];
-	  
+	  var encUuid = enc.uuid; //the encounter service will remove the encUuid
 	  EncounterService.submit(enc,function(data) {
-	      console.log('Finished submitting');	      
+	      Flex.remove(EncounterService,encUuid);
 
 	      if(data === undefined || data === null || data.error) {
 		  console.log("FormEntryServiceFlex.submit() : error submitting. Saving to local");
@@ -340,93 +337,10 @@ openmrsServicesFlex.factory('FormEntryServiceFlex',['$http','Encounter','Encount
 	  else { return forms; }
       };
 
-      function hasKeyValue(obj,key,value) {	 
-	  for(var i in obj) {
-	      if(obj[i].concept.uuid === key) {
-		  var v = obj[i].value;		  
-		  if(typeof v === "object" && v !== null) {
-		      v = obj[i].value.uuid;
-		  }
-		  if(v === value) {
-		      return true;
-		  }
-	      }
-	  }
-	  return false;
-      }
-
-      function deleteKeyValue(obj,key,value) {
-	  var v;
-	  for(var i in obj) {
-	      if(obj[i].concept.uuid == key) {
-		  v = obj[i].value;
-		  if(typeof v == "object" && v !== null) {
-		      v = obj[i].value.uuid;
-		  }
-		  if(v == value) {
-		      delete obj[i];
-		      break;		      
-		  }
-	      }
-	  }
-	  return obj;
-      }
-
-      
-
-      //This puts the object representing obs into the proper format required by OpenMRS RestWS.
-      //If a previous encounter exists, it identifies obs which have not been changed and removes them
-      //  from the encounter to be submitted. For any obs with a changed value, this function returns
-      //  an array of the uuid of the original obs so that it can be voided. 
-      FormEntryServiceFlex.prepareObs = function(enc,origEnc) {
-	  var origObs = origEnc.obs;
-
-	  if(enc.obs) {	      
-	      var t = [];
-	      
-	      for(var c in enc.obs) {		  
-		  if(enc.obs[c] === null || enc.obs[c] === "" || enc.obs[c] === undefined) {		      
-		  }
-		  else if(Object.prototype.toString.call(enc.obs[c]) !== "[object Array]") {
-		      if(hasKeyValue(origObs,c,enc.obs[c])) {
-			  origObs = deleteKeyValue(origObs,c,enc.obs[c]);
-		      } else {  			  
-			  t.push({concept:c,value:enc.obs[c]});		      
-		      }
-		  }
-		  else {  // this is for an obs with multiple answers, e.g. a multi select dropbox
-		      for(var i=0; i< enc.obs[c].length; i++) {
-			  if(hasKeyValue(origObs,c,enc.obs[c][i])) {
-			      origObs = deleteKeyValue(origObs,c,enc.obs[c][i]);
-			  }
-			  else {
-			      t.push({concept:c,value:enc.obs[c][i]});
-			  }
-		      }
-		  }
-	      }
-	      enc.obs = t;
-	  }
-	      
-	  return [enc,origObs];
-      };	  
 
 
       return FormEntryServiceFlex;
   }]);
-
-
-
-
-openmrsServicesFlex.factory('EncounterFormServiceFlex',['$http','Encounter','EncounterService','PersonAttribute',
-  function($http,Encounter,EncounterService) {
-      var efsf = {};
-      
-
-      return efsf;      
-      
-}]);
-
 
 
 
