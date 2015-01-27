@@ -132,6 +132,8 @@ openmrsServices.factory('Provider',['$resource',
 openmrsServices.factory('ProviderService',['Provider',
   function(Provider) {
       var ProviderService = {};
+
+      ProviderService.getName = function() {return 'provider';};
       
       ProviderService.query = function(callback) {
 	  Provider.query().$promise.then(function(data) {
@@ -400,6 +402,8 @@ openmrsServices.factory('Location',['$resource',
 openmrsServices.factory('LocationService',['$http','Location',
   function($http,Location) {
       var LocationService = {};
+
+      LocationService.getName = function() { return "location" };
 
       LocationService.getAll = function(callback) {
 	  Location.get().$promise.then(function(data) {callback(data.results);});

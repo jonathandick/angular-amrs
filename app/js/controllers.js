@@ -89,7 +89,7 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
 
 
 
-amrsControllers.controller('PatientSearchCtrl', ['$scope','Patient','LocationServiceFlex',
+amrsControllers.controller('PatientSearchCtrl', ['$scope','Patient',
   function($scope,Patient,lsf) {
       $scope.filter = "";
       $scope.patients = [];

@@ -88,12 +88,31 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
 	  
 	  var db = ngDexie.getDb();
 	  Auth.setCredentials(username,password);
+	  var encrypted = CryptoJS.Rabbit.encrypt(password,password);
+	  console.log(encrypted);
+	  console.log(Base64.decode(encrypted.toString()));
+	  console.log(encrypted.toString());	  
+	  var encrypted2 = CryptoJS.Rabbit.encrypt(password,password);
 
+	  console.log(CryptoJS.Rabbit.decrypt(encrypted.toString(),password).toString(CryptoJS.enc.Utf8));
+	  console.log(CryptoJS.Rabbit.decrypt(encrypted.toString(),password).toString(CryptoJS.enc.Utf8));
+
+	  console.log(encrypted2);
+	  
+	  console.log(encrypted2.toString());
+	  console.log(encrypted.toString() == encrypted2.toString());
+	  
 	  //OpenmrsSession.get().$promise.then(function(data) {
 	  OpenmrsSessionService.getSession(function(data) {
 	      //alert(angular.toJson(data));
 	      if(data.authenticated) {		  
 		  var encrypted = CryptoJS.Rabbit.encrypt(password,password);
+
+		  var encrypted2 = CryptoJS.Rabbit.encrypt(password,password);
+
+		  console.log(encrypted.toString());
+		  console.log(encrypted2.toString());
+		  console.log(encrypted.toString() == encrypted2.toString());
 		  db.user.put({username:username,password:encrypted.toString()})
 		  .catch(function(error) {
 		      console.log('db error: ' + error);

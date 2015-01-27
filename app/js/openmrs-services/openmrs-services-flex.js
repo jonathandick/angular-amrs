@@ -109,54 +109,6 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
   }]);
 
 
-openmrsServicesFlex.factory('LocationServiceFlex',['$http','LocationService','localStorage.utils',
-  function($http,LocationService,local) {
-      var lsf = {};
-      
-      function getFromServer(setOffline,callback) {
-	  LocationService.getAll(function(locations){
-	      if(setOffline) {
-		  setOffline("amrs.location",locations,function(location) {return location.uuid;});
-	      }
-	      callback(locations);
-	  });
-      };	    
-
-      lsf.getAll = function(callback) {
-	  var locations = local.getAll("amrs.location");
-	  if(Object.keys(locations).length > 0 ) {	      
-	      callback(locations);
-	  }
-	  else getFromServer(local.setAll,callback);
-      };
-
-      return lsf;
-  }]);
-
-
-openmrsServicesFlex.factory('ProviderServiceFlex',['ProviderService','localStorage.utils',
-  function(ProviderService,local) {
-      var psf = {};
-      
-
-      function getFromServer(setOffline,callback) {
-	  ProviderService.query(function(providers){
-	      if(setOffline) {
-		  setOffline("amrs.provider",providers,function(provider) {return provider.uuid;});
-	      }
-	      callback(providers);
-	  });
-      };	    
-
-      psf.query = function(callback) {
-	  var providers = local.getAll("amrs.provider");
-	  if(Object.keys(providers).length > 0 ) {	      
-	      callback(providers);
-	  }
-	  else getFromServer(local.setAll,callback);
-      };
-      return psf;
-  }]);
 
 
 

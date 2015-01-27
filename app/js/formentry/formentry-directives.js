@@ -17,7 +17,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    templateUrl: static_dir + "js/formentry/views/patient-demographics.html",	    
 	}
     }])
-    .directive('clinicLocationsDropdown',['LocationServiceFlex',function() {
+    .directive('clinicLocationsDropdown',['LocationService','Flex',function() {
 	var static_dir = 'app/';
 	return {
 	    restrict: "E",
@@ -26,15 +26,18 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		label:'@',
 		name:'@',
 	    },
-	    controller : function($scope,LocationServiceFlex) {
-		LocationServiceFlex.getAll(function(locations) { 		    
-		    $scope.locations = locations;		    		    		    
-		});
+ 	    controller : function($scope,LocationService,Flex) {
+		Flex.getAll(LocationService,
+			    function(location) { return location.uuid}, //keygetter
+			    true, //store offline
+			    null, //no encryption
+			    function(locations) {$scope.locations = locations;} // callback
+			   );
 	    },
 	    templateUrl : static_dir + "js/formentry/views/locations.html",
 	}
     }])
-    .directive('providersDropdown',['ProviderServiceFlex',function() {
+    .directive('providersDropdown',['ProviderService','Flex',function() {
 	var static_dir = 'app/';
 	return {
 	    restrict: "E",
@@ -43,10 +46,13 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		label:'@',
 		name:'@',
 	    },
-	    controller : function($scope,ProviderServiceFlex) {
-		ProviderServiceFlex.query(function(providers) {
-		    $scope.providers = providers;		    
-		});
+ 	    controller : function($scope,ProviderService,Flex) {
+		Flex.getAll(ProviderService,
+			    function(provider) { return provider.uuid}, //keygetter
+			    true, //store offline
+			    null, //no encryption
+			    function(providers) {$scope.providers = providers;} // callback
+			   );
 	    },
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
