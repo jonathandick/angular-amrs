@@ -71,6 +71,11 @@ openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
 	      callback(data);
 	  });
       }
+
+      service.logout = function(callback) {
+	  return OpenmrsSession.delete({},function(data,status,headers) {	      
+	  });
+      }
       return service;
   }]);
 

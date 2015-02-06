@@ -174,6 +174,10 @@ localStorageServices.factory('localStorage.utils',[
 	  localStorage.setItem(tableName,angular.toJson(table));
       }
 
+
+
+      
+
       return service;
   }]);
 

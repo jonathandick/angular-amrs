@@ -10,7 +10,7 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
 
       Auth.authenticated = null;
       Auth.setAuthenticated = function(authenticated) { this.authenticated = authenticated; }
-      Auth.isAuthenticated = function() { return true; }//this.authenticated; }
+      Auth.isAuthenticated = function() { return this.authenticated; }
 
       Auth.curPassword = null;
       Auth.setPassword = function(password) { this.curPassword = password; }
@@ -47,76 +47,108 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
 	      if(callback) { callback(data); }
 	  });
       };
+     
+      function setSalt() {
+	  var salt = CryptoJS.lib.WordArray.random(128/8);
+	  localStorage.setItem('amrs.auth.salt',salt);      
+	  return salt;
+      }
 
+
+      function getSalt() {
+	  var salt = localStorage.getItem('amrs.auth.salt');	  
+
+	  //if there's no salt yet in this localStorage, set it
+	  if(salt === null) {
+	    salt = setSalt();
+	  }  
+	  return salt;
+      }
+
+      function setIv() {
+	  var iv = CryptoJS.lib.WordArray.random(128/8);
+	  localStorage.setItem('amrs.auth.iv',iv);
+	  return iv;
+      }
+
+      function getIv() {
+	  var iv = localStorage.getItem('amrs.auth.iv');
+	  if(iv === null) {
+	      iv = setIv();
+	  }
+	  return iv;
+      }
+
+
+      function getHash(password){
+	  var salt = getSalt();
+	  var key128Bits100Iterations = CryptoJS.PBKDF2(password, salt, { keySize: 128/32, iterations: 100 });
+	  return key128Bits100Iterations;
+      }
+
+
+      function verifyLocalUser(username,password) {
+	  var user = getLocalUser(username);
+	  if(user) {
+	      var trialHash = getHash(password).toString();
+	      return (trialHash === user.password);
+	  }
+	  else {
+	      console.log('user not found');
+	      return undefined;
+	  }	  
+      }
       
-      Auth.authenticateLocal = function(username,password,callback) {
+
+      function getLocalUser(username) {
+	  var users = angular.fromJson(localStorage.getItem('amrs.users'));
+	  var user = users[username];
+
+	  if(user === undefined) { return undefined; }
+	  return angular.fromJson(user);
+      }
+
+
+      function setLocalUser(username,password) {
+	  var passwordHash = getHash(password).toString();
+	  var users = angular.fromJson(localStorage.getItem('amrs.users'));
+	  if(users === null) {
+	      users = {};
+	  }
+	  users[username] = angular.toJson({username:username,password:passwordHash.toString()});
+	  localStorage.setItem('amrs.users',angular.toJson(users));
+      }
+
+
+      Auth.authenticateLocal = function(username,password,callback){
+
 	  console.log('Auth.authenticateLocal() : authenticating locally');
 	  Auth.setAuthType('local');
-	  var db = ngDexie.getDb();
-	  
-	  db.user.get(username)
-	      .then(function(user) {
-		  console.log('got user');
-		  console.log(user);
-		  if(user) {
-		      var decrypted = CryptoJS.Rabbit.decrypt(user.password,password).toString(CryptoJS.enc.Utf8);		  		  
-		      var doesMatch = (decrypted == password);
-
-		      if(doesMatch) {
-			  console.log('Authenticated: true');
-			  Auth.setAuthenticated(true);
-			  Auth.setPassword(password);
-			  //Auth.clearCredentials();
-			  $location.path("/apps");
-		      }
-		      else {
-			  console.log('Local password does not match');
-			  Auth.setAuthenticated(false);
-			  Auth.setPassword(null);
-			  callback(false);
-		      }
-		  }
-		  else { callback(false); }
-	      });
-      };
+	  var doesMatch = verifyLocalUser();
+	  if(doesMatch) {
+	      console.log('Authenticated: true');
+	      Auth.setAuthenticated(true);
+	      Auth.setPassword(password);
+	      Auth.clearCredentials();
+	      $location.path("/apps");
+	  }
+	  else {
+	      console.log('Local password does not match');
+	      Auth.setAuthenticated(false);
+	      Auth.setPassword(null);
+	      callback(false);
+	  }
+      } 
 
 
       Auth.authenticateRemote = function(username,password,callback) {
 	  console.log('Auth.authenticateRemote() : authenticate on server');
-	  //alert('Auth.authenticateRemote() : authenticate on server');
-	  Auth.setAuthType('remote');
-	  
-	  var db = ngDexie.getDb();
+	  Auth.setAuthType('remote');	  
 	  Auth.setCredentials(username,password);
-	  var encrypted = CryptoJS.Rabbit.encrypt(password,password);
-	  console.log(encrypted);
-	  console.log(Base64.decode(encrypted.toString()));
-	  console.log(encrypted.toString());	  
-	  var encrypted2 = CryptoJS.Rabbit.encrypt(password,password);
-
-	  console.log(CryptoJS.Rabbit.decrypt(encrypted.toString(),password).toString(CryptoJS.enc.Utf8));
-	  console.log(CryptoJS.Rabbit.decrypt(encrypted.toString(),password).toString(CryptoJS.enc.Utf8));
-
-	  console.log(encrypted2);
-	  
-	  console.log(encrypted2.toString());
-	  console.log(encrypted.toString() == encrypted2.toString());
-	  
-	  //OpenmrsSession.get().$promise.then(function(data) {
 	  OpenmrsSessionService.getSession(function(data) {
-	      //alert(angular.toJson(data));
 	      if(data.authenticated) {		  
-		  var encrypted = CryptoJS.Rabbit.encrypt(password,password);
-
-		  var encrypted2 = CryptoJS.Rabbit.encrypt(password,password);
-
-		  console.log(encrypted.toString());
-		  console.log(encrypted2.toString());
-		  console.log(encrypted.toString() == encrypted2.toString());
-		  db.user.put({username:username,password:encrypted.toString()})
-		  .catch(function(error) {
-		      console.log('db error: ' + error);
-		  });
+		  verifyLocalUser(username,password);
+		  setLocalUser(username,password);
 		  Auth.setAuthenticated(true);
 		  Auth.setPassword(password);
 		  $location.path("/apps");
@@ -141,6 +173,7 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
 
       Auth.logout = function() {
 	  Auth.clearCredentials();
+	  OpenmrsSessionService.logout();
 	  Auth.setPassword(null);
 	  Auth.setAuthenticated(false);
       }
