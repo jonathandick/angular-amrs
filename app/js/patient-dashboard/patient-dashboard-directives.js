@@ -3,9 +3,9 @@
 /* Directives */
 
 
-angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infinite-scroll','utility.widgets'])
-    .directive('encountersPane',['EncounterServiceFlex','OpenmrsUtilityService','$state',
-      function(EncounterServiceFlex,OpenmrsUtilityService,$state) {
+angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','utility.widgets'])
+    .directive('encountersPane',['$state','EncounterService','OpenmrsUtilityService',
+      function($state,EncounterService,OpenmrsUtilityService) {
 	  var static_dir = "app/js/patient-dashboard/";
 	  return {
 	    restrict: "E",
@@ -45,7 +45,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','infi
 		    scope.busy = true;
 
 		    var params = {startIndex:scope.nextStartIndex, patient:scope.patientUuid,limit:10};
-		    EncounterServiceFlex.patientQuery(params,function(data) {		
+		    EncounterService.patientQuery(params,function(data) {		
 			console.log('querying server');
 			scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);
 			console.log('nextStartIndex: ' + scope.nextStartIndex);

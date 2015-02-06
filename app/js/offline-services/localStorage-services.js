@@ -115,8 +115,8 @@ localStorageServices.factory('localStorage.utils',[
       service.getAll = function(tableName,encryptionPassword) {
 	  var table = getTable(tableName);
 	  var resultSet = new Array;
-	  for(var key in table) {
-	      var item = table[key];
+	  for(var key in table) {	      
+	      var item = table[key];	      
 	      if(encryptionPassword) {
 		  item = decrypt(item,encryptionPassword);
 	      }

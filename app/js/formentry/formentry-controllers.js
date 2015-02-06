@@ -2,14 +2,16 @@
 
 /* Controllers */
 
-var formentry = angular.module('openmrs.formentry');
+var formEntry = angular.module('openmrs.formentry');
 
-formentry.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex',
-  function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex) {
-      $scope.savedEncounterForms = EncounterServiceFlex.getLocal();
+formEntry.controller('SavedFormsCtrl', ['$scope','$stateParams','localStorage.utils','Auth','Flex','PatientService',
+  function($scope,$stateParams,local,Auth,Flex,PatientService) {
+      $scope.savedEncounterForms = local.getAll('amrs.formentry',Auth.getPassword());
 
-      $scope.loadPatient = function(hash,patientUuid) {	  
-	  PatientServiceFlex.get(patientUuid,function(p) { 	      
+      console.log($scope.savedEncounterForms);
+
+      $scope.loadPatient = function(hash,patientUuid) {	  	  
+	  Flex.get(PatientService,patientUuid,true,Auth.getPassword(),function(p) { 	      
 	      $scope.savedEncounterForms[hash].p = p; 
 	  });	  
       };
@@ -32,8 +34,8 @@ formentry.controller('SavedFormsCtrl', ['$scope','$stateParams','PatientServiceF
 
 
 
-formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServiceFlex','EncounterServiceFlex','FormService','Flex','EncounterService',
-  function($scope,$stateParams,PatientServiceFlex,EncounterServiceFlex,FormService,Flex,EncounterService) {	
+formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormService','FormEntryService',
+  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormService,FormEntryService) {	
       $scope.patient = "";
       $scope.encounterUuid = "";
       $scope.provider = "";
@@ -84,9 +86,9 @@ formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServi
 
 	  
       }
-      else if($stateParams.hash) {
+      else if($stateParams.hash) {	  
 	  $scope.hash = $stateParams.hash;
-	  $scope.enc = EncounterServiceFlex.getLocal($stateParams.hash);
+	  $scope.enc = local.get('amrs.formentry',$stateParams.hash,Auth.getPassword());
 	  patientUuid = $scope.enc.patient;
       }
       else {
@@ -100,24 +102,26 @@ formentry.controller('EncounterFormCtrl', ['$scope','$stateParams','PatientServi
       $scope.errors = {};      
 
       if(patientUuid) {
-	  PatientServiceFlex.get(patientUuid,function(patient) { $scope.patient = patient; });
+	  Flex.get(PatientService,patientUuid,true,Auth.getPassword(),function(patient) { 
+	      $scope.patient = PatientService.abstractPatient.clone(patient.patientData);	  	      
+	  });
       }
 
 
-      $scope.save = function() {
-	  
-	  EncounterServiceFlex.saveLocal($scope.enc,$scope.hash);
+      $scope.saveOffline = function() {	  
+	  FormEntryService.saveOffline($scope.enc,$scope.hash);
       }
 
 
-      $scope.submit = function() {
-
-	  EncounterServiceFlex.submit($scope.enc,$scope.encounter,$scope.hash,
+      $scope.submit = function() {	  
+	  /*
+	    EncounterServiceFlex.submit($scope.enc,$scope.encounter,$scope.hash,
 	     function(data) {
 		 if(data === undefined || data === null || data.error) {
 		     alert("There was an error. Your form is being saved to your local storage");		     
 		 }
-	     });		 
+	     });
+	  */
       };
 
       

@@ -2,9 +2,9 @@
 
 /* Directives */
 
+var formEntry = angular.module('openmrs.formentry');
 
-angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.bootstrap'])
-    .directive('patientDemographics', [function() {
+formEntry.directive('patientDemographics', [function() {
 	var static_dir = 'app/';
 
 	return {
@@ -12,7 +12,9 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    scope : {
 		patient:'='
 	    },
-	    link : function($scope,element,attrs) {		
+	    link : function(scope,element,attrs) {		
+		console.log('patientDemographics');
+		console.log(scope.patient);
 	    },	    
 	    templateUrl: static_dir + "js/formentry/views/patient-demographics.html",	    
 	}
@@ -57,8 +59,8 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile','FormEntryServiceFlex','$state','FormService','$timeout',
-       function($parse,$compile,FormEntryServiceFlex,$state,FormService,$timeout) {
+    .directive('encounterForm',['$parse','$compile','$state','$timeout','FormEntryService','FormService',
+       function($parse,$compile,$state,$timeout,FormEntryService,FormService) {
 	return {
 	    restrict: "E",
 	    scope:false,
@@ -157,7 +159,7 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    scope.enc.form = encounter.form.uuid;
 
 		    //need to wait for the DOM to finish loading before we populate with obs
-		    $timeout(function() {
+		    $timeout(function() {			
 			loadObs(encounter.obs,'encounter-form');			
 		    });
 		}
@@ -248,18 +250,21 @@ angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.
 		    return isValid;
 		}
 
+		scope.save = function() {
+		    console.log('saving');
+		    FormEntryService.saveOffline(scope.enc);
+		    alert('Form Saved');
+		}
+		
 		scope.submit = function() {
 		    if(validate()) {
 			var obs = [];
-			prepareObs(scope.enc.obs,obs);		    
-			scope.enc.obs = obs;		    
+			prepareObs(scope.enc.obs,obs);
+			scope.enc.obs = obs;
 			var obsToVoid = getObsToVoid(scope.encounter.obs,obs);		    		    
-			//console.log('obs: ' + JSON.stringify(scope.enc.obs));
-			//console.log('obs to void: ' + JSON.stringify(obsToVoid));
-			FormEntryServiceFlex.submit(scope.enc,obsToVoid);
-			//console.log(scope.enc);
+			FormEntryService.submit(scope.enc,obsToVoid);
 			$state.go("patient",{uuid:scope.enc.patient});
-		    }		    
+		    }
 		};
 
 		scope.$watch('encounter',function(newEncounter,oldValue){
