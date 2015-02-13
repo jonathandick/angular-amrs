@@ -54,7 +54,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      authenticate:true,
 	  })
 	  .state('encounter-form',{
-	      url:"/encounter-form?formUuid&patientUuid&hash",
+	      url:"/encounter-form?formUuid&patientUuid&savedFormId",
 	      authenticate:true, 
 	      templateProvider: function($stateParams,FormService,$templateFactory) {
 		  var template = FormService.getTemplate($stateParams.formUuid);
@@ -90,10 +90,9 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
       $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth','ngDexie','OpenmrsFlexSettings',
-	  function ($rootScope, $state, Auth,ngDexie,OpenmrsFlexSettings) {
+    .run(['$rootScope','$state','Auth','ngDexie','OpenmrsFlexSettings','FormEntryService',
+	  function ($rootScope, $state, Auth,ngDexie,OpenmrsFlexSettings,FormEntryService) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
-		  console.log('is authenticated: ' + Auth.isAuthenticated());
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
 		      event.preventDefault(); 
@@ -120,6 +119,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      */
 
 	      OpenmrsFlexSettings.init();
+	      FormEntryService.init();
 
 	      
 	  }]);

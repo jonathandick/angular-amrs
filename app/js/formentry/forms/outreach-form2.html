@@ -10,7 +10,7 @@
 
 	<div class="row">
 	  <div class="col-md-6">
-	    <button class="btn btn-custom btn-lg btn-block" ng-click="save()">Save Draft</button><br/>
+	    <button class="btn btn-custom btn-lg btn-block" ng-click="saveToDrafts()">Save Draft</button><br/>
 	  </div>
 	  <div class="col-md-6">
 	    <button class="btn btn-custom btn-lg btn-block" ng-click="submit()">Submit</button><br/>
@@ -22,18 +22,18 @@
 	    <br/>
 	    <div class="form-group">
               <label for="encounterDatetime">Encounter Date:</label>
-              <input type="text" id="encounterDatetime" ng-model="enc.encounterDatetime" name="encounterDatetime"
+              <input type="text" id="encounterDatetime" ng-model="newEncounter.encounterDatetime" name="encounterDatetime"
 		     datepicker-popup="yyyy-MM-dd" is-open="dt.open" ng-click="dt.open=true"/>
 	    </div>
 
 	    <div>
-	      <clinic-locations-dropdown name="location" model="enc.location" label="Clinic Location">
+	      <clinic-locations-dropdown name="location" model="newEncounter.location" label="Clinic Location">
 	      </clinic-locations-dropdown>
 	    </div>
 	  
 	    <div class="form-group">
 	      <label for="phoneNumber">Phone:</label>
-	      <input name="phone_number" id="phoneNumber" ng-model="enc.personAttributes['72a759a8-1359-11df-a1f1-0026b9348838']" 
+	      <input name="phone_number" id="phoneNumber" ng-model="newEncounter.personAttributes['72a759a8-1359-11df-a1f1-0026b9348838']" 
 		     type="tel" value="{{patient.phone_number}}"/>
 	    </div>
 	  
@@ -406,11 +406,11 @@
 	    </div>
 	    
 	    <div class="form-group">
-	      <clinic-locations-dropdown name="transfer_location" model="enc.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" label="Transfer Location">
+	      <clinic-locations-dropdown name="transfer_location" model="newEncounter.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" label="Transfer Location">
 	      </clinic-locations-dropdown>	    
 	    </div>
 	    <div class="form-group">
-	      <providers-dropdown name="provider" model="enc.provider" label="Provider:"></providers-dropdown>
+	      <providers-dropdown name="provider" model="newEncounter.provider" label="Provider:"></providers-dropdown>
 	    </div> 
 	  </tab>
 	</tabset>

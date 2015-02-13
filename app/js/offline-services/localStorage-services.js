@@ -86,11 +86,7 @@ localStorageServices.factory('localStorage.utils',[
 
       service.remove = function(tableName,key) {
 	  var table = getTable(tableName);
-	  console.log(table);
-	  console.log("removing: " + key);
-
 	  delete table[key];
-	  console.log(table);
 	  setTable(tableName,table);
       }
 
@@ -104,7 +100,7 @@ localStorageServices.factory('localStorage.utils',[
 	      var item = table[key];
 	      if(encryptionPassword) {
 		  item = decrypt(item,encryptionPassword);
-	      }
+	      }	      
 	      item = angular.fromJson(item);
 	      return item;
 	  }

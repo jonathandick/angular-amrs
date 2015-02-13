@@ -4,10 +4,22 @@
     <hr/>
     <button class="btn btn-custom btn-lg btn-block" ng-click="submitAllLocal()">Submit all saved forms</button>
 
+    <hr>
+    <h4>Forms Pending Submission</h4>
     <div class="list-group">
-      <a ui-sref="encounter-form({hash:hash,formUuid:enc.form})" class="list-group-item" ng-repeat="(hash,enc) in savedEncounterForms">
+      <a ui-sref="encounter-form({savedFormId:enc.savedFormId,formUuid:enc.form})" class="list-group-item" ng-repeat="(savedFormId,enc) in pendingSubmission">
 	<b>{{enc.p.getName() + ' : ' + enc.encounterDatetime.substring(0,10)}}</b>
       </a>        
     </div>
+
+    <hr>
+    <h4>Saved Drafts</h4>
+    <div class="list-group">
+      <a ui-sref="encounter-form({savedFormId:enc.savedFormId,formUuid:enc.form})" class="list-group-item" ng-repeat="(savedFormId,enc) in savedDrafts">
+	<b>{{enc.p.getName() + ' : ' + enc.encounterDatetime.substring(0,10)}}</b>
+      </a>        
+    </div>
+
+
   </div>
 </div>

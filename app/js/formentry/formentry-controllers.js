@@ -4,102 +4,84 @@
 
 var formEntry = angular.module('openmrs.formentry');
 
-formEntry.controller('SavedFormsCtrl', ['$scope','$stateParams','localStorage.utils','Auth','Flex','PatientService',
-  function($scope,$stateParams,local,Auth,Flex,PatientService) {
-      $scope.savedEncounterForms = local.getAll('amrs.formentry',Auth.getPassword());
+formEntry.controller('SavedFormsCtrl', ['$scope','$stateParams','FormEntryService','Auth','Flex','PatientService',
+  function($scope,$stateParams,FormEntryService,Auth,Flex,PatientService) {
 
-      console.log($scope.savedEncounterForms);
 
-      $scope.loadPatient = function(hash,patientUuid) {	  	  
-	  Flex.get(PatientService,patientUuid,true,Auth.getPassword(),function(p) { 	      
-	      $scope.savedEncounterForms[hash].p = p; 
+      $scope.loadPatient = function(patientUuid,obj) {
+	  Flex.get(PatientService,patientUuid,true,Auth.getPassword(),function(p) { 	      	     
+	      obj.p = PatientService.abstractPatient.clone(p.patientData);	  
 	  });	  
       };
+
       
-      $scope.loadList = function() {      
-	  for(var hash in $scope.savedEncounterForms) {
-	      var patientUuid = $scope.savedEncounterForms[hash].patient;
-	      $scope.loadPatient(hash,patientUuid);
+      $scope.loadDrafts = function() {      
+	  $scope.savedDrafts = FormEntryService.getDrafts();
+	  for(var i in $scope.savedDrafts) {
+	      var patientUuid = $scope.savedDrafts[i].patient;
+	      $scope.loadPatient(patientUuid,$scope.savedDrafts[i]);
 	  }
       };
 
-      $scope.submitAllLocal = function() {
-	  EncounterServiceFlex.submitAllLocal();
+
+      $scope.loadPendingSubmission = function() {      
+	  /*
+	  FormEntryService.getPendingSubmission(undefined,function(forms) {
+	      for(var i in forms) {
+		  var patientUuid = forms[i].patient;
+		  $scope.loadPatient(patientUuid,forms[i]);
+	      }
+	      $scope.pendingSubmission = forms;
+	  });
+	  */
+
+	  var forms = FormEntryService.getPendingSubmission();
+          for(var i in forms) {
+              var patientUuid = forms[i].patient;
+              $scope.loadPatient(patientUuid,forms[i]);
+          }
+          $scope.pendingSubmission = forms;
+	  
+      };
+
+
+      $scope.submitPendingSubmission = function() {
+	  FormEntryService.submitPendingSubmission();
       }
 
-
-      $scope.loadList();
+      $scope.loadDrafts();
+      $scope.loadPendingSubmission();
       
   }]);
 
 
 
-formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormService','FormEntryService',
-  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormService,FormEntryService) {	
-      $scope.patient = "";
-      $scope.encounterUuid = "";
-      $scope.provider = "";
-      $scope.hash = "";
-      $scope.formUuid = $stateParams.formUuid;
-      $scope.enc = {}; // used to represent the encounter modified for an html form
-
-      $scope.encounter = {}; //represents the original resource
-
-      $scope.toFormData = function(encounter) {
-	  $scope.enc = {uuid:encounter.uuid,
-			encounterDatetime:encounter.encounterDatetime,
-			encounterType:encounter.encounterType.uuid,
-			form:encounter.form.uuid,
-			patient:encounter.patient.uuid,
-			location:encounter.location.uuid,
-			provider:encounter.provider.uuid,
-			obs:{},
-		       }
-	  for(var i in encounter.obs) {
-	      var o = encounter.obs[i];	      
-	      var value = o.value;
-	      if(typeof o.value === "object" && o.value !== null) {
-		  value = o.value.uuid;
-	      }
-	      var concept = o.concept.uuid;
-	      if($scope.enc.obs[concept]) {
-		  if(typeof $scope.enc.obs[concept] !== "object") {
-		      $scope.enc.obs[concept] = [$scope.enc.obs[concept],value];
-		  }
-		  else {
-		      $scope.enc.obs[concept].push(value);
-		  }
-	      }
-	      else {
-		  $scope.enc.obs[concept] = value;
-	      }
-	  }
-      };
-
+formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService',
+  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService) {	
       var patientUuid = $stateParams.patientUuid; 
-      if($stateParams.encounterUuid) {	
-	  $scope.encounterUuid = $stateParams.encounterUuid;
 
-	  Flex.get(EncounterService,$stateParams.encounterUuid,true,null,function(data) {	      
-	      $scope.encounter = data;
-	  });
+      if($stateParams.savedFormId) { //loading a saved form
+	  var savedEncounter = FormEntryService.getDrafts($stateParams.savedFormId);
+	  
+	  if(savedEncounter === null) savedEncounter = FormEntryService.getPendingSubmission($stateParams.savedFormId);
 
+	  patientUuid = savedEncounter.patient;	  
+	  $scope.newEncounter = savedEncounter;
 	  
       }
-      else if($stateParams.hash) {	  
-	  $scope.hash = $stateParams.hash;
-	  $scope.enc = local.get('amrs.formentry',$stateParams.hash,Auth.getPassword());
-	  patientUuid = $scope.enc.patient;
+      
+      else if($stateParams.encounterUuid) { //loading a form for an encounter on the server
+	  console.log('getting encounter from server');
+	  $scope.encounterUuid = $stateParams.encounterUuid;
+	  Flex.get(EncounterService,$stateParams.encounterUuid,true,null,function(data) {	      
+	      $scope.oldEncounter = data;
+	  });	  
       }
-      else {
-	  /*
-	  $scope.enc = {encounterType: FormService.getEncounterType($scope.formUuid),
-			form:$scope.formUuid,
-			patient:patientUuid};
-	  */
+      else { //This is loading a new form
+	  $scope.newEncounter = {patient:patientUuid,
+				 form:$stateParams.formUuid
+				};
       }
-
-      $scope.errors = {};      
 
       if(patientUuid) {
 	  Flex.get(PatientService,patientUuid,true,Auth.getPassword(),function(patient) { 
@@ -108,22 +90,5 @@ formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','En
       }
 
 
-      $scope.saveOffline = function() {	  
-	  FormEntryService.saveOffline($scope.enc,$scope.hash);
-      }
-
-
-      $scope.submit = function() {	  
-	  /*
-	    EncounterServiceFlex.submit($scope.enc,$scope.encounter,$scope.hash,
-	     function(data) {
-		 if(data === undefined || data === null || data.error) {
-		     alert("There was an error. Your form is being saved to your local storage");		     
-		 }
-	     });
-	  */
-      };
-
-      
       
   }]);
