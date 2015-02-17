@@ -2,8 +2,7 @@
 
 var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies']);
 
-//var OPENMRS_CONTEXT_PATH = "http://10.50.110.67:8080/amrs";
-//var OPENMRS_CONTEXT_PATH = "http://41.89.173.32:8080/amrs";
+//var OPENMRS_CONTEXT_PATH = "https://amrs.ampath.or.ke:8443/amrs";
 var OPENMRS_CONTEXT_PATH = "http://etl1.ampath.or.ke:8080/amrs";
 
 
@@ -61,8 +60,8 @@ openmrsServices.factory('OpenmrsSession',['$resource',
   }]);
 
 
-openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
-  function(OpenmrsSession,$http) {
+openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession',
+  function(OpenmrsSession) {
       var service = {};
       service.getSession = function(callback) {	  
 
@@ -70,7 +69,7 @@ openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession','$http',
 	      alert(angular.toJson(data,true));
 	      callback(data);
 	  });
-      }
+      };
 
       service.logout = function(callback) {
 	  return OpenmrsSession.delete({},function(data,status,headers) {	      
@@ -162,69 +161,101 @@ openmrsServices.factory('Patient',['$resource',
   }]);
 
 
+
+var Patient = function(patientData) {
+    this.patientData = patientData;
+};
+Patient.prototype.getPatient = function () { return this.patientData; };	  
+Patient.prototype.getUuid = function() { return this.patientData.uuid; };
+Patient.prototype.getName = function() { 
+    return (this.patientData.person.preferredName.givenName || "") + " " 
+	+ (this.patientData.person.preferredName.middleName || "") + " " 
+	+ this.patientData.person.preferredName.familyName;
+}
+Patient.prototype.getGivenName = function() { return this.patientData.person.preferredName.givenName; };
+Patient.prototype.setGivenName = function(s) { return this.patientData.person.preferredName.givenName = s; };
+
+Patient.prototype.getFamily = function() { return this.patientData.person.preferredName.familyName; };
+Patient.prototype.setFamilyName = function(s) { return this.patientData.person.preferredName.familyName = s; };
+
+Patient.prototype.getMiddleName = function() { return this.patientData.person.preferredName.middleName; };
+Patient.prototype.setMiddleName = function(s) { return this.patientData.person.preferredName.middleName = s; };
+
+Patient.prototype.getBirthdate = function() { return this.patientData.person.birthdate; };
+Patient.prototype.getDead = function() { return this.patientData.person.dead};
+Patient.prototype.getDeathDate = function() { return this.patientData.person.deathDate};
+Patient.prototype.getGender = function() { return this.patientData.person.gender};
+
+Patient.prototype.getIdentifiers = function(identifierType) {	      
+    return this.patientData.identifiers;
+};
+Patient.prototype.getPhoneNumber = function() {
+    for(var i in this.patientData.person.attributes) {
+	var attr = this.patientData.person.attributes[i];
+	if(attr.attributeType.uuid == "72a759a8-1359-11df-a1f1-0026b9348838") {
+	    return attr.value;
+	}
+    }
+}
+
+Patient.prototype.getClinicalHome = function() {
+    for(var i in this.patientData.person.attributes) {
+	var attr = this.patientData.person.attributes[i];
+	if(attr.attributeType.uuid == '8d87236c-c2cc-11de-8d13-0010c6dffd0f') {
+	    return attr.value;
+	}
+    }
+    return "";
+}    
+
+
+Patient.prototype.getAttributes = function() {
+    return this.patientData.person.attributes;
+}
+    
+//Converts an object in form of {typeUuuid:value} into rest format
+Patient.prototype.setAttributes = function(newAttributes) {
+    var existingAttrs = this.getAttributes();
+   
+    for(var attrTypeUuid in newAttributes) {
+	if(attrTypeUuid === "oldPersonAttributes") continue;
+
+	var value = newAttributes[attrTypeUuid];
+	var restAttr = {attributeType:{uuid:attrTypeUuid},value:value};	
+	var attr,found = false; 
+	for(var j in existingAttrs) {
+	    attr = existingAttrs[j];
+	    if(attr.attributeType.uuid === attrTypeUuid) {
+		found = true;
+		existingAttrs[j] = restAttr;
+	    }
+	}
+	if(!found) {
+	    existingAttrs.push(restAttr);
+	}
+    }
+}
+
+
+
+
+
 openmrsServices.factory('PatientService',['$http','Patient',
-  function($http,Patient) {
+  function($http,PatientRes) {
       var PatientService = {};
+
+
+      PatientService.Patient = function(patientData) {
+	  return new Patient(patientData);
+      }
 
       PatientService.getName = function() {
 	  return 'patient';
       }
-
-      PatientService.abstractPatient = {
-	  patientData: {},
-	  clone : function(data) {
-
-	      if(!data) { return undefined; }
-
-              var a = {patientData:data,};
-              for(var k in this) {
-		  if(typeof this[k] == 'function' && k != "clone") {
-                      a[k] = this[k];
-		  }
-              }
-              return a;
-	  },
-	  getPatient : function () { return this.patientData; },	  
-	  getUuid : function() { return this.patientData.uuid; },
-	  getName : function() { 
-	      return (this.patientData.person.preferredName.givenName || "") + " " 
-		  + (this.patientData.person.preferredName.middleName || "") + " " 
-		  + this.patientData.person.preferredName.familyName;
-	  },
-	  getGivenName : function() { return this.patientData.person.preferredName.givenName; },
-	  setGivenName : function(s) { return this.patientData.person.preferredName.givenName = s; },
-
-	  getFamily : function() { return this.patientData.person.preferredName.familyName; },
-	  setFamilyName : function(s) { return this.patientData.person.preferredName.familyName = s; },
-
-	  getMiddleName : function() { return this.patientData.person.preferredName.middleName; },
-	  setMiddleName : function(s) { return this.patientData.person.preferredName.middleName = s; },
-
-	  getBirthdate : function() { return this.patientData.person.birthdate; },
-	  getDead : function() { return this.patientData.person.dead},
-	  getDeathDate : function() { return this.patientData.person.deathDate},
-	  getGender : function() { return this.patientData.person.gender},
-
-	  getIdentifiers : function(identifierType) {	      
-	      return this.patientData.identifiers;
-	  },
-
-	  getPhoneNumber : function() {
-	      for(var i in this.patientData.person.attributes) {
-		  var attr = this.patientData.person.attributes[i];
-		  if(attr.attributeType.uuid == "72a759a8-1359-11df-a1f1-0026b9348838") {
-		      return attr.value;
-		  }
-	      }
-	  }
-	  
-      };
-
      
-      PatientService.get = function(patientUuid,callback) {
-	  Patient.get({uuid:patientUuid},function(data,status,headers) {
-	      alert(data);
-	      var p = PatientService.abstractPatient.clone(data);
+      PatientService.get = function(patientUuid,callback) {	  
+	  PatientRes.get({uuid:patientUuid},function(data,status,headers) {	      
+	      var p = new Patient(data);	      
 	      if(callback) { return callback(p); }
 	      else { return p};
 	  });
@@ -280,8 +311,8 @@ openmrsServices.factory('Obs',['$resource',
 
 
 
-openmrsServices.factory('ObsService',['$http','Obs',
-  function($http,Obs) {
+openmrsServices.factory('ObsService',['Obs',
+  function(Obs) {
       var ObsService = {};
 
       ObsService.void = function(obsToVoid,callback) {
@@ -351,11 +382,6 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 	  }
 	  delete enc.uuid;
 
-	  if(enc.personAttributes) {
-	      var attributes = enc.personAttributes;
-	      delete enc.personAttributes;
-	  }
-		  
 	  $http.post(url,enc)
 	      .success(function(data, status, headers, config) {
 		  callback(data);
@@ -432,12 +458,35 @@ openmrsServices.factory('Concept',['$resource',
 
 openmrsServices.factory('PersonAttribute',['$resource',   			       
   function($resource) { 
-      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/person/:personUuid/attribute/:attributeUuid", 
-		       { personUuid: '@personUuid',
-		         attributeUuid: '@attributeUuid',
-		       }, 
-		       { query: {method:"GET",isArray:false}}
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/person/:personUuid/attribute/:uuid", {},		       
+		       { query: {method:"GET",isArray:false},		         
+		       }
 		      ); 
+  }]);
+
+
+openmrsServices.factory('PersonAttributeService',['PersonAttribute','$http',
+  function(PersonAttribute,$http) {
+      var paService = {};
+      
+
+      paService.get = function(personUuid,attributeTypeUuid) {
+	 
+	  
+      };
+
+      paService.save = function(personUuid,attributeTypeUuid,value,callback) {	  
+	  var pa = new PersonAttribute({attributeType:attributeTypeUuid,value:value});
+	  pa.$save({personUuid:personUuid},
+		   function(data,status,headers) {
+		       if(callback) { return callback(data); }
+		       else { return data};
+		   }
+		  );
+      };
+      
+      return paService;
+
   }]);
 
 

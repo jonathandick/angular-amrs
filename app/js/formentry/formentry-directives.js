@@ -120,11 +120,6 @@ formEntry.directive('patientDemographics', [function() {
 				}
 			    }
 			});
-			/*
-			console.log('lineage: ' + lineage);
-			console.log('schema: ' + schema);
-			console.log('concept: ' + concept);
-			*/
 			
 			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
 			if(getter(scope) !== undefined) {
@@ -161,6 +156,7 @@ formEntry.directive('patientDemographics', [function() {
 		    }
 
 		    savedEncounter.obs = [];
+		    scope.personAttributes = savedEncounter.personAttributes;
 
 		    $timeout(function() {
 			loadObs(obs,'encounter-form');			
@@ -169,8 +165,8 @@ formEntry.directive('patientDemographics', [function() {
 		}
 		    
 
-		function loadEncounter(encounter) {
-		    console.log("loading encounter from server");
+		function loadExistingEncounter(encounter) {
+		    //console.log("loading encounter from server");
 		    scope.newEncounter = {};
 		    scope.newEncounter.uuid = encounter.uuid;
 		    scope.newEncounter.patient = encounter.patient.uuid;
@@ -180,33 +176,42 @@ formEntry.directive('patientDemographics', [function() {
 		    scope.newEncounter.provider = encounter.provider.uuid;
 		    scope.newEncounter.form = encounter.form.uuid;
 		    scope.newEncounter.oldEncounter = encounter;
+		    
 
 		    //need to wait for the DOM to finish loading before we populate with obs
 		    $timeout(function() {
-			loadObs(encounter.obs,'encounter-form');			
+			loadObs(encounter.obs,'encounter-form');
 		    });
-		    console.log(scope.newEncounter);
+		}
+
+		function loadPersonAttributes(personUuid) {
+		    scope.personAttributes = {};
+		    var attributes = scope.patient.patientData.person.attributes;
+		    for(var i in attributes) {
+			var attr = attributes[i];
+			scope.personAttributes[attr.attributeType.uuid] = attr.value;			
+		    }
+		    scope.personAttributes.oldPersonAttributes = attributes;
 		}
 		
-		function validate() {		    
+		function validate() { 
 		    var isValid = $("form").valid();
 		    return isValid;
 		}
 		
 		
 		scope.saveToDrafts = function() {
-		    console.log('save to drafts');
-		    console.log(scope.newEncounter);
-		    FormEntryService.saveToDrafts(scope.newEncounter);
-		    console.log('savedFormId: ' + scope.newEncounter.savedFormId);
+		    //console.log('save to drafts');
+		    //console.log(scope.newEncounter);
+		    FormEntryService.saveToDrafts(scope.newEncounter,scope.personAttributes);
+		    //console.log('savedFormId: ' + scope.newEncounter.savedFormId);
 		}
 
 		scope.submit = function() {
-		    console.log('scope.submit() ');
-		    console.log(scope.newEncounter);
+		    //console.log('scope.submit() ');
+		    
 		    if(validate()) {		    	
-			console.log(scope.newEncounter);
-			FormEntryService.submit(scope.newEncounter);
+			FormEntryService.submit(scope.newEncounter,scope.personAttributes);
 			$state.go("patient",{uuid:scope.newEncounter.patient});
 		    }
 		};
@@ -214,9 +219,12 @@ formEntry.directive('patientDemographics', [function() {
 
 		scope.$watch('newEncounter',function(newEncounter,oldValue){		    
 		    if(newEncounter !== undefined && newEncounter !== null && newEncounter !== "") {			
-			console.log('newEncounter has changed');
+			//console.log('newEncounter has changed');
 			if(newEncounter.savedFormId) {
 			    loadSavedEncounter(newEncounter);
+			}
+			else if(newEncounter.isNewEncounter) {
+			    loadPersonAttributes(newEncounter.patient);
 			}
 		    }
 		    
@@ -225,8 +233,9 @@ formEntry.directive('patientDemographics', [function() {
 		
 		scope.$watch('oldEncounter',function(oldEncounter,oldValue){		    
 		    if(oldEncounter !== undefined && oldEncounter !== null && oldEncounter !== "") {
-			console.log('oldEncounter has changed');
-			loadEncounter(oldEncounter);			    			
+			//console.log('oldEncounter has changed');
+			loadExistingEncounter(oldEncounter);
+			loadPersonAttributes(oldEncounter.patient.uuid);
 		    }
 		});
 
@@ -291,11 +300,15 @@ formEntry.directive('patientDemographics', [function() {
 		
 		function setValue(newValue) {
 		    //console.log('setting value: ' + newValue);
+		    if (Object.prototype.toString.call(newValue) === "[object Date]") {
+			newValue = newValue.toISOString();
+		    }
 		    if(newValue === undefined) return;
 
 		    var s = lineage.replace('[' + id + ']',"")
+		    
 		    var encScope = ctrl.getEncounterFormScope();
-
+		    
 		    var o = $parse(s)(encScope);
 		    var oSetter = $parse(s).assign;
 

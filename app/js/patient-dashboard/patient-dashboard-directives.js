@@ -18,8 +18,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 		$scope.nextStartIndex = -1;
 		$scope.startIndexes = new Set([]);
 
-		$scope.showEncounter = function(encUuid,formUuid) {		    
-		    console.log('formUuid: ' + formUuid);		    
+		$scope.showEncounter = function(encUuid,formUuid) {		    		    
 		    for(var i in $scope.encounters) {
 			if($scope.encounters[i].uuid === encUuid) { formUuid = $scope.encounters[i].form.uuid;}
 		    }
@@ -40,15 +39,14 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 		});
 
 		scope.loadMore = function() {	
-		    console.log("busy: " + scope.busy);
 		    if(scope.busy === true) return; 
 		    scope.busy = true;
 
 		    var params = {startIndex:scope.nextStartIndex, patient:scope.patientUuid,limit:10};
 		    EncounterService.patientQuery(params,function(data) {		
-			console.log('querying server');
+			//console.log('querying server');
 			scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);
-			console.log('nextStartIndex: ' + scope.nextStartIndex);
+			//console.log('nextStartIndex: ' + scope.nextStartIndex);
 			for(var e in data.results) {
 			    scope.encounters.push(data.results[e]); 
 			}			

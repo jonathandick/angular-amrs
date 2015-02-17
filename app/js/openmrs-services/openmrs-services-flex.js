@@ -24,15 +24,14 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
   function(local) {
       var flexService = {};
 
-      var openmrsServices
-
       function getFromServer(service,key,storeOffline,encryptionPassword,callback) {
 	  service.get(key,function(item){
 	      if(storeOffline) {
 		  var tableName = "amrs." + service.getName();
 		  local.set(tableName,key,item,encryptionPassword);
 	      }
-	      callback(item);
+	      if(callback) callback(item)
+	      else return item;
 	  });
       };	    
 
@@ -58,11 +57,23 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
       }
       
       flexService.init = function() {
-	  var tables = ['amrs.patient','expiration','amrs.provider','amrs.location','amrs.encounter','amrs.formentry'];
+	  var tables = ['amrs.patient','expiration','amrs.provider','amrs.location','amrs.encounter'];
 	  for(var i in tables) {
 	      var t = localStorage.getItem(tables[i]);
 	      if(!t) localStorage.setItem(tables[i],"{}");
 	  }
+      }
+
+
+      flexService.getFromServer = function(service,key,storeOffline,encryptionPassword,callback) {	  
+          getFromServer(service,key,storeOffline,encryptionPassword,callback);
+      }
+
+
+      flexService.getFromLocal = function(service,key,storeOffline,encryptionPassword,callback) {	  
+	  var tableName = "amrs." + service.getName();	  
+	  var item = local.get(tableName,key,encryptionPassword);
+	  callback(item);
       }
 
 
@@ -96,6 +107,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
       }
 
 
+
       /*
 	Save : only store locally, do not communicate with server. 
 	For example, if data collection is incomplete, and form to completed later.
@@ -103,7 +115,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
       flexService.save = function(service,key,item,encryptionPassword,callback) {
 	  var tableName = "amrs." + service.getName();
 	  local.set(tableName,key,item,encryptionPassword);
-	  callback();
+	  if(callback) callback();	      
       }
 
       return flexService;

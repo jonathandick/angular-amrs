@@ -29,7 +29,6 @@ $(document).ready( function() {
 jQuery.validator.addMethod(
     "needs_date_found", 
     function(value, element) {
-	console.log('validator: needs_date_found() | value = ' + value);
 	if(value === '') {
             return ($("#contacted_in_field option:selected").text().toLowerCase() != 'yes'
 		    && $("#contacted_by_phone option:selected").text().toLowerCase() != 'yes');
@@ -42,7 +41,6 @@ jQuery.validator.addMethod(
 jQuery.validator.addMethod(
     "needs_location_of_contact", 
     function(value, element) {
-	console.log('validator: needs_location_of_contact() | value = ' + value);
 	if(value === '') {
             return ($("#contacted_in_field option:selected").text().toLowerCase() != 'yes'
 		    && $("#contacted_by_phone option:selected").text().toLowerCase() != 'yes')
@@ -70,8 +68,7 @@ jQuery.validator.addMethod(
     "needs_likelihood_of_return", 
     function(value, element) {
 	if($("#patient_status option:selected").text().toLowerCase().match('^patient wishes')) {
-	    console.log("validate: needs_likelihood_of_return");
-            return value != '';
+	    return value != '';
 	}
 	else { return true; }
     }, 
@@ -116,7 +113,6 @@ jQuery.validator.addMethod(
 jQuery.validator.addMethod(
     "check_death_date", 
     function(value, element) {
-	console.log("validator: checking death date");	    
 	var re = /^\d{4}-\d{2}-\d{2}$/;
 	// valid if optional and empty OR if it passes the regex test
 	return (this.optional(element) && value=="") || re.test(value);

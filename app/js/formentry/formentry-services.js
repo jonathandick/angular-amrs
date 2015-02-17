@@ -2,8 +2,8 @@
 
 var formEntry = angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.bootstrap','localStorageServices']);
 
-formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','EncounterService','PersonAttribute','ObsService',
-  function(Auth,local,Flex,EncounterService,PersonAttribute,ObsService) {
+formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','EncounterService','PersonAttributeService','ObsService','PatientService',
+  function(Auth,local,Flex,EncounterService,PersonAttributeService,ObsService,PatientService) {
       var FormEntryService = {};
       var pendingSubmissionTable = 'amrs.formentry.pending-submission';
       var draftsTable = 'amrs.formentry.drafts';
@@ -51,7 +51,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
 
       
-      FormEntryService.saveToDrafts = function(newEncounter) {
+      FormEntryService.saveToDrafts = function(newEncounter,personAttributes) {
 	  if(newEncounter.savedFormId === undefined) { 
 	      var s = JSON.stringify(newEncounter);
 	      newEncounter.savedFormId = getHashCode(s);
@@ -59,9 +59,13 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  else {
 	      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
 	  }
-	  
+	  newEncounter.personAttributes = personAttributes;
 	  local.set(draftsTable,newEncounter.savedFormId,newEncounter,Auth.getPassword());
       }
+
+      
+
+      
 
 
 
@@ -85,27 +89,30 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
       }	  
 
 
-      FormEntryService.saveToPendingSubmission = function(newEncounter) {
+      FormEntryService.saveToPendingSubmission = function(newEncounter,personAttributes) {
 	  console.log('saveToPendingSubmission()...');
 	  console.log(newEncounter);
 	  if(!newEncounter.savedFormId) { 
 	      var s = JSON.stringify(newEncounter);             
 	      newEncounter.savedFormId = getHashCode(s);
 	  }	  
+	  newEncounter.personAttributes = personAttributes;
+
 	  local.set(pendingSubmissionTable,newEncounter.savedFormId,newEncounter,Auth.getPassword());	  
       }
 
 
 
-      FormEntryService.submit = function(newEncounter) {	  	  	  
+      FormEntryService.submit = function(newEncounter,personAttributes) {	  	  	  
 	  console.log('FormEntryService.submit() : submitting encounter');
 	  console.log(newEncounter);
 
-	  var restData = getRestData(newEncounter);
-	  var obsToVoid = getObsToVoid(newEncounter.oldEncounter.obs,restData.obs);
+	  var restData = getRestData(newEncounter),obsToVoid;
+	  if(newEncounter.oldEncounter) obsToVoid = getObsToVoid(newEncounter.oldEncounter.obs,restData.obs);
 	  
-	  EncounterService.submit(restData,function(data) {	 
-	      console.log(newEncounter);
+	  
+	  EncounterService.submit(restData,function(data) {	 	      
+	      
 	      if(newEncounter.savedFormId) FormEntryService.removeFromDrafts(newEncounter.savedFormId);
 	      
 	      //FormEntryService.saveToPendingSubmission(newEncounter);
@@ -113,18 +120,24 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	      if(data === undefined || data === null || data.error) {
 		  console.log("FormEntryService.submit() : error submitting. Saving to local");		  
 		  newEncounter.restObs = restData.obs;
-		  newEncounter.obsToVoid = obsToVoid;
-		  FormEntryService.saveToPendingSubmission(newEncounter);
+		  if(newEncounter.oldEncounter) newEncounter.obsToVoid = obsToVoid;		      
+		  FormEntryService.saveToPendingSubmission(newEncounter,personAttributes);
 	      }
 	      else {
 		  Flex.remove(EncounterService,newEncounter.uuid);
+
 		  if(newEncounter.savedFormId !== undefined) {
 		      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
 		  }
 		  console.log('FormEntryService.submit() : checking for obs to void');
-		  ObsService.void(obsToVoid,function(data) {			  
-		      console.log(data);
-		  });		      
+		  if(newEncounter.oldEncounter) {
+		      ObsService.void(obsToVoid,function(data) {			  
+			  console.log(data);
+		      });		      
+		  }
+		      
+		  submitPersonAttributes(newEncounter.patient,personAttributes);
+		  //Flex.getFromServer(PatientService,newEncounter.patient,true,Auth.getPassword());		  
 	      }
 	      return data;
 	  });
@@ -209,6 +222,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  }
 	  return true;
       }
+
       
       function getObsToVoid(originalObs,obs) {
 	  var obsToVoid = [];
@@ -231,10 +245,52 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
       }
 
 
+      function submitPersonAttributes(personUuid,personAttributes) {
+
+	  var oldAttrs = personAttributes.oldPersonAttributes || [];
+	  var newAttrs = personAttributes;
+	  var restAttrs = [];
+	  
+	  var shouldPush;
+	  for(var attrTypeUuid in newAttrs) {	      
+	      if(attrTypeUuid === "oldPersonAttributes") continue;
+	      shouldPush = true;
+	      for(var i in oldAttrs) {
+		  var type = oldAttrs[i].attributeType.uuid;
+		  if(attrTypeUuid === type) {
+		      //if the value has not changed, do not resubmit it
+		      if(newAttrs[attrTypeUuid] === oldAttrs[i].value) {
+			  shouldPush = false;			  
+		      }
+		      break;
+		  }
+	      }
+	      if(shouldPush) restAttrs.push({attributeType:attrTypeUuid,value:newAttrs[attrTypeUuid]});
+	  }
+
+	  for(var i in restAttrs) {
+	      console.log('attr type: ' + attrTypeUuid + ' value: '  + newAttrs[attrTypeUuid]);
+
+	      PersonAttributeService.save(personUuid,restAttrs[i].attributeType,restAttrs[i].value,
+					  function(data) {
+					      console.log(data);
+					  });
+	  }	  
+
+
+	  //Update local version of patient to reflect new personAttributes
+	  Flex.getFromLocal(PatientService,personUuid,true,Auth.getPassword(),function(data) {
+	      var p = PatientService.Patient(data.patientData);
+	      p.setAttributes(personAttributes);
+	      Flex.save(PatientService,personUuid,p,Auth.getPassword());
+	  });
+			    
+      }
+
+	  
       function getRestData(newEncounter) {
 	  var restObs = [];
-	  getNewRestObs(newEncounter.obs,restObs);
-	  console.log(restObs);
+	  getNewRestObs(newEncounter.obs,restObs);	 
 
 	  var data = {uuid:newEncounter.uuid,
 		      patient: newEncounter.patient,
