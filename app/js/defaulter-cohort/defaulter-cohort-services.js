@@ -108,7 +108,7 @@ dc.factory('DefaulterCohort',['$http',
       DefaulterCohort.getOutreachProviders = function(callback) {	  
 	  var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
 	  var providers = local.getItem('outreach-providers');
-	  
+
 	  if(providers === undefined || providers === null) {
 	      console.log('Getting outreach providers from server');
               $http.get(url).success(function(data) {
@@ -119,11 +119,14 @@ dc.factory('DefaulterCohort',['$http',
               }).error(function(error) { console.log(error); });
 	  }
 	  else providers = angular.fromJson(providers);
-	  return providers;
+
+
+	  if(callback) callback(providers);
+	  else return providers;
       }
 
 
-      return DefaulterCohort
+      return DefaulterCohort;
 
   }]);
 

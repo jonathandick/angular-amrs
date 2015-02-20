@@ -69,7 +69,8 @@ formEntry.directive('patientDemographics', [function() {
 		name:'@',
 	    },
  	    controller : function($scope,ProviderService,Flex) {
-		DefaulterCohort.getOutreachProviders(function(data) {
+		DefaulterCohort.getOutreachProviders(function(data) {		    
+		    console.log(data);
 		    $scope.outreachProviders = data;
 		});
 	    },
