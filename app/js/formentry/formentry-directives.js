@@ -128,6 +128,7 @@ formEntry.directive('patientDemographics', [function() {
 			    $compile(e)(scope);
 			    getter = $parse(e.attr('lineage'));
 			}
+
 			var setter = getter.assign;			    			
 			if(obs[j].value) {
 			    if(setter) setter(scope,{concept:concept,value:value,uuid:obs[j].uuid});
@@ -189,7 +190,7 @@ formEntry.directive('patientDemographics', [function() {
 		    var attributes = scope.patient.patientData.person.attributes;
 		    for(var i in attributes) {
 			var attr = attributes[i];
-			scope.personAttributes[attr.attributeType.uuid] = attr.value;			
+			scope.personAttributes[attr.attributeType.uuid] = attr.value;
 		    }
 		    scope.personAttributes.oldPersonAttributes = attributes;
 		}
@@ -234,8 +235,10 @@ formEntry.directive('patientDemographics', [function() {
 		scope.$watch('oldEncounter',function(oldEncounter,oldValue){		    
 		    if(oldEncounter !== undefined && oldEncounter !== null && oldEncounter !== "") {
 			//console.log('oldEncounter has changed');
+			scope.loadingData = true;  //starts a spinner
 			loadExistingEncounter(oldEncounter);
 			loadPersonAttributes(oldEncounter.patient.uuid);
+			scope.loadingData = false; //stops a spinner
 		    }
 		});
 

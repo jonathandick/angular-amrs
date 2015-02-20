@@ -12,6 +12,7 @@ openmrsServicesFlex.factory('OpenmrsFlexSettings',[
 	  for(var i in tables) {
 	      var t = localStorage.getItem(tables[i]);
 	      if(!t) localStorage.setItem(tables[i],"{}");
+	      //localStorage.setItem(tables[i],"{}");
 	  }
       }
       return service;
@@ -42,7 +43,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
 		  var tableName = "amrs." + service.getName();
 		  local.setAll(tableName,items,keyGetter,encryptionPassword);
 	      }
-	      callback(item);
+	      if(callback) callback(items);		  
 	  });
       };
 
@@ -52,7 +53,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
 		  var tableName = "amrs." + service.getName();
 		  local.setQuerySet(tableName,items,keyGetter,encryptionPassword);
 	      }
-              callback(items);
+              if(callback) callback(items);
           });
       }
       
@@ -75,7 +76,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
 	  var item = local.get(tableName,key,encryptionPassword);
 	  callback(item);
       }
-
+      
 
       flexService.get = function(service,key,storeOffline,encryptionPassword,callback) {
 	  var tableName = "amrs." + service.getName();	  
@@ -97,7 +98,7 @@ openmrsServicesFlex.factory('Flex',['localStorage.utils',
 	  if(Object.keys(items).length > 0 ) {	      
 	      callback(items);
 	  }
-	  else getFromServer(service,keyGetter,storeOffline,encryptionPassword,callback);
+	  else getAllFromServer(service,keyGetter,storeOffline,encryptionPassword,callback);
       };
 
       flexService.remove = function(service,key,callback) {

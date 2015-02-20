@@ -13,6 +13,6 @@
       <td>{{encounter.provider.display}}</td>
     </tr>
   </table>
-  <div ng-show='busy>Loading data...</div>
+  <div ng-show='busy && !allDataLoaded'><b>Loading data...</b></div>
+  <div ng-show='allDataLoaded'><b>All data loaded</b></div>
 </div>
-

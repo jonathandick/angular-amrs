@@ -3,7 +3,7 @@
 /* Directives */
 
 
-angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','utility.widgets'])
+angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','utility.widgets','infinite-scroll'])
     .directive('encountersPane',['$state','EncounterService','OpenmrsUtilityService',
       function($state,EncounterService,OpenmrsUtilityService) {
 	  var static_dir = "app/js/patient-dashboard/";
@@ -15,8 +15,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 	    controller : function($scope,$state) {		
 		$scope.encounters = [];
 		$scope.busy = false;
-		$scope.nextStartIndex = -1;
-		$scope.startIndexes = new Set([]);
+		$scope.nextStartIndex = -1;		
 
 		$scope.showEncounter = function(encUuid,formUuid) {		    		    
 		    for(var i in $scope.encounters) {
@@ -32,6 +31,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 		attrs.$observe('patientUuid',function(newVal,oldVal) {
 		    if(newVal && newVal != "") {
 			scope.busy = false;
+			scope.allDataLoaded = false;
 			scope.nextStartIndex = 0;
 			scope.encounters = [];
 			scope.loadMore();			
@@ -39,11 +39,13 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 		});
 
 		scope.loadMore = function() {	
-		    if(scope.busy === true) return; 
+		    if(scope.busy === true) return; 		    
 		    scope.busy = true;
 
 		    var params = {startIndex:scope.nextStartIndex, patient:scope.patientUuid,limit:10};
+		    console.log(params);
 		    EncounterService.patientQuery(params,function(data) {		
+			//alert('querying server');
 			//console.log('querying server');
 			scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);
 			//console.log('nextStartIndex: ' + scope.nextStartIndex);
@@ -51,7 +53,7 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 			    scope.encounters.push(data.results[e]); 
 			}			
 			if(scope.nextStartIndex !== undefined){ scope.busy = false;}
-
+			else scope.allDataLoaded = true;
 		    });
 		};
 

@@ -53,32 +53,6 @@ openmrsServices.factory('openmrs',['$resource',
 
 
 
-openmrsServices.factory('OpenmrsSession',['$resource',   			       
-  function($resource) { 
-      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",{} 		       
-		      ); 
-  }]);
-
-
-openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession',
-  function(OpenmrsSession) {
-      var service = {};
-      service.getSession = function(callback) {	  
-
-	  return OpenmrsSession.get({},function(data,status,headers) {
-	      alert(angular.toJson(data,true));
-	      callback(data);
-	  });
-      };
-
-      service.logout = function(callback) {
-	  return OpenmrsSession.delete({},function(data,status,headers) {	      
-	  });
-      }
-      return service;
-  }]);
-
-
 openmrsServices.factory('interceptor',function($q) {
     return {
 
@@ -114,6 +88,36 @@ openmrsServices.config(['$httpProvider',function($httpProvider) {
 }]);
 
 
+openmrsServices.factory('OpenmrsSession',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/session",{} 		       
+		      ); 
+  }]);
+
+
+openmrsServices.factory('OpenmrsSessionService',['OpenmrsSession',
+  function(OpenmrsSession) {
+      var service = {};
+      service.getSession = function(callback) {	  
+
+	  return OpenmrsSession.get({},function(data,status,headers) {
+	      //alert(angular.toJson(data,true));
+	      callback(data);
+	  });
+      };
+
+      service.logout = function(callback) {
+	  return OpenmrsSession.delete({},function(data,status,headers) {	      
+	  });
+      }
+      return service;
+  }]);
+
+
+
+
+
+
 openmrsServices.factory('Person',['$resource',   			       
   function($resource) { 
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/person/:uuid", 
@@ -139,11 +143,13 @@ openmrsServices.factory('ProviderService',['Provider',
 
       ProviderService.getName = function() {return 'provider';};
       
-      ProviderService.query = function(callback) {
+      ProviderService.getAll = function(callback) {
 	  Provider.query().$promise.then(function(data) {
 	      callback(data.results);
 	  });
       };
+
+      
 
 
       return ProviderService;
@@ -238,6 +244,16 @@ Patient.prototype.setAttributes = function(newAttributes) {
 
 
 
+openmrsServices.factory('Patient',['$resource',   			       
+  function($resource) { 
+      var v = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
+	  + "attributes:(uuid,value,attributeType:ref)))";
+
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/patient/:uuid", 
+		       { uuid: '@uuid',v:v},
+		       { query: {method:"GET",isArray:false}}
+		      ); 
+  }]);
 
 
 openmrsServices.factory('PatientService',['$http','Patient',

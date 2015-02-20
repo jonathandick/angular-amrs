@@ -102,21 +102,6 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 		  } 
 	      });
 
- 
-	      /* Setting up the indexedDB. This is not in the right place but leaving it here for now (2015-01-20)
-	       
-	      var stores = {
-		  user:'username',
-                  provider:'uuid,givenName,familyName,providerId,dateCreated',
-                  location:'uuid,name,dateCreated',
-                  encounter: '++id,uuid,patientUuid,encounterDatetime,dateCreated',
-                  savedEncounter: '++id,uuid,patientUuid,encounterDatetime,dateCreated',
-                  patient:'uuid,dateCreated',
-		  defaulterCohort: 'uuid,name,dateCreated',
-		  defaulterCohortMember: 'uuid,patientUuid,defaulterCohortUuid,dateCreated'
-              };
-	      //ngDexie.init('openmrs-database',stores,true);	      
-	      */
 
 	      OpenmrsFlexSettings.init();
 	      FormEntryService.init();

@@ -12,9 +12,8 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
       Auth.setAuthenticated = function(authenticated) { this.authenticated = authenticated; }
       Auth.isAuthenticated = function() { return this.authenticated; }
 
-      
       Auth.setPassword = function(password) { this.curPassword = password; }
-      Auth.getPassword = function() { return this.curPassword; }
+      Auth.getPassword = function() { this.curPassword; }
 
       Auth.authType = null;
       Auth.setAuthType = function(authType) { this.authType = authType; }
@@ -93,8 +92,7 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
 	      var trialHash = getHash(password).toString();
 	      return (trialHash === user.password);
 	  }
-	  else {
-	      console.log('user not found');
+	  else {	      
 	      return undefined;
 	  }	  
       }
