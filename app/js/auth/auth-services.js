@@ -10,6 +10,7 @@ auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','Op
 
       Auth.authenticated = null;
       Auth.setAuthenticated = function(authenticated) { this.authenticated = authenticated; }
+      //Auth.isAuthenticated = function() { return true; }
       Auth.isAuthenticated = function() { return this.authenticated; }
 
       Auth.setPassword = function(password) { this.curPassword = password; }

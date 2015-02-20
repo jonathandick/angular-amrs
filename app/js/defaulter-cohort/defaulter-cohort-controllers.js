@@ -14,6 +14,8 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
       $scope.riskCategories = {0:'Being Traced',1:'High',2:'Medium',3:'Low',4:'LTFU',5:'no_rtc_date',6:'Untraceable'};
 
       $scope.outreachProviders = DefaulterCohort.getOutreachProviders();
+      //Get defaulter cohort if one exists in session
+      
 
       function setNumRetired() {
 	  var numRetired = 0;
@@ -45,8 +47,6 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
 	  });
       };
 
-      //Get defaulter cohort if one exists in session
-      $scope.getDefaulterCohort();
       
 
       $scope.updateDefaulterCohort = function() {
@@ -77,9 +77,9 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
 
       };
 
-
       //Load defaulter cohorts
       DefaulterCohort.getDefaulterCohorts(function(data) {
+	  //alert(angular.toJson(data));
 	  $scope.defaulterCohorts = data;
       });
       

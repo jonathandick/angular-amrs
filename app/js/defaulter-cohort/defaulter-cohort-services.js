@@ -48,16 +48,23 @@ dc.factory('DefaulterCohort',['$http',
       
       DefaulterCohort.getDefaulterCohorts = function(callback) {
 	  var dcs = local.getItem("defaulterCohorts");
+
           if(dcs) {
 	      console.log("getting defaulter cohorts from local");
               callback(JSON.parse(dcs));
           }
           else {
 	      console.log("getting defaulter cohorts from server");
-              $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function(data) {                  
+	      
+              $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function(data) {
+		  alert('success getting data from dc server');		  
                   local.setItem("defaulterCohorts",JSON.stringify(data));
 		  callback(data);
-              });
+              }).error(function(error,status) {
+		  alert('error');
+		  alert(error);		  
+		  alert(status);
+	      });
           }
       };
 
