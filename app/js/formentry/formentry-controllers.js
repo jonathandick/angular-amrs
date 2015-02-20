@@ -56,8 +56,8 @@ formEntry.controller('SavedFormsCtrl', ['$scope','$stateParams','FormEntryServic
 
 
 
-formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService','FormService',
-  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService,FormService) {	
+formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService',
+  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService) {	
       var patientUuid = $stateParams.patientUuid; 
       $scope.newEncounter = {};
 
@@ -81,7 +81,7 @@ formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','En
 	  $scope.newEncounter = {patient:patientUuid,
 				 form:$stateParams.formUuid,
 				 obs:[],
-				 encounterType:FormService.getEncounterType($stateParams.formUuid),
+				 encounterType:FormEntryService.getEncounterType($stateParams.formUuid),
 				 isNewEncounter:true,
 				 encounterDatetime: d.toISOString()
 				};	  

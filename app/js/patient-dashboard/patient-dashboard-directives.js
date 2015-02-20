@@ -61,13 +61,13 @@ angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','util
 	    templateUrl : static_dir + "views/encountersPane.html",
 	}
     }])
-    .directive('formsPane',['FormService',function(FormService) {
+    .directive('formsPane',['FormEntryService',function(FormEntryService) {
 	var static_dir = "app/js/patient-dashboard/";
 	return {
 	    restrict: "E",
 	    scope: {patientUuid:"@",},
 	    controller : function($scope) {	
-		$scope.forms = FormService.query();		
+		$scope.forms = FormEntryService.getForms();		
 	    },
 	    link: function(scope, element, attrs) {				
 

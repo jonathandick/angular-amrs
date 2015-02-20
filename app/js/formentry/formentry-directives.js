@@ -70,15 +70,15 @@ formEntry.directive('patientDemographics', [function() {
 	    },
  	    controller : function($scope,ProviderService,Flex) {
 		DefaulterCohort.getOutreachProviders(function(data) {		    
-		    console.log(data);
+		    //console.log(data);
 		    $scope.outreachProviders = data;
 		});
 	    },
 	    templateUrl : static_dir + "js/formentry/views/outreachProvidersDropdown.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile','$state','$timeout','FormEntryService','FormService',
-       function($parse,$compile,$state,$timeout,FormEntryService,FormService) {
+    .directive('encounterForm',['$parse','$compile','$state','$timeout','FormEntryService',
+       function($parse,$compile,$state,$timeout,FormEntryService) {
 	return {
 	    restrict: "E",
 	    scope:false,

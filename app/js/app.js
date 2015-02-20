@@ -56,8 +56,8 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	  .state('encounter-form',{
 	      url:"/encounter-form?formUuid&patientUuid&savedFormId",
 	      authenticate:true, 
-	      templateProvider: function($stateParams,FormService,$templateFactory) {
-		  var template = FormService.getTemplate($stateParams.formUuid);
+	      templateProvider: function($stateParams,FormEntryService,$templateFactory) {
+		  var template = FormEntryService.getTemplate($stateParams.formUuid);
 		  var html = $templateFactory.fromUrl(static_dir + template); 
 		  return html;
 	      },
@@ -71,8 +71,8 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	  .state('formentry',{
 	      url:"/formentry?encounterUuid&formUuid&patientUuid",
 	      authenticate:true, 
-	      templateProvider: function($stateParams,FormService,$templateFactory) {
-		  var template = FormService.getTemplate($stateParams.formUuid);
+	      templateProvider: function($stateParams,FormEntryService,$templateFactory) {
+		  var template = FormEntryService.getTemplate($stateParams.formUuid);
 		  var html = $templateFactory.fromUrl(static_dir + template); 		  
 		  return html;
 	      },	      

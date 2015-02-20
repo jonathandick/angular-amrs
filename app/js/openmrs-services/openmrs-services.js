@@ -293,28 +293,6 @@ openmrsServices.factory('Form',['$resource',
   }]);
 
 
-openmrsServices.factory('FormService',['Form',  			       
-  function() {
-      var FormService = {};
-      var formMap = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":
-                     {name: 'outreach form',template:'js/formentry/forms/outreach-form2.html',encounterType:"df5547bc-1350-11df-a1f1-0026b9348838"},     
-		    }; 
-      
-      FormService.getTemplate = function(formUuid) {
-	  return formMap[formUuid]['template'];
-      };
-
-      FormService.getEncounterType = function(formUuid) {
-	  return formMap[formUuid]['encounterType'];
-      };
-
-      FormService.query = function() {
-	  return formMap;
-      }
-      
-      return FormService;
-  }]);
-
 
 openmrsServices.factory('Obs',['$resource',   			       
   function($resource) { 
