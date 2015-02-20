@@ -107,12 +107,13 @@ dc.factory('DefaulterCohort',['$http',
 		  console.log(data);
 		  local.setItem("outreach-providers",JSON.stringify(data));
 		  providers = data;
-
+		  callback(providers);
+		  
               });
 	  }
 	  else providers = angular.fromJson(providers);
-
-          callback(providers);
+	  return providers
+          
 
       }
 
