@@ -2,8 +2,8 @@
 
 var openmrsServices = angular.module('openmrsServices', ['ngResource','ngCookies']);
 
-//var OPENMRS_CONTEXT_PATH = "https://amrs.ampath.or.ke:8443/amrs";
-var OPENMRS_CONTEXT_PATH = "http://etl1.ampath.or.ke:8080/amrs";
+var OPENMRS_CONTEXT_PATH = "https://amrs.ampath.or.ke:8443/amrs";
+//var OPENMRS_CONTEXT_PATH = "http://etl1.ampath.or.ke:8080/amrs";
 
 
 
