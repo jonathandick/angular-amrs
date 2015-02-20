@@ -106,7 +106,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
       FormEntryService.submit = function(newEncounter,personAttributes) {	  	  	  
 	  console.log('FormEntryService.submit() : submitting encounter');
 	  console.log(newEncounter);
-
+	  return;
 	  var restData = getRestData(newEncounter),obsToVoid;
 	  if(newEncounter.oldEncounter) obsToVoid = getObsToVoid(newEncounter.oldEncounter.obs,restData.obs);
 	  

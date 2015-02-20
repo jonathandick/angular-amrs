@@ -2,3 +2,4 @@
 <select class="form-control" name="{{name}}" id="provider" ng-model='model' ng-options="p.person.uuid as (p.person.display + ' (' + p.identifier + ')' ) for p in providers">
   <option/>
 </select>
+<input type="text" ng-model="model" placeholder="Select Provider..." typeahead="p.person.uuid as (p.person.display + ' (' + p.identifier + ')' ) for p in providers | filter:{p.identifier:$viewValue}"  class="form-control">

@@ -13,6 +13,8 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
       $scope.numRetired = 0;
       $scope.riskCategories = {0:'Being Traced',1:'High',2:'Medium',3:'Low',4:'LTFU',5:'no_rtc_date',6:'Untraceable'};
 
+      $scope.outreachProviders = DefaulterCohort.getOutreachProviders();
+
       function setNumRetired() {
 	  var numRetired = 0;
 	  for(var i in $scope.defaulterCohort.patients) {

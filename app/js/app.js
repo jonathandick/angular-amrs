@@ -73,8 +73,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      authenticate:true, 
 	      templateProvider: function($stateParams,FormService,$templateFactory) {
 		  var template = FormService.getTemplate($stateParams.formUuid);
-		  var html = $templateFactory.fromUrl(static_dir + template); 
-		  
+		  var html = $templateFactory.fromUrl(static_dir + template); 		  
 		  return html;
 	      },	      
 	  })            

@@ -51,10 +51,29 @@ formEntry.directive('patientDemographics', [function() {
 			    function(provider) { return provider.uuid}, //keygetter
 			    true, //store offline
 			    null, //no encryption
-			    function(providers) {$scope.providers = providers;} // callback
+			    function(providers) { // callback
+				$scope.providers = providers;
+			    } 
 			   );
 	    },
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
+	}
+    }])
+    .directive('outreachProvidersDropdown',['DefaulterCohort',function(DefaulterCohort) {
+	var static_dir = 'app/';
+	return {
+	    restrict: "E",
+	    scope: {
+		model:'=',
+		label:'@',
+		name:'@',
+	    },
+ 	    controller : function($scope,ProviderService,Flex) {
+		DefaulterCohort.getOutreachProviders(function(data) {
+		    $scope.outreachProviders = data;
+		});
+	    },
+	    templateUrl : static_dir + "js/formentry/views/outreachProvidersDropdown.html",
 	}
     }])
     .directive('encounterForm',['$parse','$compile','$state','$timeout','FormEntryService','FormService',
