@@ -104,6 +104,4 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
 	      OpenmrsFlexSettings.init();
 	      FormEntryService.init();
-
-	      
 	  }]);

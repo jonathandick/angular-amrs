@@ -12,6 +12,12 @@ var dc = angular.module('defaulterCohort', ['ngResource','ngCookies','openmrsSer
 dc.factory('DefaulterCohort',['$http',
   function($http) {
       var DefaulterCohort = {};
+
+
+      DefaulterCohort.init = function() {
+	  DefaulterCohort.getOutreachProviders();
+      };
+
       DefaulterCohort.get = function(uuid,callback) {
 	  
 	  if(uuid === undefined || uuid === "") {
@@ -102,19 +108,18 @@ dc.factory('DefaulterCohort',['$http',
       DefaulterCohort.getOutreachProviders = function(callback) {	  
 	  var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
 	  var providers = local.getItem('outreach-providers');
-	  if(providers === undefined) {
+	  
+	  if(providers === undefined || providers === null) {
+	      console.log('Getting outreach providers from server');
               $http.get(url).success(function(data) {
-		  console.log(data);
+		  console.log('got outreach providers');
 		  local.setItem("outreach-providers",JSON.stringify(data));
 		  providers = data;
-		  callback(providers);
-		  
-              });
+		  if(callback) callback(providers);		  
+              }).error(function(error) { console.log(error); });
 	  }
 	  else providers = angular.fromJson(providers);
-	  return providers
-          
-
+	  return providers;
       }
 
 
