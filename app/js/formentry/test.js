@@ -101,18 +101,7 @@ formEntry.directive('patientDemographics', [function() {
 		this.setObs = function(lineage, value) {
                     var oSetter = $parse(lineage).assign;
 		    oSetter($scope,oSetter);
-		}
-
-		this.addToModel = function(parentLineage,id,item) {
-		    
-		    var getter = $parse(parentLineage)($scope);
-		    if(getter === undefined) {
-			console.log('error creating lineage: ' +  lineage);
-			return false; //It should not be possible for there not to be a parent object
-		    }
-		    if(getter.obs === undefined) getter["obs"] = []; 		    
-		    getter.obs[id] = item;
-		}
+		}		
 
 	    },
 	    link: function(scope,element,attrs,ctrl,transclude) {
@@ -153,9 +142,7 @@ formEntry.directive('patientDemographics', [function() {
 			});
 			
 			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
-			if(getter(scope) !== undefined && getter(scope).value !== undefined && getter(scope).value !== "") {
-			    console.log('lineage is full: ' + lineage);
-			    console.log('value: ' + getter(scope).value);
+			if(getter(scope) !== undefined) {
 			    var e = angular.element(matching[0].outerHTML);
 			    matching.after(e);
 			    $compile(e)(scope);
@@ -201,7 +188,7 @@ formEntry.directive('patientDemographics', [function() {
 
 		function loadExistingEncounter(encounter) {
 		    //console.log("loading encounter from server");
-		    scope.newEncounter = {obs:scope.newEncounter.obs};
+		    scope.newEncounter = {};
 		    scope.newEncounter.uuid = encounter.uuid;
 		    scope.newEncounter.patient = encounter.patient.uuid;
 		    scope.newEncounter.encounterDatetime = encounter.encounterDatetime;
@@ -290,12 +277,11 @@ formEntry.directive('patientDemographics', [function() {
 		var id = ctrl.getId();
 
 		var conceptUuid = attrs['conceptUuid'];
-		var parentLineage = angular.element(element).parent().attr('lineage');
-		if(parentLineage === undefined || parentLineage === null) parentLineage = "newEncounter";
+		var lineage = angular.element(element).parent().attr('lineage');
 
-		var lineage = parentLineage + '.obs[' + id + ']';
+		if(lineage) lineage += '.obs[' + id + ']';
+		else lineage = 'newEncounter.obs[' + id + ']';
 		element.attr('lineage',lineage);
-		ctrl.addToModel(parentLineage,id,{concept:conceptUuid,obs:[]});
 	
 		transclude(scope,function(clone,scope){		    		    
 		    if(element[0].attributes['repeat']) {			
@@ -333,59 +319,71 @@ formEntry.directive('patientDemographics', [function() {
 	    priority: 100000,
 	    require:"^encounterForm",
 	    link: function(scope,elem,attrs,ctrl,transclude) {		
-		var obs = {concept:attrs.conceptUuid};	    
-		var encScope = ctrl.getEncounterFormScope();		
-		var lineage,checkboxValue;
-
-		function init() {
-		    var template = elem[0].outerHTML;
-		    var e = elem.find('select,input');
-		    e.attr('ng-model','selected');
-		    if(e.attr('type') === 'checkbox') checkboxValue = e.attr('value');		    
-		    $compile(e)(scope);
-
-		    var id = ctrl.getId();			
-		    var parentLineage = angular.element(elem).parent().attr('lineage');
-		    if(parentLineage === undefined || parentLineage === null) parentLineage = "newEncounter";
-		    lineage = parentLineage + '.obs[' + id + ']';
-		    elem.attr('lineage',lineage);
-
-		    //Create the model
-		    ctrl.addToModel(parentLineage,id,obs);		    
-		}
-
-		init();
+		var f = {concept:attrs.conceptUuid};	    
 		
-
 		function setValue(newValue) {
-		    if(newValue === undefined) return;
-		    console.log('setting value: ' + newValue);
-		    console.log('lineage: ' + lineage);
-		    console.log(encScope.newEncounter);
- 
+		    //console.log('setting value: ' + newValue);
 		    if (Object.prototype.toString.call(newValue) === "[object Date]") {
 			newValue = newValue.toISOString();
-		    }	
-		    var o = $parse(lineage)(encScope);
-		    if(checkboxValue) {
-			if(newValue === true) o.value = checkboxValue;
-			else o.value = "";
 		    }
-		    else o.value = newValue;
+		    if(newValue === undefined) return;
+
+		    var s = lineage.replace('[' + id + ']',"")
+		    
+		    var encScope = ctrl.getEncounterFormScope();
+		    
+		    var o = $parse(s)(encScope);
+		    var oSetter = $parse(s).assign;
+
+		    if(checkboxValue) {
+			if(newValue === true) f.value = checkboxValue;
+			else f.value = "";
+			o[id] = f;
+		    }
+		    else if(newValue != "") {
+			f.value = newValue;		    			
+			o[id] = f;
+		    }
+		    else { delete o[id]; }
+		    oSetter(encScope,o);
+		}
+		
+
+		var template = elem[0].outerHTML;
+		var e = elem.find('select,input');
+		
+		e.attr('ng-model','selected');
+
+		var checkboxValue;
+		if(e.attr('type') === 'checkbox') {
+		    checkboxValue = e.attr('value');
 		}
 
+		$compile(e)(scope);
+
+		var id = ctrl.getId();			
+		var lineage = angular.element(elem).parent().attr('lineage');
+		if(lineage) lineage += '.obs[' + id + ']';
+		else lineage = 'newEncounter.obs[' + id + ']';
+		elem.attr('lineage',lineage);
+		
+				
 		
 		scope.$watch('selected',function(newValue,oldValue) {		   
 		    setValue(newValue);
 		});
 		
+	
+		var encScope = ctrl.getEncounterFormScope();
 		encScope.$watch(lineage, function(newValue,oldValue) {		    
 		    if(newValue && newValue.value) {
 			if(checkboxValue) {
 			    elem.find("input").attr("checked",true);
 			    scope.selected = true;
 			}
-			else scope.selected = newValue.value;
+			else {
+			    scope.selected = newValue.value;
+			}
 		    }
 		});			 
 

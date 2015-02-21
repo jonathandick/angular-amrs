@@ -1,9 +1,8 @@
 'use strict';
 
+
 var flex = angular.module('flex', ['ngResource','ngCookies','openmrsServices','openmrs.auth','localStorageServices']);
 								 
-
-
 flex.factory('OpenmrsFlexSettings',[
   function() {
       var service = {};
@@ -25,7 +24,7 @@ flex.factory('Flex',['localStorage.utils',
   function(local) {
       var flexService = {};
 
-      function getFromServer(service,key,storeOffline,encryptionPassword,callback) {
+      function getFromServer(service,key,storeOffline,encryptionPassword,callback) {	  
 	  service.get(key,function(item){
 	      if(storeOffline) {
 		  var tableName = "amrs." + service.getName();
@@ -79,7 +78,7 @@ flex.factory('Flex',['localStorage.utils',
       
 
       flexService.get = function(service,key,storeOffline,encryptionPassword,callback) {
-	  var tableName = "amrs." + service.getName();	  
+	  var tableName = "amrs." + service.getName();
 	  var item = local.get(tableName,key,encryptionPassword);
 	  if(item) { callback(item); }
 	  else getFromServer(service,key,storeOffline,encryptionPassword,callback);
