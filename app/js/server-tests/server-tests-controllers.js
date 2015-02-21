@@ -1,11 +1,8 @@
 'use strict';
 
-/* Controllers */
-
-
-var amrsControllers = angular.module('amrsControllers',[]);
+var serverTests = angular.module('serverTests',[]);
        
-amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','$cookies',
+serverTests.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','$cookies',
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,$cookies) {					      
       $scope.v = "";
       $scope.q = ""; 
@@ -43,7 +40,7 @@ amrsControllers.controller('DjangoCtrl', ['$scope','$http','Amrs','Person','Loca
   }]);
 
 
-amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','Obs',
+serverTests.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Location','PersonAttribute','openmrs','Auth','Obs',
   function($scope,$http,Amrs,Person,Location,PersonAttribute,openmrs,Auth,Obs) {					      
       $scope.v = "";
       $scope.q = "";
@@ -86,26 +83,3 @@ amrsControllers.controller('AmrsCtrl', ['$scope','$http','Amrs','Person','Locati
       //$scope.encounter = encounter;
 
   }]);
-
-
-
-amrsControllers.controller('PatientSearchCtrl', ['$scope','Patient',
-  function($scope,Patient,lsf) {
-      $scope.filter = "";
-      $scope.patients = [];
-
-      $scope.$watch('searchString',function(value) {
-	  
-	  var v = "custom:(uuid,";
-	  v += "person:(uuid,gender,birthdate,preferredName:(givenName,middleName,familyName),birthdate,attributes:(attributeType:(uuid),uuid)))";
-
-	  if(value && value.length > 3) {
-	      Patient.query({q:value,v:v}).$promise.then(function(data) {
-		  $scope.patients = data.results;
-	      });
-	  }
-      });
-
-   }]);
-
-

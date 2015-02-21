@@ -1,0 +1,112 @@
+<script src="app/js/formentry/forms/outreach_validation.js"></script>
+
+<div ng-controller='EncounterFormCtrl'>
+   <div class="container-fluid">
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
+    <htmlform>
+      <patient-demographics patient="patient"></patient-demographics>	        
+      <br/>
+
+      <div class="row">
+	<div class="col-md-6">
+	  <button class="btn btn-custom btn-lg btn-block" ng-click="save()">Save</button><br/>
+	</div>
+	<div class="col-md-6">
+	  <button class="btn btn-custom btn-lg btn-block" ng-click="submit()">Submit</button><br/>
+	</div>
+      </div>
+      
+      <tabset vertical="false" type="pills">
+	<tab heading="Encounter Info">	        
+	  <br/>
+	  <div class="form-group">
+            <label for="encounterDatetime">Encounter Date:</label>
+            <input type="text" id="encounterDatetime" ng-model="enc.encounterDatetime" name="encounterDatetime"
+		   datepicker-popup="yyyy-MM-dd" is-open="dt.open" ng-click="dt.open=true"/>
+	  </div>
+	  
+	  <div>
+	    <clinic-locations-dropdown name="location" model="enc.location" label="Clinic Location">
+	    </clinic-locations-dropdown>
+	  </div>
+	  
+	  <div class="form-group">
+	    <label for="phoneNumber">Phone:</label>
+	    
+	    <lookup
+	       class="value" 
+	       expression="personAttributes.get('TB District Registration Number')" 
+	       uuid="72a759a8-1359-11df-a1f1-0026b9348838']"
+	       name="phone_number"
+	       />
+	  </div>
+	  
+	  <div class="form-group">
+	    <obs 
+	       conceptId=
+	       conceptUuid="a89e3896-1350-11df-a1f1-0026b9348838"
+	       labelText="Missed appointment date:"
+	       style="date"
+	       />
+	  </div>
+	</tab>
+	
+	<tab heading="Phone Follow-up">
+	  <br/>
+	  <div class="form-group">
+	    <obs 
+	       concept-uuid="e6c52d7e-3e25-4a83-8f9c-55a03bdc653a"
+	       labelText="Number of call attempts:"
+	       answers="1,2,3,4,5,6"
+	       answerLabels="1,2,3,4,5,More than 5"
+	       style="dropdown"
+	       />
+	  </div>
+	  
+	  <div class="form-group">	
+	    <obs concept-uuid="2b90dbd2-8897-49fd-9784-e5999e7312fa"
+		 labelText="Was the patient contacted by phone?"
+		 answerConceptIds=""
+		 answerConceptUuids="a899b35c-1350-11df-a1f1-0026b9348838,a89dec06-1350-11df-a1f1-0026b9348838,
+				     a69cdbf7-edf0-4e4d-a4dc-1ff3bc771d5c,1965eb6f-fc86-4f44-b3b8-59772b1daa20,
+				     fdd18cec-11ba-4512-ab3c-b66066847f58,a8aaf3e2-1350-11df-a1f1-0026b9348838"
+		 answerLabels="Yes, 
+			       No - phone not connecting, 
+			       No - phone number inactive, 
+			       No - wrong phone number, 
+			       No - no one picks up,
+			       No - a different reason"
+		 style="dropdown"
+		 >
+	    </obs>
+	    
+	  </div>
+	    
+	  <div class="form-group">
+	    <obs 
+	       concept-uuid="47a5988a-e5f7-424e-96cc-3b34aeea3c1a"
+	       labelText="Who does the phone belong to? :"
+	       name="owner_of_phone"
+	       answerConceptUuids="a899b35c-1350-11df-a1f1-0026b9348838,
+				   a89cd280-1350-11df-a1f1-0026b9348838,
+				   a8aaf234-1350-11df-a1f1-0026b9348838,
+				   a8aaf07c-1350-11df-a1f1-0026b9348838,
+				   a8aaf3e2-1350-11df-a1f1-0026b9348838"
+	       answerLabels="...,Patient,Caregiver,Family Member,Friend,Other"
+	       />
+	  </div>
+	  
+
+	  
+	  <div class="form-group">
+	    <clinic-locations-dropdown name="transfer_location" model="enc.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']" label="Transfer Location">
+	    </clinic-locations-dropdown>	    
+	  </div>
+	  <div class="form-group">
+	    <providers-dropdown name="provider" model="enc.provider" label="Provider:"></providers-dropdown>
+	  </div> 
+	</tab>
+      </tabset>
+    </htmlform>
+   </div>
+</div>

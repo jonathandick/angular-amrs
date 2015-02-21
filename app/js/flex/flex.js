@@ -1,10 +1,10 @@
 'use strict';
 
-var openmrsServicesFlex = angular.module('openmrsServicesFlex', ['ngResource','ngCookies','openmrsServices','dexieServices','openmrs.auth',
-								 'localStorageServices']);
+var flex = angular.module('flex', ['ngResource','ngCookies','openmrsServices','openmrs.auth','localStorageServices']);
+								 
 
 
-openmrsServicesFlex.factory('OpenmrsFlexSettings',[
+flex.factory('OpenmrsFlexSettings',[
   function() {
       var service = {};
       service.init = function() {
@@ -21,7 +21,7 @@ openmrsServicesFlex.factory('OpenmrsFlexSettings',[
 
 
 
-openmrsServicesFlex.factory('Flex',['localStorage.utils',
+flex.factory('Flex',['localStorage.utils',
   function(local) {
       var flexService = {};
 

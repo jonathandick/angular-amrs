@@ -8,10 +8,9 @@ var amrsApp = angular.module('amrsApp', ['ui.router',
 					 'openmrs.auth',
 					 'openmrs.formentry',
 					 'openmrsServices',
-					 'openmrsServicesFlex',
-					 'patientDashboard',
-					 'amrsControllers',
-					 'dexieServices',
+					 'flex',
+					 'patientSearch',
+					 'patientDashboard',					 
  					]);
 
 amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
@@ -23,6 +22,10 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      url: "/login",
               templateUrl:  static_dir + 'js/auth/views/login.html',
 	  })
+	  .state('logout',{
+	      url: "/logout",
+	      templateUrl: static_dir + 'js/auth/views/login.html',
+	  })
 	  .state('apps', {
 	      url: "/apps",
               templateUrl: static_dir + 'partials/apps.html',	      
@@ -30,7 +33,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	  })
 	  .state('patient-search', {
 	      url: '/patient-search',
-	      templateUrl: static_dir + 'partials/patient-search.html',
+	      templateUrl: static_dir + 'js/patient-search/views/patient-search.html',
 	      controller: 'PatientSearchCtrl',
 	      authenticate:true,
 	  })
@@ -47,12 +50,6 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      controller: 'DefaulterCohortCtrl',
 	      authenticate:true,	      
 	  })	  
-	  .state('amrs',{
-	      url: "/amrs",
-	      templateUrl: static_dir + 'js/formentry/forms/outreach-form2.html',	      
-	      controller: 'AmrsCtrl',
-	      authenticate:true,
-	  })
 	  .state('encounter-form',{
 	      url:"/encounter-form?formUuid&patientUuid&savedFormId",
 	      authenticate:true, 
@@ -76,21 +73,12 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 		  var html = $templateFactory.fromUrl(static_dir + template); 		  
 		  return html;
 	      },	      
-	  })            
-	  .state('django',{
-	      url: "/django",
-	      templateUrl: static_dir + 'partials/test-django.html',
-	      authenticate: true,	      
-	  })
-	  .state('logout',{
-	      url: "/logout",
-	      templateUrl: static_dir + 'js/auth/views/login.html',
-	  });
+	  });            
 
       $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth','ngDexie','OpenmrsFlexSettings','FormEntryService',
-	  function ($rootScope, $state, Auth,ngDexie,OpenmrsFlexSettings,FormEntryService) {
+    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings','FormEntryService',
+	  function ($rootScope, $state, Auth, OpenmrsFlexSettings,FormEntryService) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");

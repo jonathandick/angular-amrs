@@ -2,10 +2,10 @@
 
 /* Services */
 
-var auth = angular.module('openmrs.auth', ['ngResource','openmrsServices','dexieServices']);
+var auth = angular.module('openmrs.auth', ['ngResource','openmrsServices']);
 
-auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','OpenmrsUserService','ngDexie',
-  function (Base64, $http, $location, OpenmrsSessionService,OpenmrsUserService,ngDexie) {
+auth.factory('Auth', ['Base64', '$http', '$location','OpenmrsSessionService','OpenmrsUserService',
+  function (Base64, $http, $location, OpenmrsSessionService,OpenmrsUserService) {
       var Auth = {}
 
       Auth.authenticated = null;

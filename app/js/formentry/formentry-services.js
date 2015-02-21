@@ -1,6 +1,6 @@
 'use strict';
 
-var formEntry = angular.module('openmrs.formentry',['openmrsServices','openmrsServicesFlex','ui.bootstrap','localStorageServices']);
+var formEntry = angular.module('openmrs.formentry',['openmrsServices','flex','ui.bootstrap','localStorageServices']);
 
 formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','EncounterService','PersonAttributeService','ObsService','PatientService',
   function(Auth,local,Flex,EncounterService,PersonAttributeService,ObsService,PatientService) {

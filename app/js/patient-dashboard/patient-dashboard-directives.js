@@ -3,7 +3,7 @@
 /* Directives */
 
 
-angular.module('patientDashboard',['openmrsServices','openmrsServicesFlex','utility.widgets','infinite-scroll'])
+angular.module('patientDashboard',['openmrsServices','flex','utility.widgets','infinite-scroll'])
     .directive('encountersPane',['$state','EncounterService','OpenmrsUtilityService',
       function($state,EncounterService,OpenmrsUtilityService) {
 	  var static_dir = "app/js/patient-dashboard/";
