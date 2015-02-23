@@ -107,32 +107,44 @@ formEntry.directive('patientDemographics', [function() {
 		    
 		    var getter = $parse(parentLineage)($scope);
 		    if(getter === undefined) {
-			console.log('error creating lineage: ' +  lineage);
+			//console.log($scope.newEncounter);
+			//console.log('error creating lineage: ' +  parentLineage);
 			return false; //It should not be possible for there not to be a parent object
-		    }
+		    }		    
+		    
 		    if(getter.obs === undefined) getter["obs"] = []; 		    
-		    getter.obs[id] = item;
+		    getter.obs[id] = item;		    
+		    
 		}
 
 	    },
 	    link: function(scope,element,attrs,ctrl,transclude) {
-		
+						
 		function getValue(obs) {
+		    var trueConceptUuid = 'a899b35c-1350-11df-a1f1-0026b9348838';
+		    var falseConceptUuid = 'a899b42e-1350-11df-a1f1-0026b9348838';
+
 		    if(obs.value) {
 			var v = obs.value;
 			if(Object.prototype.toString.call(v) == "[object Object]") {
 			    v = obs.value.uuid;
 			}
+			/*
+			if(v === trueConceptUuid) v = "true";
+			else if(v === falseConceptUuid) v = "false";
+			*/
+
 			return v;
 		    } 
 		    else return undefined;
 		}
 
 		function loadObs(obs,curSchema) {
+		    //console.log(obs);
 		    for(var j in obs) {
 			var schema, concept = obs[j].concept.uuid, id = ctrl.getId(),value;
 			
-			if(obs[j].obs) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
+			if(obs[j].groupMembers) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
 			else {
 			    schema = curSchema + " obs[concept-uuid='" + concept + "']";			    			
 			    value = getValue(obs[j]);			    
@@ -140,6 +152,7 @@ formEntry.directive('patientDemographics', [function() {
 			var matching = $(schema);
 			var getter;
 			var lineage;
+
 			
 			matching.each(function(index) {
 			    var c = $(this).find('input[type="checkbox"]');
@@ -147,49 +160,75 @@ formEntry.directive('patientDemographics', [function() {
 				lineage = $(this).attr('lineage');				
 				getter = $parse(lineage);
 				if(getter(scope) === undefined) {
+				    console.log("Error with schema");
 				    return false;
 				}
 			    }
 			});
-			
+			//console.log('schema: ' + schema);
+			//console.log('lineage:' + lineage);
+			//console.log(getter(scope));
 			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
 			if(getter(scope) !== undefined && getter(scope).value !== undefined && getter(scope).value !== "") {
-			    console.log('lineage is full: ' + lineage);
-			    console.log('value: ' + getter(scope).value);
+			    //console.log('lineage is full: ' + lineage);
+			    //console.log('value: ' + getter(scope).value);
 			    var e = angular.element(matching[0].outerHTML);
 			    matching.after(e);
 			    $compile(e)(scope);
 			    getter = $parse(e.attr('lineage'));
 			}
 
-			var setter = getter.assign;			    			
+			var setter = getter.assign,existingValue;			    			
 			if(obs[j].value) {
-			    if(setter) setter(scope,{concept:concept,value:value,uuid:obs[j].uuid});
-			} else if(obs[j].obs){
-			    setter(scope,{concept:concept,uuid:obs[j].uuid,obs:{}});
-			    loadObs(obs[j].obs,schema + ":last");
+			    if(obs[j].existingValue) existingValue = obs[j].existingValue;
+			    else existingValue = obs[j].value;
+
+			    if(setter) setter(scope,{concept:concept,value:value,uuid:obs[j].uuid,existingValue:existingValue});
+			} else if(obs[j].groupMembers){			    
+			    getter(scope).uuid = obs[j].uuid;
+			    //setter(scope,{concept:concept,uuid:obs[j].uuid});
+			    loadObs(obs[j].groupMembers,schema + ":last");
 			}
 			
 		    }
 		}
+
+
+		//This converts an angular formentry represetnation of obs to the openmrs rest ws version. 
+		//The loadObs() function requires the obs to be in the same format as the openmrs rest object.
+		function loadSavedObs(obs,obsToLoad) {
+		    console.log('converting obs');
+		    console.log(obs);
+		    var o, f = {};
+		    for(var i in obs) {
+			o = obs[i];
+			
+			if(o === null || o.value === null || o.value === undefined) continue;
+			//console.log(o);
+			f = {concept:{uuid:o.concept}};
+			if(o.uuid) f.uuid = o.uuid;
+			if(o.existingValue) f.existingValue = o.existingValue;
+			
+			//if(o.obs) console.log('found obs');
+			//if(o.value) console.log('found value');
+			if(o.value) f.value = o.value;
+			else if(o.obs) {
+			    f.groupMembers = [];
+			    loadSavedObs(o.obs,f.groupMembers);
+			}
+			obsToLoad.push(f);
+		    }
+		}
+
+			
+			
 
 		/*
 		  NOTE: This assumes there are no obsGroups in the obs. 
 		*/
 		function loadSavedEncounter(savedEncounter) {		    
 		    var obs = [];
-		    
-		    for(var i in savedEncounter.obs) {
-			var o = savedEncounter.obs[i];
-			var f = {};
-			if(o !== null) {
-			    f.concept = {uuid:o.concept};
-			    f.value = {uuid:o.value};
-			    obs.push(f);
-			}
-		    }
-
-		    savedEncounter.obs = [];
+		    loadSavedObs(savedEncounter.obs,obs);		    
 		    scope.personAttributes = savedEncounter.personAttributes;
 
 		    $timeout(function() {
@@ -208,8 +247,7 @@ formEntry.directive('patientDemographics', [function() {
 		    scope.newEncounter.encounterType = encounter.encounterType.uuid; //encounter.encounterType.uuid;
 		    scope.newEncounter.location = encounter.location.uuid;
 		    scope.newEncounter.provider = encounter.provider.uuid;
-		    scope.newEncounter.form = encounter.form.uuid;
-		    scope.newEncounter.oldEncounter = encounter;
+		    scope.newEncounter.form = encounter.form.uuid;		    
 		    
 
 		    //need to wait for the DOM to finish loading before we populate with obs
@@ -233,7 +271,6 @@ formEntry.directive('patientDemographics', [function() {
 		    return isValid;
 		}
 		
-		
 		scope.saveToDrafts = function() {
 		    //console.log('save to drafts');
 		    //console.log(scope.newEncounter);
@@ -252,8 +289,8 @@ formEntry.directive('patientDemographics', [function() {
 
 
 		scope.$watch('newEncounter',function(newEncounter,oldValue){		    
-		    if(newEncounter !== undefined && newEncounter !== null && newEncounter !== "") {			
-			//console.log('newEncounter has changed');
+		    if(newEncounter !== undefined && newEncounter !== null && newEncounter !== "") {							
+			
 			if(newEncounter.savedFormId) {
 			    loadSavedEncounter(newEncounter);
 			}
@@ -267,7 +304,7 @@ formEntry.directive('patientDemographics', [function() {
 		
 		scope.$watch('oldEncounter',function(oldEncounter,oldValue){		    
 		    if(oldEncounter !== undefined && oldEncounter !== null && oldEncounter !== "") {
-			//console.log('oldEncounter has changed');
+			console.log('oldEncounter has changed');
 			scope.loadingData = true;  //starts a spinner
 			loadExistingEncounter(oldEncounter);
 			loadPersonAttributes(oldEncounter.patient.uuid);
@@ -292,8 +329,8 @@ formEntry.directive('patientDemographics', [function() {
 		var conceptUuid = attrs['conceptUuid'];
 		var parentLineage = angular.element(element).parent().attr('lineage');
 		if(parentLineage === undefined || parentLineage === null) parentLineage = "newEncounter";
-
 		var lineage = parentLineage + '.obs[' + id + ']';
+
 		element.attr('lineage',lineage);
 		ctrl.addToModel(parentLineage,id,{concept:conceptUuid,obs:[]});
 	
@@ -314,7 +351,7 @@ formEntry.directive('patientDemographics', [function() {
 		    scope.template = e[0].outerHTML;
 		    scope.$parent.templates[lineage] = e[0].outerHTML;
 		}
-
+		
 		scope.getClone = function() {
 		    
 		    var node = $compile(scope.template)(scope);
@@ -341,7 +378,7 @@ formEntry.directive('patientDemographics', [function() {
 		    var template = elem[0].outerHTML;
 		    var e = elem.find('select,input');
 		    e.attr('ng-model','selected');
-		    if(e.attr('type') === 'checkbox') checkboxValue = e.attr('value');		    
+		    if(e.attr('type') === 'checkbox') checkboxValue = e.attr('value');
 		    $compile(e)(scope);
 
 		    var id = ctrl.getId();			
@@ -350,7 +387,7 @@ formEntry.directive('patientDemographics', [function() {
 		    lineage = parentLineage + '.obs[' + id + ']';
 		    elem.attr('lineage',lineage);
 
-		    //Create the model
+		    //Create the "space" in newEncounter.obs
 		    ctrl.addToModel(parentLineage,id,obs);		    
 		}
 
@@ -359,14 +396,16 @@ formEntry.directive('patientDemographics', [function() {
 
 		function setValue(newValue) {
 		    if(newValue === undefined) return;
-		    console.log('setting value: ' + newValue);
-		    console.log('lineage: ' + lineage);
-		    console.log(encScope.newEncounter);
+		    //console.log('setting value: ' + newValue);
+		    //console.log('lineage: ' + lineage);
+		    //console.log(encScope.newEncounter);
+		    
  
 		    if (Object.prototype.toString.call(newValue) === "[object Date]") {
 			newValue = newValue.toISOString();
 		    }	
 		    var o = $parse(lineage)(encScope);
+		    
 		    if(checkboxValue) {
 			if(newValue === true) o.value = checkboxValue;
 			else o.value = "";

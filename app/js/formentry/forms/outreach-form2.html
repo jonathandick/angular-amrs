@@ -38,6 +38,25 @@
 	<tabset vertical="false" type="pills">
 	  <tab heading="Encounter Info">	        
 	    <br/>
+
+	    <div class="form-group">
+	      Detailed Crypto Plan: <br/>
+	      <obs-group concept-uuid="a89fe7b8-1350-11df-a1f1-0026b9348838">
+		<obs concept-uuid="a89c2790-1350-11df-a1f1-0026b9348838">
+		  <label for="cryptoTreatment">Crypto Treatment</label>	      
+		  <select name="cryptoTreatment">
+		    <option/>
+		    <option value="a899e0ac-1350-11df-a1f1-0026b9348838">None</option>
+		  </select>
+		</obs>		
+		<br/>
+		<obs concept-uuid="a89fca44-1350-11df-a1f1-0026b9348838">
+		  <label for="daysOfMeds">Days of meds:</label>
+		  <input type="text" name="daysOfMeds"/>
+		</obs>
+	      </obsGroup>
+
+	    </div>
 	    <div class="form-group">
               <label for="encounterDatetime">Encounter Date:</label>
               <input type="text" id="encounterDatetime" ng-model="newEncounter.encounterDatetime" name="encounterDatetime"
@@ -82,13 +101,7 @@
 	    </div>
 	    
 	    <div class="form-group">	
-	      <obs concept-uuid="2b90dbd2-8897-49fd-9784-e5999e7312fa"
-		   labelText=""
-		   answerConceptIds=""
-		   answerConceptUuids=""
-		   answerLabels=""
-		   style="dropdown"
-		   >
+	      <obs concept-uuid="2b90dbd2-8897-49fd-9784-e5999e7312fa">
 		<label for="contacted_by_phone">Was the patient contacted by phone?</label>
 		<select class="form-control" id='contacted_by_phone'>
 		  <option value=""></option>
@@ -136,7 +149,9 @@
 		<label for="contacted_in_field">Was the patient found?:</label>	   
 		<select class="form-control" name="contacted_in_field">
 		  <option/>
+		  <option value="true">Yes - true</option>
 		  <option value="a899b35c-1350-11df-a1f1-0026b9348838">Yes</option>
+		  <option value="false">No - false</option>
 		  <option value="a899b42e-1350-11df-a1f1-0026b9348838">No</option>
 		</select>
 	      </obs>
@@ -158,8 +173,8 @@
 	    </div>	    
 	    <div class="form-group">
 	      <obs concept-uuid="a89fe006-1350-11df-a1f1-0026b9348838">
-	      <label for="obs.number_of_days_of_remaining_arv_medication">Does the patient have medications remaining? If yes, # of days worth:</label>
-	      <input id="obs.number_of_days_of_remaining_arv_medication" type="text"/>
+		<label for="obs.number_of_days_of_remaining_arv_medication">Does the patient have medications remaining? If yes, # of days worth:</label>
+		<input id="obs.number_of_days_of_remaining_arv_medication" type="text"/>
 	      </obs>
 	    </div>
 	  </tab>

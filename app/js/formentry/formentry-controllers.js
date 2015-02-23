@@ -56,17 +56,18 @@ formEntry.controller('SavedFormsCtrl', ['$scope','$stateParams','FormEntryServic
 
 
 
-formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService',
-  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService) {	
+formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService','$timeout',
+  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService,$timeout) {	
       var patientUuid = $stateParams.patientUuid; 
       $scope.newEncounter = {};
 
       if($stateParams.savedFormId) { //loading a saved form
 	  var savedEncounter = FormEntryService.getDrafts($stateParams.savedFormId);	  
+	  console.log('formentry controller');
+	  console.log(savedEncounter);
 	  if(savedEncounter === null) savedEncounter = FormEntryService.getPendingSubmission($stateParams.savedFormId);
 	  patientUuid = savedEncounter.patient;	  
-	  $scope.newEncounter = savedEncounter;
-	  
+	  $scope.newEncounter = savedEncounter;	  
       }
       
       else if($stateParams.encounterUuid) { //loading a form for an encounter on the server

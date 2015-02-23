@@ -292,11 +292,19 @@ openmrsServices.factory('Form',['$resource',
 		      ); 
   }]);
 
-
+/*
+openmrsServices.factory('Obs',['$resource',   			       
+  function($resource) { 
+      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/obs/:uuid", 
+		       { uuid: '@uuid'}, 
+		       { query: {method:"GET",isArray:false}}
+		      ); 
+  }]);
+*/
 
 openmrsServices.factory('Obs',['$resource',   			       
   function($resource) { 
-      var v = "custom:(uuid,concept:(uuid,uuid),value:ref)";          
+      var v = "custom:(uuid,concept:(uuid,uuid),groupMembers,value:ref)";          
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/obs/:uuid", 
 		       { uuid: '@uuid',v:v}, 
 		       { query: {method:"GET",isArray:false}}
@@ -305,29 +313,74 @@ openmrsServices.factory('Obs',['$resource',
 
 
 
-openmrsServices.factory('ObsService',['Obs',
-  function(Obs) {
+openmrsServices.factory('ObsService',['Obs','$http',
+  function(Obs,$http) {
       var ObsService = {};
 
-      ObsService.void = function(obsToVoid,callback) {
-	  /*
-	  var uuid;
-	  for(var i in obsToVoid) {
-	      uuid = obsToVoid[i].uuid;
-	      Obs.delete({uuid:uuid}).$promise.then(function(data) {
-		  if(callback) { callback(data); }
-		  else {return data;}
-	      });
-	  }
-	  */
-	  for(var i in obsToVoid) {
-	      var uuid = obsToVoid[i];
-	      Obs.delete({uuid:uuid}).$promise.then(function(data) {
-		  if(callback) { callback(data); }
-		  else {return data;}
-	      });
+
+      ObsService.update = function(obsUuid,value,callback) {
+	  var o = new Obs({uuid:obsUuid,value:value});
+	  o.$save(function(data) {console.log(data);},function(error){console.log(error);});
+      };
+
+      /*
+	If the obs to be updated has a non-empty value, it will be updated.
+	Otherwise, it will be voided.
+      */
+      ObsService.updateObsSet = function(obsToUpdate,callback) {
+	  var o;
+	  for(var i in obsToUpdate) {
+	      o = obsToUpdate[i];
+	      console.log('updating obs: ' + angular.toJson(o));
+
+	      if(o.value !== undefined && o.value !== "") { ObsService.update(o.uuid,o.value,callback); }
+	      else ObsService.void(o.uuid,callback);
 	  }
       }
+
+      ObsService.updateGroupMembers = function(obsUuid,groupMembers,callback) {
+	  var o = new Obs({uuid:obsUuid,groupMembers:groupMembers});
+	  o.$save(function(data) {console.log(data);},function(error){console.log(error);});
+      }
+
+      ObsService.get = function(obsUuid,callback) {
+	  var o = Obs.get({uuid:obsUuid},function(data) {callback(data);});
+      }
+
+      ObsService.addObs = function(obsUuid,o,callback) {
+          var url = OPENMRS_CONTEXT_PATH + '/ws/rest/v1/obs/' + obsUuid;
+	  console.log(url);
+          $http.post(url,o)
+              .success(function(data, status, headers, config) {
+                  callback(data);
+                  if(data.error) {
+                      console.log('EncounterService.submit() : error in rest response');
+                  }
+              })
+              .error(function(data, status, headers, config) {
+                  console.log("EncounterService.submit() : error:");
+                  callback(data);
+                  console.log(data);
+                  console.log(status);
+              });
+
+      };
+      
+
+      ObsService.void = function(obsUuid,callback) {
+	  Obs.delete({uuid:obsUuid}).$promise.then(function(data) {
+	      if(callback) { callback(data); }
+	      else {return data;}
+	  });
+      }
+
+      ObsService.voidObs = function(obsToVoid,callback) {
+	  for(var i in obsToVoid) {
+	      var uuid = obsToVoid[i];
+	      ObsService.void(uuid,callback);
+	  }
+      }
+
       return ObsService;
   }]);
 
@@ -336,7 +389,7 @@ openmrsServices.factory('ObsService',['Obs',
 openmrsServices.factory('Encounter',['$resource',   			       
   function($resource) { 
       var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
-      v += ",encounterType:ref,provider:ref,obs:(uuid,concept:(uuid,uuid),value:ref))";    
+      v += ",encounterType:ref,provider:ref,obs:(uuid,concept:(uuid,uuid),value:ref,groupMembers))";    
       
       return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/encounter/:uuid", 
 		       { uuid: '@uuid',v:v}, 
@@ -359,7 +412,7 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
       };
       
 
-
+      //NEEDS TO BE CHANGED FROM ENCOUNTER.GET TO ENCOUNTER.QUERY WITH A CUSTOM REP THAT DOES NOT INCLUDE OBS
       EncounterService.patientQuery = function(params,callback) {
 	  Encounter.get(params).$promise.then(function(data) {
 	      if(callback) { return callback(data); }
@@ -407,13 +460,6 @@ openmrsServices.factory('EncounterType',['$resource',
   }]);
 
 
-openmrsServices.factory('Obs',['$resource',   			       
-  function($resource) { 
-      return $resource(OPENMRS_CONTEXT_PATH  + "/ws/rest/v1/obs/:uuid", 
-		       { uuid: '@uuid'}, 
-		       { query: {method:"GET",isArray:false}}
-		      ); 
-  }]);
 
 openmrsServices.factory('Location',['$resource',   			       
   function($resource) { 

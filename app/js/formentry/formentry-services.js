@@ -56,7 +56,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  console.log('FormEntryService.getDrafts()');
 	  if(savedFormId) {
 	      var form = local.get(draftsTable,savedFormId,Auth.getPassword());
-	      console.log(form);
+	      
 	      if(form) return form;
 	      else { return null; }
 	  }
@@ -81,14 +81,11 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
 	  }
 	  newEncounter.personAttributes = personAttributes;
-	  local.set(draftsTable,newEncounter.savedFormId,newEncounter,Auth.getPassword());
+
+	  local.set(draftsTable,newEncounter.savedFormId,newEncounter,Auth.getPassword());	  
       }
 
       
-
-      
-
-
 
       FormEntryService.getPendingSubmission = function(savedFormId,callback) {
 	  if(savedFormId) {
@@ -127,10 +124,16 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
       FormEntryService.submit = function(newEncounter,personAttributes) {	  	  	  
 	  console.log('FormEntryService.submit() : submitting encounter');
 
-	  var restData = getRestData(newEncounter),obsToVoid;
-	  if(newEncounter.oldEncounter) obsToVoid = getObsToVoid(newEncounter.oldEncounter.obs,restData.obs);
+	  var restData = getRestData(newEncounter);
+
+	  var obsToUpdate = restData.obsToUpdate;
+	  delete restData.obsToUpdate;
 	  
+	  //return;
 	  
+
+	  ///if(newEncounter.oldEncounter) obsToVoid = getObsToVoid(newEncounter.oldEncounter.obs,restData.obs);
+
 	  EncounterService.submit(restData,function(data) {	 	      
 	      
 	      if(newEncounter.savedFormId) FormEntryService.removeFromDrafts(newEncounter.savedFormId);
@@ -140,7 +143,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	      if(data === undefined || data === null || data.error) {
 		  console.log("FormEntryService.submit() : error submitting. Saving to local");		  
 		  newEncounter.restObs = restData.obs;
-		  if(newEncounter.oldEncounter) newEncounter.obsToVoid = obsToVoid;		      
+		  newEncounter.obsToUpdate = obsToUpdate;
 		  FormEntryService.saveToPendingSubmission(newEncounter,personAttributes);
 	      }
 	      else {
@@ -150,8 +153,9 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 		      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
 		  }
 		  console.log('FormEntryService.submit() : checking for obs to void');
-		  if(newEncounter.oldEncounter) {
-		      ObsService.void(obsToVoid,function(data) {			  
+
+		  if(obsToUpdate.length > 0) {
+		      ObsService.updateObsSet(obsToUpdate,function(data) {			  
 			  console.log(data);
 		      });		      
 		  }
@@ -183,88 +187,53 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
       }
 
 
-      function getNewRestObs(obs,restObs) {
+
+      function getRestObs(obs,newRestObs,obsToUpdate) {
+	  var hasChanged = false;
 	  for(var i in obs) {
 	      var o = obs[i];
-	      if('value' in o) {
-		  if(o.value && o.value.toString().trim() !== "") {
-		      //No empty values will be saved
-		      restObs.push(o);
+	      if ('obs' in o) {
+		  
+		  var obsGroup = {concept:o.concept,groupMembers:[]};
+		  var groupHasChanged = getRestObs(o.obs,obsGroup.groupMembers,null);
+		  
+		  //this is an obsgroup which has no existing values and therfore changed from empty to with values
+		  
+		  
+		  //Because of the way REST WS works (requires each group member to have a person and obsDatetime), 
+		  //  we will treat a group that has changed as a new group. 
+		  if(groupHasChanged) {
+		      //only add the group if it has members
+		      if(obsGroup.groupMembers.length >0) newRestObs.push(obsGroup);
+
+		      //this will cause the existing obs group to be voided
+		      if(o.uuid) obsToUpdate.push({uuid:o.uuid});
+		  }
+		  
+	      }
+
+	      //if obsToUpdate is null, it means we are in an obsGroup. The entire obsGroup will be reposted indedpendent of whether the values
+	      // have changed. This is done because of issues with the REST WS and updating obsGroups.
+	      else if(obsToUpdate !== null && o.existingValue) {
+		  if(o.value != o.existingValue) {
+		      obsToUpdate.push({concept:o.concept,value:o.value,uuid:o.uuid});
 		  }
 	      }
-	      else {
-		  var obsSet = {concept:o.concept,obs:[]};
-		  getNewRestObs(o.obs,obsSet.obs);
-		  restObs.push(obsSet);
-	      }
-	  }
-      }
-      
-      function compare(a,b) {
- 	  if(a.concept.uuid) {
-	      if(a.concept.uuid < b.concept.uuid) return -1;
-	      if(a.concept.uuid > b.concept.uuid) return 1;
-	      if(a.concept.uuid === b.concept.uuid) {
-		  var aValue = getValue(a);
-		  var bValue = getValue(b);
-		  if(aValue < bValue) return -1;
-		  if(aValue > bValue) return 1;
-		  return 0;
-			}
-	  }
-	  else {
-	      if(a.concept < b.concept) return -1;
-	      if(a.concept > b.concept) return 1;
-	      return 0;
-	  }
-      }						
+	      else if(o.value !== null && o.value !== undefined) {
+		  //if(obsToUpdate === null) console.log(o);
 
+		  if(o.existingValue && o.existingValue != o.value) hasChanged = true;
+		  else if (o.existingValue === undefined && o.value.toString().trim() !== "") hasChanged = true;
 
-      //assumes obs1 is a restws object and obs2 is a payload object. 
-      function isIdentical(obs1,obs2) {
-	  if(obs1.value) {
-	      if(Object.prototype.toString.call(obs1.value) == "[object Object]") {
-		  return obs1.value.uuid === obs2.value;
-	      }
-			else return obs1.value === obs2.value;
-	      
+		  //No empty values will be saved for new obs
+		  if(o.value.toString().trim() !== "") newRestObs.push({concept:o.concept,value:o.value});		  		  
+	      }	      
 	  }
-	  else if(obs2.obs === undefined) return false;
-	  else if(obs1.obs.length != obs2.obs.length) return false;
-	  else {			
-	      obs1.obs.sort(compare);
-	      obs2.obs.sort(compare);			
-	      for(var i in obs1.obs) {
-		  if(!isIdentical(obs1.obs[i],obs2.obs[i])) {
-		      return false;
-		  }
-	      }
-	  }
-	  return true;
-      }
-
-      
-      function getObsToVoid(originalObs,obs) {
-	  var obsToVoid = [];
-	  for(var i in originalObs) {
-	      var found = false;
-	      for(var j in obs) {
-		  if(originalObs[i].concept.uuid === obs[j].concept) {
-		      if(isIdentical(originalObs[i],obs[j])) {
-			  obs.splice(j,1); //don't resubmit
-			  found = true;
-			  break;
-		      }
-		  }
-	      }
-	      if(!found) {
-		  obsToVoid.push(originalObs[i].uuid); //void as key=value is not the same
-	      }
-	  }
-	  return obsToVoid;
+	  return hasChanged;
       }
 
 
+     
       function submitPersonAttributes(personUuid,personAttributes) {
 
 	  var oldAttrs = personAttributes.oldPersonAttributes || [];
@@ -309,8 +278,14 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
 	  
       function getRestData(newEncounter) {
-	  var restObs = [];
-	  getNewRestObs(newEncounter.obs,restObs);	 
+	  var restObs1 = [],restObs=[],obsToUpdate=[];
+	  //getNewRestObs(newEncounter.obs,restObs);
+
+	  getRestObs(newEncounter.obs,restObs,obsToUpdate);
+	  console.log('restObs');
+	  console.log(restObs);
+	  console.log('obsToUpdate');
+	  console.log(obsToUpdate);
 
 	  var data = {uuid:newEncounter.uuid,
 		      patient: newEncounter.patient,
@@ -320,6 +295,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 		      provider:newEncounter.provider,
 		      form:newEncounter.form,
 	      	      obs: restObs,
+		      obsToUpdate: obsToUpdate
 		      //breaksubmit: true
 		     }
 	  return data;
