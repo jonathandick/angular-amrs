@@ -53,7 +53,6 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
       //If savedFormId provided, return individual form. Otherwrise return all forms.
       FormEntryService.getDrafts = function(savedFormId) {
-	  console.log('FormEntryService.getDrafts()');
 	  if(savedFormId) {
 	      var form = local.get(draftsTable,savedFormId,Auth.getPassword());
 	      
@@ -189,9 +188,10 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
 
       function getRestObs(obs,newRestObs,obsToUpdate) {
-	  var hasChanged = false;
+	  var hasChanged = false,o;
 	  for(var i in obs) {
-	      var o = obs[i];
+	      o = obs[i];
+	      if(o === null) continue;
 	      if ('obs' in o) {
 		  
 		  var obsGroup = {concept:o.concept,groupMembers:[]};

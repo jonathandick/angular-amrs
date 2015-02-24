@@ -60,11 +60,9 @@ formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','En
   function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService,$timeout) {	
       var patientUuid = $stateParams.patientUuid; 
       $scope.newEncounter = {};
-
+      
       if($stateParams.savedFormId) { //loading a saved form
 	  var savedEncounter = FormEntryService.getDrafts($stateParams.savedFormId);	  
-	  console.log('formentry controller');
-	  console.log(savedEncounter);
 	  if(savedEncounter === null) savedEncounter = FormEntryService.getPendingSubmission($stateParams.savedFormId);
 	  patientUuid = savedEncounter.patient;	  
 	  $scope.newEncounter = savedEncounter;	  

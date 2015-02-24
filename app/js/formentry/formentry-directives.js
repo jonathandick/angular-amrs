@@ -84,7 +84,7 @@ formEntry.directive('patientDemographics', [function() {
 	    scope:false,
 	    controller: function($scope) {
 		$scope.id = 0;
-
+		$scope.obsCount = 0;
 		
 		this.getId = function() {
 		    return $scope.id++;
@@ -110,8 +110,11 @@ formEntry.directive('patientDemographics', [function() {
 			//console.log($scope.newEncounter);
 			//console.log('error creating lineage: ' +  parentLineage);
 			return false; //It should not be possible for there not to be a parent object
-		    }		    
-		    
+		    }	
+		    //if the model already exists (e.g. the data is from a saved form), don't recreated it.
+		    if(getter.obs && getter.obs[id]) {
+			return;
+		    }
 		    if(getter.obs === undefined) getter["obs"] = []; 		    
 		    getter.obs[id] = item;		    
 		    
@@ -119,7 +122,7 @@ formEntry.directive('patientDemographics', [function() {
 
 	    },
 	    link: function(scope,element,attrs,ctrl,transclude) {
-						
+		
 		function getValue(obs) {
 		    var trueConceptUuid = 'a899b35c-1350-11df-a1f1-0026b9348838';
 		    var falseConceptUuid = 'a899b42e-1350-11df-a1f1-0026b9348838';
@@ -139,14 +142,15 @@ formEntry.directive('patientDemographics', [function() {
 		    else return undefined;
 		}
 
+
+
 		function loadObs(obs,curSchema) {
-		    //console.log(obs);
 		    for(var j in obs) {
 			var schema, concept = obs[j].concept.uuid, id = ctrl.getId(),value;
 			
 			if(obs[j].groupMembers) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
 			else {
-			    schema = curSchema + " obs[concept-uuid='" + concept + "']";			    			
+			    schema = curSchema + " obs[concept-uuid='" + concept + "']";	    			
 			    value = getValue(obs[j]);			    
 			}
 			var matching = $(schema);
@@ -165,13 +169,9 @@ formEntry.directive('patientDemographics', [function() {
 				}
 			    }
 			});
-			//console.log('schema: ' + schema);
-			//console.log('lineage:' + lineage);
-			//console.log(getter(scope));
+
 			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
 			if(getter(scope) !== undefined && getter(scope).value !== undefined && getter(scope).value !== "") {
-			    //console.log('lineage is full: ' + lineage);
-			    //console.log('value: ' + getter(scope).value);
 			    var e = angular.element(matching[0].outerHTML);
 			    matching.after(e);
 			    $compile(e)(scope);
@@ -196,9 +196,7 @@ formEntry.directive('patientDemographics', [function() {
 
 		//This converts an angular formentry represetnation of obs to the openmrs rest ws version. 
 		//The loadObs() function requires the obs to be in the same format as the openmrs rest object.
-		function loadSavedObs(obs,obsToLoad) {
-		    console.log('converting obs');
-		    console.log(obs);
+		function toRESTStyleObs(obs,obsToLoad) {
 		    var o, f = {};
 		    for(var i in obs) {
 			o = obs[i];
@@ -220,21 +218,14 @@ formEntry.directive('patientDemographics', [function() {
 		    }
 		}
 
-			
-			
 
 		/*
-		  NOTE: This assumes there are no obsGroups in the obs. 
+		  The obs are saved from the previous encounter. This means that if new dom elements
+		  were created, they will not be represented on the current dom. Adding dom elements
+		  based on the model still needs to be implemented.
 		*/
 		function loadSavedEncounter(savedEncounter) {		    
-		    var obs = [];
-		    loadSavedObs(savedEncounter.obs,obs);		    
-		    scope.personAttributes = savedEncounter.personAttributes;
-
-		    $timeout(function() {
-			loadObs(obs,'encounter-form');			
-		    });
-
+		    scope.personAttributes = savedEncounter.personAttributes;		    
 		}
 		    
 
@@ -272,15 +263,10 @@ formEntry.directive('patientDemographics', [function() {
 		}
 		
 		scope.saveToDrafts = function() {
-		    //console.log('save to drafts');
-		    //console.log(scope.newEncounter);
 		    FormEntryService.saveToDrafts(scope.newEncounter,scope.personAttributes);
-		    //console.log('savedFormId: ' + scope.newEncounter.savedFormId);
 		}
 
 		scope.submit = function() {
-		    //console.log('scope.submit() ');
-		    
 		    if(validate()) {		    	
 			FormEntryService.submit(scope.newEncounter,scope.personAttributes);
 			$state.go("patient",{uuid:scope.newEncounter.patient});
@@ -325,6 +311,7 @@ formEntry.directive('patientDemographics', [function() {
 	    require:"^encounterForm",
 	    link: function(scope,element,attrs,ctrl,transclude) {
 		var id = ctrl.getId();
+		
 
 		var conceptUuid = attrs['conceptUuid'];
 		var parentLineage = angular.element(element).parent().attr('lineage');
@@ -370,6 +357,7 @@ formEntry.directive('patientDemographics', [function() {
 	    priority: 100000,
 	    require:"^encounterForm",
 	    link: function(scope,elem,attrs,ctrl,transclude) {		
+		
 		var obs = {concept:attrs.conceptUuid};	    
 		var encScope = ctrl.getEncounterFormScope();		
 		var lineage,checkboxValue;
@@ -396,10 +384,6 @@ formEntry.directive('patientDemographics', [function() {
 
 		function setValue(newValue) {
 		    if(newValue === undefined) return;
-		    //console.log('setting value: ' + newValue);
-		    //console.log('lineage: ' + lineage);
-		    //console.log(encScope.newEncounter);
-		    
  
 		    if (Object.prototype.toString.call(newValue) === "[object Date]") {
 			newValue = newValue.toISOString();
