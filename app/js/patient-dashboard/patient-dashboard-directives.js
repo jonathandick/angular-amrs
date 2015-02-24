@@ -42,7 +42,7 @@ angular.module('patientDashboard',['openmrsServices','flex','utility.widgets','i
 		    if(scope.busy === true) return; 		    
 		    scope.busy = true;
 
-		    var params = {startIndex:scope.nextStartIndex, patient:scope.patientUuid,limit:10};
+		    var params = {startIndex:scope.nextStartIndex, patient:scope.patientUuid,limit:20};
 		    
 		    EncounterService.patientQuery(params,function(data) {		
 			scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);

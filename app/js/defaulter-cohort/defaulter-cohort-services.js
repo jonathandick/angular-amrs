@@ -57,7 +57,7 @@ dc.factory('DefaulterCohort',['$http',
 	      console.log("getting defaulter cohorts from server");
 	      
               $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function(data) {
-		  alert('success getting data from dc server');		  
+		  //alert('success getting data from dc server');		  
                   local.setItem("defaulterCohorts",JSON.stringify(data));
 		  callback(data);
               }).error(function(error,status) {

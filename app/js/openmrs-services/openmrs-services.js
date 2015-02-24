@@ -413,7 +413,12 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
       
 
       //NEEDS TO BE CHANGED FROM ENCOUNTER.GET TO ENCOUNTER.QUERY WITH A CUSTOM REP THAT DOES NOT INCLUDE OBS
+      
       EncounterService.patientQuery = function(params,callback) {
+	  var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
+	  v += ",encounterType:ref,provider:ref)";
+
+	  params.v = v;
 	  Encounter.get(params).$promise.then(function(data) {
 	      if(callback) { return callback(data); }
 	      else { return data};
@@ -433,15 +438,13 @@ openmrsServices.factory('EncounterService',['$http','Encounter',
 	      .success(function(data, status, headers, config) {
 		  callback(data);
 		  if(data.error) {
-		      console.log('EncounterService.submit() : error in rest response');
-		      
+		      console.log('EncounterService.submit() : error in rest response');		      
 		  }
 	      })
 	      .error(function(data, status, headers, config) {
 		  console.log("EncounterService.submit() : error:");
 		  callback(data);
 		  console.log(data);
-		  console.log(status);
 	      });
 
       };

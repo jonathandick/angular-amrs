@@ -124,20 +124,11 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  console.log('FormEntryService.submit() : submitting encounter');
 
 	  var restData = getRestData(newEncounter);
-
 	  var obsToUpdate = restData.obsToUpdate;
 	  delete restData.obsToUpdate;
 	  
-	  //return;
-	  
-
-	  ///if(newEncounter.oldEncounter) obsToVoid = getObsToVoid(newEncounter.oldEncounter.obs,restData.obs);
-
-	  EncounterService.submit(restData,function(data) {	 	      
-	      
+	  EncounterService.submit(restData,function(data) {	 	      	      
 	      if(newEncounter.savedFormId) FormEntryService.removeFromDrafts(newEncounter.savedFormId);
-	      
-	      //FormEntryService.saveToPendingSubmission(newEncounter);
 	      
 	      if(data === undefined || data === null || data.error) {
 		  console.log("FormEntryService.submit() : error submitting. Saving to local");		  
@@ -147,20 +138,16 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	      }
 	      else {
 		  Flex.remove(EncounterService,newEncounter.uuid);
-
 		  if(newEncounter.savedFormId !== undefined) {
 		      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
 		  }
-		  console.log('FormEntryService.submit() : checking for obs to void');
-
 		  if(obsToUpdate.length > 0) {
 		      ObsService.updateObsSet(obsToUpdate,function(data) {			  
 			  console.log(data);
 		      });		      
 		  }
 		      
-		  submitPersonAttributes(newEncounter.patient,personAttributes);
-		  //Flex.getFromServer(PatientService,newEncounter.patient,true,Auth.getPassword());		  
+		  submitPersonAttributes(newEncounter.patient,personAttributes);		  
 	      }
 	      return data;
 	  });
@@ -282,10 +269,6 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  //getNewRestObs(newEncounter.obs,restObs);
 
 	  getRestObs(newEncounter.obs,restObs,obsToUpdate);
-	  console.log('restObs');
-	  console.log(restObs);
-	  console.log('obsToUpdate');
-	  console.log(obsToUpdate);
 
 	  var data = {uuid:newEncounter.uuid,
 		      patient: newEncounter.patient,
