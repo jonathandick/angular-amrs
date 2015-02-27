@@ -4,9 +4,71 @@
 
 var formEntry = angular.module('openmrs.formentry');
 
-formEntry.directive('patientDemographics', [function() {
-	var static_dir = 'app/';
+formEntry    
+    .directive('htmlForm', ['$parse','$compile',
+	function($parse,$compile) {
+	    return {
+		restrict: "E",
+		scope:false,
+		controller: function($scope) {
+		    $scope.id = 0;
+                    $scope.obsCount = 0;
+		    $scope.form = {};
+		    
+                    this.getId = function() {
+			return $scope.id++;
+                    }
+		    
+                    this.getObs = function() {
+			return $scope.newEncounter.obs;
+                    }
+		    
+                    this.getFormScope = function() {
+			return $scope;
+                    }
+		    
+                    this.setObs = function(lineage, value) {
+			var oSetter = $parse(lineage).assign;
+			oSetter($scope,oSetter);
+                    }
+		    
+                    this.addToModel = function(parentLineage,id,item) {
+		    
+			var getter = $parse(parentLineage)($scope);
+			if(getter === undefined) {
+                            $scope.obs = [];
+                            getter = $scope.obs;
+			}
+			//if the model already exists (e.g. the data is from a saved form), don't recreated it.
+			else if(getter[id]) return;
+			getter[id] = item;
+                    }
+		    
+		},
 
+		link : function(scope,element,attrs) {		
+
+		    function validate() { 
+			var isValid = $("form").valid();
+			return isValid;
+		    }
+		    
+		    scope.saveToDrafts = function() {
+			FormEntryService.saveToDrafts(scope.encounter,scope.personAttributes);
+		    }
+		    
+		    scope.submit = function() {
+			if(validate()) {		    	
+			    FormEntryService.submit(scope.encounter,scope.personAttributes);
+			    $state.go("patient",{uuid:scope.encounter.patient});
+			}
+		    };
+		}
+	    }
+	}])
+    .directive('patientDemographics', [function() {
+	var static_dir = 'app/';
+	
 	return {
 	    restrict : "E",
 	    scope : {
@@ -17,6 +79,7 @@ formEntry.directive('patientDemographics', [function() {
 	    templateUrl: static_dir + "js/formentry/views/patient-demographics.html",	    
 	}
     }])
+
     .directive('clinicLocationsDropdown',['LocationService','Flex',function() {
 	var static_dir = 'app/';
 	return {
@@ -37,6 +100,7 @@ formEntry.directive('patientDemographics', [function() {
 	    templateUrl : static_dir + "js/formentry/views/locations.html",
 	}
     }])
+
     .directive('providersDropdown',['ProviderService','Flex',function() {
 	var static_dir = 'app/';
 	return {
@@ -59,6 +123,7 @@ formEntry.directive('patientDemographics', [function() {
 	    templateUrl : static_dir + "js/formentry/views/providersDropdown.html",
 	}
     }])
+
     .directive('outreachProvidersDropdown',['DefaulterCohort',function(DefaulterCohort) {
 	var static_dir = 'app/';
 	return {
@@ -77,123 +142,273 @@ formEntry.directive('patientDemographics', [function() {
 	    templateUrl : static_dir + "js/formentry/views/outreachProvidersDropdown.html",
 	}
     }])
-    .directive('encounterForm',['$parse','$compile','$state','$timeout','FormEntryService',
-       function($parse,$compile,$state,$timeout,FormEntryService) {
+
+    .directive('encounter',['$parse','$compile','$state','$timeout','FormEntryService','Flex','PatientService','Auth',
+       function($parse,$compile,$state,$timeout,FormEntryService,Flex,PatientService,Auth) {
 	return {
 	    restrict: "E",
 	    scope:false,
-	    controller: function($scope) {
-		$scope.id = 0;
-		$scope.obsCount = 0;
-		
-		this.getId = function() {
-		    return $scope.id++;
-		}
-
-		this.getObs = function() {
-		    return $scope.newEncounter.obs;
-		}
-
-		this.getEncounterFormScope = function() {
-		    return $scope;
-		}		
-
-		this.setObs = function(lineage, value) {
-                    var oSetter = $parse(lineage).assign;
-		    oSetter($scope,oSetter);
-		}
-
-		this.addToModel = function(parentLineage,id,item) {
-		    
-		    var getter = $parse(parentLineage)($scope);
-		    if(getter === undefined) {
-			//console.log($scope.newEncounter);
-			//console.log('error creating lineage: ' +  parentLineage);
-			return false; //It should not be possible for there not to be a parent object
-		    }	
-		    //if the model already exists (e.g. the data is from a saved form), don't recreated it.
-		    if(getter.obs && getter.obs[id]) {
-			return;
-		    }
-		    if(getter.obs === undefined) getter["obs"] = []; 		    
-		    getter.obs[id] = item;		    
-		    
-		}
-
-	    },
+	    require:"^htmlForm",
 	    link: function(scope,element,attrs,ctrl,transclude) {
+
+		/*
+		  The obs are saved from the previous encounter. This means that if new dom elements
+		  were created, they will not be represented on the current dom. Adding dom elements
+		  based on the model still needs to be implemented.
+		*/
+		function loadSavedEncounter(savedEncounter) {		    
+		    Flex.get(PatientService,savedEncounter.patient,true,Auth.getPassword(),function(patient) { 
+			$scope.patient = PatientService.Patient(patient.patientData);	  	     	      
+		    });
+		    scope.form.personAttributes = savedEncounter.personAttributes;		    
+		}
+		    
 		
-		function getValue(obs) {
-		    var trueConceptUuid = 'a899b35c-1350-11df-a1f1-0026b9348838';
-		    var falseConceptUuid = 'a899b42e-1350-11df-a1f1-0026b9348838';
-
-		    if(obs.value) {
-			var v = obs.value;
-			if(Object.prototype.toString.call(v) == "[object Object]") {
-			    v = obs.value.uuid;
-			}
-			/*
-			if(v === trueConceptUuid) v = "true";
-			else if(v === falseConceptUuid) v = "false";
-			*/
-
-			return v;
-		    } 
-		    else return undefined;
+		function loadExistingEncounter(restEncounter) {
+		    //console.log("loading encounter from server");
+		    scope.form.encounter = {uuid:restEncounter.uuid,
+					    patient:restEncounter.patient.uuid,
+					    encounterDatetime:restEncounter.encounterDatetime,
+					    encounterType:restEncounter.encounterType.uuid, 
+					    location:restEncounter.location.uuid,
+					    provider:restEncounter.provider.uuid,
+					    form:restEncounter.form.uuid
+					   }
+		    
+		    Flex.get(PatientService,restEncounter.patient.uuid,true,Auth.getPassword(),function(patient) { 
+			scope.patient = PatientService.Patient(patient.patientData);	  	     	      
+		    });
 		}
 
-
-
-		function loadObs(obs,curSchema) {
-		    for(var j in obs) {
-			var schema, concept = obs[j].concept.uuid, id = ctrl.getId(),value;
-			
-			if(obs[j].groupMembers) schema = curSchema +  " obs-group[concept-uuid='" + concept + "']";	    
-			else {
-			    schema = curSchema + " obs[concept-uuid='" + concept + "']";	    			
-			    value = getValue(obs[j]);			    
+		
+		scope.$watch('encounter',function(encounter,oldValue){		    
+		    if(encounter !== undefined && encounter !== null && encounter !== "") {
+			if(encounter.savedFormId) {
+			    loadSavedEncounter(encounter);
 			}
-			var matching = $(schema);
-			var getter;
-			var lineage;
-
-			
-			matching.each(function(index) {
-			    var c = $(this).find('input[type="checkbox"]');
-			    if(c.length === 0 || (c.length > 0 && c.attr('value') === value)) {								
-				lineage = $(this).attr('lineage');				
-				getter = $parse(lineage);
-				if(getter(scope) === undefined) {
-				    console.log("Error with schema");
-				    return false;
-				}
-			    }
-			});
-
-			//There is no available node in the DOM. We need to create a cloned dom element and add to the dom.
-			if(getter(scope) !== undefined && getter(scope).value !== undefined && getter(scope).value !== "") {
-			    var e = angular.element(matching[0].outerHTML);
-			    matching.after(e);
-			    $compile(e)(scope);
-			    getter = $parse(e.attr('lineage'));
+			else if(encounter.isNewEncounter) {
+			    //loadPersonAttributes(encounter.patient);
 			}
-
-			var setter = getter.assign,existingValue;			    			
-			if(obs[j].value) {
-			    if(obs[j].existingValue) existingValue = obs[j].existingValue;
-			    else existingValue = obs[j].value;
-
-			    if(setter) setter(scope,{concept:concept,value:value,uuid:obs[j].uuid,existingValue:existingValue});
-			} else if(obs[j].groupMembers){			    
-			    getter(scope).uuid = obs[j].uuid;
-			    //setter(scope,{concept:concept,uuid:obs[j].uuid});
-			    loadObs(obs[j].groupMembers,schema + ":last");
-			}
-			
 		    }
+		    
+		});
+
+		
+		scope.$watch('existingEncounter',function(existingEncounter,oldValue){		    
+		    if(existingEncounter !== undefined && existingEncounter !== null && existingEncounter !== "") {
+			loadExistingEncounter(existingEncounter);			
+		    }
+		});
+
+	    }
+	}
+    }])
+
+    .directive('obsGroup',['$parse','$compile',function($parse,$compile) {
+	return {
+	    restrict: "E",
+	    scope: {},
+	    transclude:true,
+	    replace:true,
+	    require:"^htmlForm",
+	    link: function(scope,elem,attrs,ctrl,transclude) {
+		var id = ctrl.getId();
+		var formScope = ctrl.getFormScope();		
+
+		var conceptUuid = attrs['conceptUuid'];
+		var parentLineage = angular.element(elem).parent().attr('lineage');
+		if(parentLineage === undefined || parentLineage === null) parentLineage = "form.obs";
+		else parentLineage += '.obs';
+
+		if($parse(parentLineage)(formScope) === undefined) formScope.form.obs = [];
+
+		var lineage = parentLineage + '[' + id + ']';
+
+		elem.attr('lineage',lineage);
+		ctrl.addToModel(parentLineage,id,{concept:conceptUuid,obs:[]});
+ 	
+		transclude(scope,function(clone,scope){		    		    
+		    if(elem[0].attributes['repeat']) {			
+			var b = angular.element("<button ng-click='getClone()'>Repeat</button><br/>");
+			$compile(b)(scope);
+			elem.before(b);
+		    }
+		    elem.append(clone);
+		}); 
+
+		if(elem[0].attributes['repeat']) {			
+		    var e = elem.clone();
+		    e.removeAttr('lineage class repeat');
+		    e.find('*').removeAttr('lineage class');
+		    e.find('select').attr('obs',""); 
+		    scope.template = e[0].outerHTML;
+		    scope.$parent.templates[lineage] = e[0].outerHTML;
+		}
+		
+		scope.getClone = function() {
+		    
+		    var node = $compile(scope.template)(scope);
+		    elem.append('<br/>');
+		    elem.after(node);
+		};		
+				
+		function loadData(obsGroup,domElements) {
+		    var o,m;
+		    domElements.each(function() {
+			if(this === undefined) return false;
+			var conceptUuid = this.attributes['concept-uuid'].value;			    
+			var lineage,model,setter,value,existingValue,members;
+			for(var j in obsGroup) {			    
+			    o = obsGroup[j];
+			    if(o.concept.uuid !== conceptUuid) continue;
+			    if(o.isLoaded) continue;
+
+			    lineage = this.attributes['lineage'].value;
+			    model = $parse(lineage)(formScope);
+			    setter = $parse(lineage).assign;
+
+			    if(model.value || model.obs) {
+				scope.getClone();
+				break;
+			    }
+	
+			    o.isLoaded = true;
+			    if(o.value) {
+				value = getValue(o);				
+				existingValue = o.exitingValue || o.value;
+				setter(formScope, {concept:conceptUuid,value:value,uuid:o.uuid,existingValue:existingValue});				
+			    } else if(o.groupMembers){	//Come back to this, needs to be moved to obsgroup, only obsgroups can have obs/obsgroups	
+				members = $(elem).find('obs, obsGroup');
+				setter(formScope, {concept:conceptUuid,uuid:o.uuid,obs:[]});				
+				loadData(o.groupMembers,members);
+			    }
+			    break;
+			}
+		    });
 		}
 
+		var parentLineage = elem.parent().attr('lineage');
+		
+		if(parentLineage === undefined) {
+		    formScope.$watch('existingEncounter', function(existingEncounter,oldValue) {		    
+			if(existingEncounter) {
+			    loadData(existingEncounter.obs,elem);
+			}
+		    });			 
+		    
+		}
+	    },
+	}
+    }])
 
+    .directive('obs', ['$parse', '$compile', function($parse, $compile) {	
+	return {
+	    restrict: "E",
+	    scope: true,
+	    priority: 100000,
+	    require:"^htmlForm",
+	    link: function(scope,elem,attrs,ctrl,transclude) {		
+		
+		var obs = {concept:attrs.conceptUuid};	    
+		var formScope = ctrl.getFormScope();		
+		var lineage,checkboxValue;
+
+		function init() {
+		    var template = elem[0].outerHTML;
+		    var e = elem.find('select,input');
+		    e.attr('ng-model','selected');
+		    if(e.attr('type') === 'checkbox') checkboxValue = e.attr('value');
+		    $compile(e)(scope);
+
+		    var id = ctrl.getId();			
+		    var parentLineage = angular.element(elem).parent().attr('lineage');
+		    if(parentLineage === undefined || parentLineage === null) parentLineage = "form.obs";
+		    else parentLineage += '.obs';
+
+		    if($parse(parentLineage)(formScope) === undefined) formScope.form.obs = [];
+		    lineage = parentLineage + '[' + id + ']';
+		    elem.attr('lineage',lineage);
+
+		    //Create the "space" in encounter.obs
+		    ctrl.addToModel(parentLineage,id,obs);		    
+		}
+		
+		init();
+		
+
+		function setValue(newValue) {
+		    if(newValue === undefined) return;
+ 
+		    if (Object.prototype.toString.call(newValue) === "[object Date]") {
+			newValue = newValue.toISOString();
+		    }	
+		    var o = $parse(lineage)(formScope);
+		    var setter = $parse(lineage);
+		    
+		    if(checkboxValue) {
+			if(newValue === true) o.value = checkboxValue;
+			else o.value = "";
+		    }
+		    else o.value = newValue;
+		    setter(formScope,o);
+		}
+
+                function getValue(obs) {
+                    var trueConceptUuid = 'a899b35c-1350-11df-a1f1-0026b9348838';
+                    var falseConceptUuid = 'a899b42e-1350-11df-a1f1-0026b9348838';
+
+                    if(obs.value) {
+                        var v = obs.value;
+                        if(Object.prototype.toString.call(v) == "[object Object]") {
+                            v = obs.value.uuid;
+                        }
+                        /*
+                        if(v === trueConceptUuid) v = "true";
+                        else if(v === falseConceptUuid) v = "false";
+                        */
+
+                        return v;
+                    }
+                    else return undefined;
+                }
+
+		function loadData(obsGroup,domElements) {
+		    var o,m,conceptUuid,lineage,model,setter,e,value,existingValue;
+		    domElements.each(function() {
+			if(this === undefined) return false;
+			conceptUuid = this.attributes['concept-uuid'].value;			    
+			for(var j in obsGroup) {			    
+			    o = obsGroup[j];
+			    if(o.concept.uuid !== conceptUuid) continue;
+			    if(o.isLoaded) continue;
+
+			    lineage = this.attributes['lineage'].value;			    
+			    model = $parse(lineage)(formScope);
+			    setter = $parse(lineage).assign;
+			    
+			    if(model.value) {
+				e = angular.element(elem.outerHTML);
+				elem.after(e);
+				$compile(e)(scope);
+				break;
+			    }
+	
+			    o.isLoaded = true;
+			    if(o.value) {				
+				value = getValue(o);
+				existingValue = o.existingValue || value;
+				setter(formScope, {concept:conceptUuid,value:value,uuid:o.uuid,existingValue:existingValue});				
+				if(checkboxValue) {
+				    elem.find("input").attr("checked",true);
+				    scope.selected = true;
+				}
+				else scope.selected = value;
+			    }
+			    break;
+			}
+		    });
+		}
+		
 		//This converts an angular formentry represetnation of obs to the openmrs rest ws version. 
 		//The loadObs() function requires the obs to be in the same format as the openmrs rest object.
 		function toRESTStyleObs(obs,obsToLoad) {
@@ -218,202 +433,78 @@ formEntry.directive('patientDemographics', [function() {
 		    }
 		}
 
-
-		/*
-		  The obs are saved from the previous encounter. This means that if new dom elements
-		  were created, they will not be represented on the current dom. Adding dom elements
-		  based on the model still needs to be implemented.
-		*/
-		function loadSavedEncounter(savedEncounter) {		    
-		    scope.personAttributes = savedEncounter.personAttributes;		    
-		}
-		    
-
-		function loadExistingEncounter(encounter) {
-		    //console.log("loading encounter from server");
-		    scope.newEncounter = {obs:scope.newEncounter.obs};
-		    scope.newEncounter.uuid = encounter.uuid;
-		    scope.newEncounter.patient = encounter.patient.uuid;
-		    scope.newEncounter.encounterDatetime = encounter.encounterDatetime;
-		    scope.newEncounter.encounterType = encounter.encounterType.uuid; //encounter.encounterType.uuid;
-		    scope.newEncounter.location = encounter.location.uuid;
-		    scope.newEncounter.provider = encounter.provider.uuid;
-		    scope.newEncounter.form = encounter.form.uuid;		    
-		    
-
-		    //need to wait for the DOM to finish loading before we populate with obs
-		    $timeout(function() {
-			loadObs(encounter.obs,'encounter-form');
-		    });
-		}
-
-		function loadPersonAttributes(personUuid) {
-		    scope.personAttributes = {};
-		    var attributes = scope.patient.patientData.person.attributes;
-		    for(var i in attributes) {
-			var attr = attributes[i];
-			scope.personAttributes[attr.attributeType.uuid] = attr.value;
-		    }
-		    scope.personAttributes.oldPersonAttributes = attributes;
-		}
-		
-		function validate() { 
-		    var isValid = $("form").valid();
-		    return isValid;
-		}
-		
-		scope.saveToDrafts = function() {
-		    FormEntryService.saveToDrafts(scope.newEncounter,scope.personAttributes);
-		}
-
-		scope.submit = function() {
-		    if(validate()) {		    	
-			FormEntryService.submit(scope.newEncounter,scope.personAttributes);
-			$state.go("patient",{uuid:scope.newEncounter.patient});
-		    }
-		};
-
-
-		scope.$watch('newEncounter',function(newEncounter,oldValue){		    
-		    if(newEncounter !== undefined && newEncounter !== null && newEncounter !== "") {							
-			
-			if(newEncounter.savedFormId) {
-			    loadSavedEncounter(newEncounter);
-			}
-			else if(newEncounter.isNewEncounter) {
-			    loadPersonAttributes(newEncounter.patient);
-			}
-		    }
-		    
+		scope.$watch('selected',function(newValue,oldValue) {		   
+		    setValue(newValue);
 		});
 
 		
-		scope.$watch('oldEncounter',function(oldEncounter,oldValue){		    
-		    if(oldEncounter !== undefined && oldEncounter !== null && oldEncounter !== "") {
-			console.log('oldEncounter has changed');
-			scope.loadingData = true;  //starts a spinner
-			loadExistingEncounter(oldEncounter);
-			loadPersonAttributes(oldEncounter.patient.uuid);
-			scope.loadingData = false; //stops a spinner
-		    }
-		});
-
+		//Only watch for first level obs/obsgroups. Any obsgroups will be filled when the parent obs is loaded. 
+		var parentLineage = elem.parent().attr('lineage');
+		if(parentLineage === undefined) {
+		    formScope.$watch('existingEncounter', function(restEncounter,oldValue) {		    
+			if(restEncounter) loadData(restEncounter.obs,elem);
+		    });			 
+		}
 	    }
 	}
-    }])
-
-    .directive('obsGroup',['$parse','$compile',function($parse,$compile) {
-	return {
-	    restrict: "E",
-	    scope: {},
-	    transclude:true,
-	    replace:true,
-	    require:"^encounterForm",
-	    link: function(scope,element,attrs,ctrl,transclude) {
-		var id = ctrl.getId();
-		
-
-		var conceptUuid = attrs['conceptUuid'];
-		var parentLineage = angular.element(element).parent().attr('lineage');
-		if(parentLineage === undefined || parentLineage === null) parentLineage = "newEncounter";
-		var lineage = parentLineage + '.obs[' + id + ']';
-
-		element.attr('lineage',lineage);
-		ctrl.addToModel(parentLineage,id,{concept:conceptUuid,obs:[]});
-	
-		transclude(scope,function(clone,scope){		    		    
-		    if(element[0].attributes['repeat']) {			
-			var b = angular.element("<button ng-click='getClone()'>Repeat</button><br/>");
-			$compile(b)(scope);
-			element.before(b);
-		    }
-		    element.append(clone);
-		}); 
-
-		if(element[0].attributes['repeat']) {			
-		    var e = element.clone();
-		    e.removeAttr('lineage class repeat');
-		    e.find('*').removeAttr('lineage class');
-		    e.find('select').attr('obs',""); 
-		    scope.template = e[0].outerHTML;
-		    scope.$parent.templates[lineage] = e[0].outerHTML;
-		}
-		
-		scope.getClone = function() {
-		    
-		    var node = $compile(scope.template)(scope);
-		    element.append('<br/>');
-		    element.after(node);
-		};		
-				
-	    },
-	}
-    }])
-
-    .directive('obs', ['$parse', '$compile', function($parse, $compile) {	
+    }])	
+    .directive('personAttribute', ['$parse', '$compile', function($parse, $compile) {	
 	return {
 	    restrict: "E",
 	    scope: true,
 	    priority: 100000,
-	    require:"^encounterForm",
+	    require:"^htmlForm",
 	    link: function(scope,elem,attrs,ctrl,transclude) {		
-		
-		var obs = {concept:attrs.conceptUuid};	    
-		var encScope = ctrl.getEncounterFormScope();		
-		var lineage,checkboxValue;
 
+		var formScope = ctrl.getFormScope();
+		var uuid = attrs['uuid'];
+		var checkboxValue;
+		
 		function init() {
-		    var template = elem[0].outerHTML;
 		    var e = elem.find('select,input');
 		    e.attr('ng-model','selected');
 		    if(e.attr('type') === 'checkbox') checkboxValue = e.attr('value');
-		    $compile(e)(scope);
-
-		    var id = ctrl.getId();			
-		    var parentLineage = angular.element(elem).parent().attr('lineage');
-		    if(parentLineage === undefined || parentLineage === null) parentLineage = "newEncounter";
-		    lineage = parentLineage + '.obs[' + id + ']';
-		    elem.attr('lineage',lineage);
-
-		    //Create the "space" in newEncounter.obs
-		    ctrl.addToModel(parentLineage,id,obs);		    
+		    $compile(e)(scope);		    
+		    if(formScope.personAttributes === undefined) formScope.personAttributes = {};
+		    ctrl.addToModel('personAttributes',uuid,"");		    
 		}
-
 		init();
-		
+
 
 		function setValue(newValue) {
-		    if(newValue === undefined) return;
- 
+		    if(newValue === undefined) return; 
 		    if (Object.prototype.toString.call(newValue) === "[object Date]") {
 			newValue = newValue.toISOString();
 		    }	
-		    var o = $parse(lineage)(encScope);
-		    
-		    if(checkboxValue) {
-			if(newValue === true) o.value = checkboxValue;
-			else o.value = "";
-		    }
-		    else o.value = newValue;
+		    formScope.personAttributes[uuid] = newValue;
 		}
 
-		
+	
 		scope.$watch('selected',function(newValue,oldValue) {		   
 		    setValue(newValue);
 		});
-		
-		encScope.$watch(lineage, function(newValue,oldValue) {		    
-		    if(newValue && newValue.value) {
-			if(checkboxValue) {
-			    elem.find("input").attr("checked",true);
-			    scope.selected = true;
-			}
-			else scope.selected = newValue.value;
-		    }
-		});			 
 
+		formScope.$watch('form.personAttributes["' + uuid + '"]',function(value) {
+		    if(checkboxValue) {
+			elem.find("input").attr("checked",true);
+			scope.selected = true;
+		    }
+		    else scope.selected = value;
+		});
+
+		formScope.$watch('patient', function(value) {
+		    var attributes = scope.patient.patientData.person.attributes;
+		    var attr;
+		    for(var i in attributes) {
+			attr = attributes[i];
+			if(uuid === attr.attributeType.uuid) {
+			    scope.selected = attr.value;
+			    break;
+			}
+		    }
+		});
+		
 	    }
 	}
-    }])		
-
+    }])
 ;

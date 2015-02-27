@@ -10,7 +10,8 @@ var amrsApp = angular.module('amrsApp', ['ui.router',
 					 'openmrsServices',
 					 'flex',
 					 'patientSearch',
-					 'patientDashboard',					 
+					 'patientDashboard',
+					 'spinner',
  					]);
 
 amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
@@ -77,9 +78,9 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
       $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings','FormEntryService',
-	  function ($rootScope, $state, Auth, OpenmrsFlexSettings,FormEntryService) {
-	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
+    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings','FormEntryService','spinnerService',
+	  function ($rootScope, $state, Auth, OpenmrsFlexSettings,FormEntryService,spinner) {
+	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){		  
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
 		      event.preventDefault(); 
@@ -87,6 +88,7 @@ amrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 		  if (toState.url == "/logout") {		      
 		      Auth.logout();
 		  } 
+		  
 	      });
 
 

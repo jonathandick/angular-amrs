@@ -56,28 +56,26 @@ formEntry.controller('SavedFormsCtrl', ['$scope','$stateParams','FormEntryServic
 
 
 
-formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService','$timeout',
-  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService,$timeout) {	
-      var patientUuid = $stateParams.patientUuid; 
-      $scope.newEncounter = {};
+formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','EncounterService','PatientService','FormEntryService','spinnerService',
+  function($scope,$stateParams,Auth,Flex,EncounterService,PatientService,FormEntryService,spinner) {	
+      $scope.patientUuid = $stateParams.patientUuid;       
       
       if($stateParams.savedFormId) { //loading a saved form
-	  var savedEncounter = FormEntryService.getDrafts($stateParams.savedFormId);	  
+	  var savedEncounter = FormEntryService.getDrafts($stateParams.savedFormId);
 	  if(savedEncounter === null) savedEncounter = FormEntryService.getPendingSubmission($stateParams.savedFormId);
-	  patientUuid = savedEncounter.patient;	  
-	  $scope.newEncounter = savedEncounter;	  
+	  $scope.newEncounter = savedEncounter;
       }
       
       else if($stateParams.encounterUuid) { //loading a form for an encounter on the server
-	  //console.log('getting encounter from server');
-	  $scope.encounterUuid = $stateParams.encounterUuid;
-	  Flex.get(EncounterService,$stateParams.encounterUuid,true,Auth.getPassword(),function(data) {	      
-	      $scope.oldEncounter = data;	      	      
-	  });	  
+	  $scope.encounterUuid = $stateParams.encounterUuid;	  	  
+	  Flex.get(EncounterService,$stateParams.encounterUuid,true,Auth.getPassword(),function(data) {	      	      
+	      $scope.existingEncounter = data;	      
+	  });
+	  
       }
       else { //This is loading a new form
 	  var d = new Date();
-	  $scope.newEncounter = {patient:patientUuid,
+	  $scope.newEncounter = {patient:$scope.patientUuid,
 				 form:$stateParams.formUuid,
 				 obs:[],
 				 encounterType:FormEntryService.getEncounterType($stateParams.formUuid),
@@ -87,14 +85,6 @@ formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','En
 	  $scope.personAttributes = {};
       }
 
-      if(patientUuid) {
-	  Flex.get(PatientService,patientUuid,true,Auth.getPassword(),function(patient) { 
-	      $scope.patient = PatientService.Patient(patient.patientData);	  	     
-	      if($scope.newEncounter.isNewEncounter) {		  
-		  $scope.newEncounter.location = $scope.patient.getClinicalHome();
-	      }
-	  });
-      }
 
 
 

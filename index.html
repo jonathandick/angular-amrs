@@ -26,10 +26,9 @@
   <script src="app/bower_components/cryptojs/rollups/rabbit.js"></script>
   <script src="app/bower_components/cryptojs/rollups/sha256.js"></script>
   <script src="app/bower_components/cryptojs/rollups/pbkdf2.js"></script>
-
-  <script src="app/bower_components/ng-spinner/spinner.js"></script>
   
-
+  <script src="app/bower_components/ng-spinner/spinner.js"></script>
+  <!--script src="app/js/spinner/spinner-directives.js"></script-->
  
   <script src="app/bower_components/jquery-validation/dist/jquery.validate.min.js"></script>
 
@@ -61,9 +60,10 @@
 </script>
 </head>
 <body>
+  <spinner id='waiting'></spinner>
   <div ng-include="'app/partials/header.html'"></div>
   <div class="view-container">    
-    <div ui-view class="view-frame">      
+    <div ui-view class="view-frame">            
     </div>
   </div>
 

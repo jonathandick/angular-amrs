@@ -1,6 +1,6 @@
 'use strict';
 
-var app = angular.module('app', []);
+var app = angular.module('spinner', []);
 
 app.controller('controlPanel', function ($scope, spinnerService) {
   $scope.spinnerService = spinnerService;
@@ -128,7 +128,7 @@ app.directive('spinner', function () {
     restrict: 'E',
     template: [
       '<span>',
-      '  <img ng-show="showSpinner" ng-src="{{ url }}" style="padding-right: 7px; width: {{ spinnerSize }}; vertical-align: middle" />',
+      '  <img ng-show="showSpinner" ng-src="app/bower_components/ng-spinner/blue-spinner.gif" class="loading" />',
       '  <span ng-show="loadingText && showSpinner">{{ loadingText }}</span>',
       '  <span ng-show="doneText && !showSpinner">{{ doneText }}</span>',
       '</span>'
