@@ -9,17 +9,21 @@ var DEFAULTER_COHORT_CONTEXT  = "https://testserver1.ampath.or.ke";
 var dc = angular.module('defaulterCohort', ['ngResource','ngCookies','openmrsServices']);
 
 
-dc.factory('DefaulterCohort',['$http',
-  function($http) {
+dc.factory('DefaulterCohort',['$http','spinnerService',
+  function($http,spinner) {
       var DefaulterCohort = {};
 
 
-      DefaulterCohort.init = function() {
+      DefaulterCohort.ping = function() {
+	  $http.get(DEFAULTER_COHORT_CONTEXT).success(function(data) {console.log(data);});
+      }
+
+      DefaulterCohort.init = function() {	  
 	  DefaulterCohort.getOutreachProviders();
       };
 
       DefaulterCohort.get = function(uuid,callback) {
-	  
+	  spinner.show('waiting');
 	  if(uuid === undefined || uuid === "") {
 	      uuid = session.getItem("curDefaulterCohortUuid");
 	  }
@@ -28,6 +32,7 @@ dc.factory('DefaulterCohort',['$http',
 	  var dc = session.getItem(uuid);
 	  if(dc) {	      
 	      callback(JSON.parse(dc));
+	      spinner.hide('waiting');
 	  }
 	  else if (uuid !== undefined && uuid !== "") {
 	      $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohort?defaulter_cohort_uuid=' + uuid).success(function(data) {
@@ -42,6 +47,7 @@ dc.factory('DefaulterCohort',['$http',
 		      local.removeItem("defaulterCohorts");
 		  }
 		  callback(data.defaulter_cohort);
+		  spinner.hide('waiting');
 	      });
 	  }
       };

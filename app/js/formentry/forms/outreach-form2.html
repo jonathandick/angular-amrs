@@ -1,16 +1,14 @@
 <script src="app/js/formentry/forms/outreach_validation.js"></script>
 
 <div ng-controller='FormEntryCtrl'>
-  <div class="container-fluid">
+  <div class="container-fluid" style="background-color:#f9f9ff;">
     <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
 
-    {{obs[35]}}
-
     <html-form rules='outreachFormRules'>
-      <form novalidate class="simple-form" id="outreach_form" name="outreach_form" method='post'>
+	<form novalidate class="simple-form" id="outreach_form" name="outreach_form" method='post' >
+
 	<patient-demographics patient="patient"></patient-demographics>	        
 	<br/>
-
 	<div class="row">
 	  <div class="col-md-6">
 	    <button class="btn btn-custom btn-lg btn-block" ng-click="saveToDrafts()">Save Draft</button><br/>
@@ -25,41 +23,22 @@
 	    <tab heading="Encounter Info">	        
 	    <br/>
 
-	    <div class="form-group">	      
-	      <obs-group concept-uuid='1234'>
-		<obs concept-uuid="e6c52d7e-3e25-4a83-8f9c-55a03bdc653a">
-		  <label for="obs.number_of_call_attempts">Number of call attempts:</label>
-		  <select class="form-control">
-		    <option></option>
-		    <option>1</option>
-		    <option>2</option>
- 		  </select>
-		</obs>
-		<obs concept-uuid="2b90dbd2-8897-49fd-9784-e5999e7312fa">
-                  <label for="contacted_by_phone">Was the patient contacted by phone?</label>
-                  <select class="form-control" id='contacted_by_phone'>
-                    <option value=""></option>
-                    <option value='a899b35c-1350-11df-a1f1-0026b9348838' oldvalue='1065^Yes^99DCT'>Yes</option>
-                    <option value='a8aaf3e2-1350-11df-a1f1-0026b9348838' oldvalue='5622^OTHER NON-CODED^99DCT'>No, a different reason</option>
-                  </select>
-		</obs>
-	      </obs-group>
-
-		
-	    </div>
-
-
 	    <div class="form-group">
               <label for="encounterDatetime">Encounter Date:</label>
               <input type="text" id="encounterDatetime" ng-model="form.encounter.encounterDatetime" name="encounterDatetime"
 		     datepicker-popup="yyyy-MM-dd" is-open="dt.open" ng-click="dt.open=true"/>
 	    </div>
 
-	    <div>
+	    <div class="form-group">
 	      <clinic-locations-dropdown name="location" model="form.encounter.location" label="Clinic Location">
 	      </clinic-locations-dropdown>
 	    </div>
-	  
+
+	    <div class="form-group">
+	      <outreach-providers-dropdown name="provider" model="form.encounter.provider" label="Provider:"></outreach-providers-dropdown>
+	    </div> 
+
+
 	    <div class="form-group">
 	      <person-attribute uuid="72a759a8-1359-11df-a1f1-0026b9348838">
 		<label for="phoneNumber">Phone:</label>
@@ -201,67 +180,68 @@
 	    </div>
 	    
     	    <div class="form-group" id="reason_missed_div">
-	      <legend>Reason for Missed Visit:</legend>
-	      <div class='list-button'>
+	      <label>Reason for Missed Visit:</label>
+	      <div class="list-button">
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
       		  <input id='obs.reason_for_missed_visit.deceased' type='checkbox' value="a89335d6-1350-11df-a1f1-0026b9348838"/>
-		  <span>Deceased</span> 
+		  <label for='obs.reason_for_missed_visit.deceased'>Deceased
+		  </label> 
 		</obs>		
 	      </div>
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.ampath_clinic_transfer' type='checkbox' value="a89ef060-1350-11df-a1f1-0026b9348838"/>
-		  <span>Transferred Clinic</span>
+		  <label for='obs.reason_for_missed_visit.ampath_clinic_transfer'>Transferred Clinic</label>
 		</obs>
 		
 	      </div>
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
-		  <input id="work_commitmentstype" type='checkbox' value="a89e2a54-1350-11df-a1f1-0026b9348838"/>			 
-		  <span>Work Committments</span>
+		  <input id="work_commitments" type='checkbox' value="a89e2a54-1350-11df-a1f1-0026b9348838"/>			 
+		  <label for="work_commitments">Work Committments</label>
 		</obs>  
 	      </div>
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.family_commitments' type='checkbox' value='a89e291e-1350-11df-a1f1-0026b9348838'/>
-		  <span>Family Committments</span>
+		  <label for='obs.reason_for_missed_visit.family_commitments'>Family Committments</label>
 		</obs>  
 	      </div>
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input type='checkbox' id='obs.reason_for_missed_visit.transport_costs' value="a89e2b30-1350-11df-a1f1-0026b9348838"/> 
-		  <span>Transport Costs</span>
+		  <label for='obs.reason_for_missed_visit.transport_costs'>Transport Costs</label>
 		</obs>  
 	      </div>
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.did_not_miss_appointment' type='checkbox' value="a89e26d0-1350-11df-a1f1-0026b934883"/>
-		  <span>Did not actually miss appointment</span>		  
+		  <label for='obs.reason_for_missed_visit.did_not_miss_appointment'>Did not actually miss appointment</label>		  
 		</obs>
 	      </div>  	      
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.school_commitments' type='checkbox' value="a8a08e7a-1350-11df-a1f1-0026b9348838"/>
-		  <span>School Committments</span>
+		  <label for='obs.reason_for_missed_visit.school_commitments'>School Committments</label>
 		</obs>
 	      </div>  
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.travel' type='checkbox' value="a89de152-1350-11df-a1f1-0026b9348838"/>			   
-    		  <span>Travelled</span>
+    		  <label for=>Travelled</label>
 		</obs>
 	      </div>  
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.insecurity' type='checkbox' value="a8a08cfe-1350-11df-a1f1-0026b9348838"/>			   
-    		  <span>Insecurity</span>
+    		  <label for='obs.reason_for_missed_visit.insecurity'>Insecurity</label>
 		</obs>
 
 	      </div>  
@@ -269,65 +249,60 @@
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.forgot_appointment' type='checkbox' value="a89e27f2-1350-11df-a1f1-0026b9348838"/>
-    		  <span>Forgot appointment</span>
+    		  <label for='obs.reason_for_missed_visit.forgot_appointment'>Forgot appointment</label>
 		</obs>
 	      </div>  
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.health_issues' type='checkbox' value="a89de2d8-1350-11df-a1f1-0026b9348838"/>
-    		  <span>To ill to come</span>
+    		  <label for='obs.reason_for_missed_visit.health_issues'>To ill to come</label>
 		</obs>
 	      </div>  
 	      
-	      <div class='list-button'>
-		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">		  
-		  <input id='obs.reason_for_missed_visit.hiv_disclosure' type='checkbox' value="a89ecaa4-1350-11df-a1f1-0026b9348838"/>		  
-		  <span>Disclosure Issues</span>
-		</obs>
-	      </div>  
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.in_good_health' type='checkbox' value="81033c9e-80d4-445a-9899-3a6a9c9520ee"/>
-		  <span>Had medications and felt well</span>
+		  <label for='obs.reason_for_missed_visit.in_good_health'>Had medications and felt well</label>
 		</obs>
 	      </div>  
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.family_conflict' type='checkbox' value="ec9227a3-d078-4ed0-bdc3-e8328a9e549e"/>
-		  <span>Family conflict</span>
+		  <label for='obs.reason_for_missed_visit.family_conflict'>Family conflict</label>
 		</obs>
 	      </div>  
     	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
-		  <label>
 		    <input id='obs.reason_for_missed_visit.conflicting_return_to_clinic_dates' type='checkbox' 
 			   value="04b9e1ce-3463-495b-9c08-7a1a2db779ba"/>
-		    <span>Patient given different date than in AMRS</span>
+		    <label for='obs.reason_for_missed_visit.conflicting_return_to_clinic_dates'>
+		      Patient given different date than in AMRS
+		    </label>
 		</obs>
 	      </div>      	      
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
-		  <input type='checkbox' value="057dae68-3d6f-4d79-926c-ed75a0ce7fd5"/>			   
-		  <span>Patient was admitted</span>
+		  <input type='checkbox' id='reason_for_missed_visit.admitted' value="057dae68-3d6f-4d79-926c-ed75a0ce7fd5"/>			   
+		  <label for='reason_for_missed_visit.admitted'>Patient was admitted</label>
 		</obs>
 	      </div>  
     	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.refusal' type='checkbox' value="a89d25fa-1350-11df-a1f1-0026b9348838"/>
-    		  <span>Patient Refused</span>
+    		  <label for='obs.reason_for_missed_visit.refusal'>Patient Refused</label>
 		</obs>
 	      </div>  
 	      
 	      <div class='list-button'>
 		<obs concept-uuid="a89ef11e-1350-11df-a1f1-0026b9348838">
 		  <input id='obs.reason_for_missed_visit.other_non_coded' type='checkbox' value="a8aaf3e2-1350-11df-a1f1-0026b9348838"/>
-    		  <span>Other</span>
+    		  <label for='obs.reason_for_missed_visit.other_non_coded'>Other</label>
 	      	</obs>
 	      </div>  
 	    </div>
@@ -437,15 +412,14 @@
 	    
 	    <div class="form-group">
 	      
-	      <person-attribute uuid='8d87236c-c2cc-11de-8d13-0010c6dffd0f'>
-		<clinic-locations-dropdown name="transfer_location" label="Clinical Home: (Please update if blank or patient has transferred)">
-		</clinic-locations-dropdown>	    
-	      </person-attribute>
+	      <clinic-locations-dropdown 
+		 name="transfer_location" 
+		 label="Clinical Home: (Please update if patient has transferred)"
+		 model="form.personAttributes['8d87236c-c2cc-11de-8d13-0010c6dffd0f']"
+		 >
+	      </clinic-locations-dropdown>
 	    </div>
 
-	    <div class="form-group">
-	      <outreach-providers-dropdown name="provider" model="form.encounter.provider" label="Provider:"></outreach-providers-dropdown>
-	    </div> 
 
 	  </tab>
 	</tabset>

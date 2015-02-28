@@ -1,5 +1,9 @@
 /* app css stylesheet */
 
+.error {
+    color:red;
+}
+
 .loading {
   position: fixed;
   z-index: 999;
@@ -13,37 +17,27 @@
   right: 0;
 }
 
+.nav-pills > li > a{
+    font-size:small;
+}
 
 .list-button {
-    display: block;
-    width: 100%;
-    margin:1px;
     background-color:#EFEFEF;
-    border-radius:4px;
-    border:1px solid #D0D0D0;
-    overflow:auto;
-    float:left;
-}
-
-.list-button label {
-    float:left;
-    width:4.0em;
-    display: block;    
-    width: 100%;
-}
-
-.list-button label span {
-    text-align:left;
-    padding:3px 25px;
     display:block;
 }
 
-.list-button label input {
-    position:absolute;
-    padding:3px 10px;    
+.list-button label {
+    width: 90%;
+    font-size:x-large;
 }
 
-.list-button input:checked + span {
+.form-group label {
+    font-size:large;
+    font-family: sans-serif;
+}
+
+
+.list-button input:checked  {
     background-color:#ADD8E6;
     overflow:auto;
 }

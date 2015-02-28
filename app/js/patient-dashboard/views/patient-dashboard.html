@@ -7,7 +7,8 @@
 
     <ul class="list-group">
       <li class="list-group-item" style="font-size:large">
-	Patient Name: {{patient.getName()}}
+	
+	<label>Patient Name:</label> {{patient.getName()}}
       </li>
       <li class="list-group-item" style="font-size:large">Identifier(s): <span ng-repeat="i in patient.getIdentifiers()">{{i.display}}; </span></li>
       <li class="list-group-item" style="font-size:large">Birthdate: {{patient.getBirthdate().substring(0,10)}}</li>
@@ -31,7 +32,7 @@
 
 
     <button class="btn btn-custom btn-lg btn-block" ng-click="encounterHistory = !encounterHistory">Encounter History</button>
-    <div collapse="encounterHistory" >
+    <div collapse="!encounterHistory" >
       <h3>Encounter History</h3>              
       <div style="height:350px; overflow:scroll;">
 	<encounters-pane patient-uuid="{{patient.getUuid()}}"></encounters-pane>

@@ -15,8 +15,8 @@
     <hr>
     <h4>Saved Drafts</h4>
     <div class="list-group">
-      <a ui-sref="encounter-form({savedFormId:enc.savedFormId,formUuid:enc.form})" class="list-group-item" ng-repeat="(savedFormId,enc) in savedDrafts">
-	<b>{{enc.p.getName() + ' : ' + enc.encounterDatetime.substring(0,10)}}</b>
+      <a ui-sref="encounter-form({savedFormId:savedFormId,formUuid:form.encounter.form})" class="list-group-item" ng-repeat="(savedFormId,form) in savedDrafts">
+	<b>{{form.patient.getName() + ' : ' + form.encounter.encounterDatetime.substring(0,10)}}</b>
       </a>        
     </div>
 

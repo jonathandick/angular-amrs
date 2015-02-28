@@ -23,6 +23,8 @@ mod.controller('PatientSearchCtrl', ['$scope','Patient','ObsService','$http','Ob
 	      });
 	  }
       });
+
+
    }]);
 
 

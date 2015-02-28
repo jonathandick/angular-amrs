@@ -222,18 +222,20 @@ Patient.prototype.getAttributes = function() {
 //Converts an object in form of {typeUuuid:value} into rest format
 Patient.prototype.setAttributes = function(newAttributes) {
     var existingAttrs = this.getAttributes();
-   
+    
+    var value,restAttr,attr,found;
     for(var attrTypeUuid in newAttributes) {
-	if(attrTypeUuid === "oldPersonAttributes") continue;
-
-	var value = newAttributes[attrTypeUuid];
-	var restAttr = {attributeType:{uuid:attrTypeUuid},value:value};	
-	var attr,found = false; 
+	value = newAttributes[attrTypeUuid];
+	restAttr = {attributeType:{uuid:attrTypeUuid},value:value};	
+	found = false; 
+	console.log('finding: ' + attrTypeUuid);
 	for(var j in existingAttrs) {
 	    attr = existingAttrs[j];
 	    if(attr.attributeType.uuid === attrTypeUuid) {
+		console.log('found attribute, resetting to new value');
 		found = true;
 		existingAttrs[j] = restAttr;
+		break;
 	    }
 	}
 	if(!found) {

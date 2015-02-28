@@ -69,19 +69,17 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
       }
 
 
-
       
-      FormEntryService.saveToDrafts = function(newEncounter,personAttributes) {
-	  if(newEncounter.savedFormId === undefined) { 
-	      var s = JSON.stringify(newEncounter);
-	      newEncounter.savedFormId = getHashCode(s);
+      FormEntryService.saveToDrafts = function(form) {
+	  if(form.savedFormId === undefined) { 
+	      var s = JSON.stringify(form);
+	      form.savedFormId = getHashCode(s);
 	  }
 	  else {
-	      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
-	  }
-	  newEncounter.personAttributes = personAttributes;
+	      FormEntryService.removeFromPendingSubmission(form.savedFormId);
+	  }	  
 
-	  local.set(draftsTable,newEncounter.savedFormId,newEncounter,Auth.getPassword());	  
+	  local.set(draftsTable,form.savedFormId,form,Auth.getPassword());	  
       }
 
       
@@ -120,26 +118,25 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
 
 
-      FormEntryService.submit = function(newEncounter,personAttributes) {	  	  	  
+      FormEntryService.submit = function(form) {	  	  	  
 	  console.log('FormEntryService.submit() : submitting encounter');
-
-	  var restData = getRestData(newEncounter);
+	  var restData = getEncounterRestData(form);
 	  var obsToUpdate = restData.obsToUpdate;
 	  delete restData.obsToUpdate;
-	  
+
 	  EncounterService.submit(restData,function(data) {	 	      	      
-	      if(newEncounter.savedFormId) FormEntryService.removeFromDrafts(newEncounter.savedFormId);
+	      if(form.savedFormId) FormEntryService.removeFromDrafts(form.savedFormId);
 	      
 	      if(data === undefined || data === null || data.error) {
 		  console.log("FormEntryService.submit() : error submitting. Saving to local");		  
-		  newEncounter.restObs = restData.obs;
-		  newEncounter.obsToUpdate = obsToUpdate;
-		  FormEntryService.saveToPendingSubmission(newEncounter,personAttributes);
+		  form.restObs = restData.obs;		  
+		  form.obsToUpdate = obsToUpdate;
+		  FormEntryService.saveToPendingSubmission(form);
 	      }
-	      else {
-		  Flex.remove(EncounterService,newEncounter.uuid);
-		  if(newEncounter.savedFormId !== undefined) {
-		      FormEntryService.removeFromPendingSubmission(newEncounter.savedFormId);
+	      else {		  
+		  Flex.remove(EncounterService,form.encounter.uuid);
+		  if(form.savedFormId !== undefined) {
+		      FormEntryService.removeFromPendingSubmission(form.savedFormId);
 		  }
 		  if(obsToUpdate.length > 0) {
 		      ObsService.updateObsSet(obsToUpdate,function(data) {			  
@@ -147,7 +144,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 		      });		      
 		  }
 		      
-		  submitPersonAttributes(newEncounter.patient,personAttributes);		  
+		  submitPersonAttributes(form);
 	      }
 	      return data;
 	  });
@@ -159,17 +156,9 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  var errors = 0;
 	  var successes = 0;
 	  for(var i in forms) {
-	      var enc = forms[i];
-	      var obsToVoid = enc.obsToVoid;
-	      delete enc.obsToVoid;
-
-	      var data = FormEntryService.submit(enc,{},obsToVoid);
-	      if(data === undefined || data === null || data.error) {	      
-		  errors++;
-	      }
-	      else { successes++;}
+	      var form = forms[i];
+	      FormEntryService.submit(form);
 	  }
-	  alert(successes + " forms submitted successfully. " + errors + " forms with errors, still saved locally.");
       }
 
 
@@ -221,21 +210,23 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
 
      
-      function submitPersonAttributes(personUuid,personAttributes) {
+      function submitPersonAttributes(form) {
 
-	  var oldAttrs = personAttributes.oldPersonAttributes || [];
-	  var newAttrs = personAttributes;
+	  var oldAttrs = form.patient.getAttributes() || [];
+	  var newAttrs = form.personAttributes;
 	  var restAttrs = [];
-	  
-	  var shouldPush;
+	  var personUuid = form.patient.getUuid();
+	  var shouldPush,type;
+
 	  for(var attrTypeUuid in newAttrs) {	      
 	      if(attrTypeUuid === "oldPersonAttributes") continue;
 	      shouldPush = true;
 	      for(var i in oldAttrs) {
-		  var type = oldAttrs[i].attributeType.uuid;
+		  type = oldAttrs[i].attributeType.uuid;
 		  if(attrTypeUuid === type) {
 		      //if the value has not changed, do not resubmit it
 		      if(newAttrs[attrTypeUuid] === oldAttrs[i].value) {
+			  console.log('attribute has not changed');
 			  shouldPush = false;			  
 		      }
 		      break;
@@ -245,8 +236,6 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 	  }
 
 	  for(var i in restAttrs) {
-	      console.log('attr type: ' + attrTypeUuid + ' value: '  + newAttrs[attrTypeUuid]);
-
 	      PersonAttributeService.save(personUuid,restAttrs[i].attributeType,restAttrs[i].value,
 					  function(data) {
 					      console.log(data);
@@ -255,28 +244,22 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
 
 	  //Update local version of patient to reflect new personAttributes
-	  Flex.getFromLocal(PatientService,personUuid,true,Auth.getPassword(),function(data) {
-	      var p = PatientService.Patient(data.patientData);
-	      p.setAttributes(personAttributes);
-	      Flex.save(PatientService,personUuid,p,Auth.getPassword());
-	  });
-			    
+	  form.patient.setAttributes(form.personAttributes);	  
+	  Flex.save(PatientService,personUuid,form.patient,Auth.getPassword());			    
       }
 
 	  
-      function getRestData(newEncounter) {
+      function getEncounterRestData(form) {
 	  var restObs1 = [],restObs=[],obsToUpdate=[];
-	  //getNewRestObs(newEncounter.obs,restObs);
+	  getRestObs(form.obs,restObs,obsToUpdate);
 
-	  getRestObs(newEncounter.obs,restObs,obsToUpdate);
-
-	  var data = {uuid:newEncounter.uuid,
-		      patient: newEncounter.patient,
-		      encounterDatetime:newEncounter.encounterDatetime,
-		      encounterType:newEncounter.encounterType,
-		      location:newEncounter.location,
-		      provider:newEncounter.provider,
-		      form:newEncounter.form,
+	  var data = {uuid:form.encounter.uuid,
+		      patient: form.encounter.patient,
+		      encounterDatetime:form.encounter.encounterDatetime,
+		      encounterType:form.encounter.encounterType,
+		      location:form.encounter.location,
+		      provider:form.encounter.provider,
+		      form:form.encounter.form,
 	      	      obs: restObs,
 		      obsToUpdate: obsToUpdate
 		      //breaksubmit: true
