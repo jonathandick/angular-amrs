@@ -70,14 +70,12 @@ formEntry.controller('FormEntryCtrl', ['$scope','$stateParams','Auth','Flex','En
       }
       else { //This is loading a new form
 	  var d = new Date();
-	  $scope.newEncounter = {patient:$scope.patientUuid,
-				 form:$stateParams.formUuid,
-				 obs:[],
-				 encounterType:FormEntryService.getEncounterType($stateParams.formUuid),
-				 isNewEncounter:true,
-				 encounterDatetime: d.toISOString()
-				};	  
-	  $scope.personAttributes = {};
+	  $scope.encounter = {patient:$scope.patientUuid,
+			      form:$stateParams.formUuid,			   
+			      encounterType:FormEntryService.getEncounterType($stateParams.formUuid),
+			      isNewEncounter:true,
+			      encounterDatetime: d.toISOString()
+			     };	  	  
       }
 
 

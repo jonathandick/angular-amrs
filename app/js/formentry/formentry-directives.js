@@ -181,7 +181,7 @@ formEntry
 			    loadSavedEncounter(encounter);
 			}
 			else if(encounter.isNewEncounter) {
-			    //loadPersonAttributes(encounter.patient);
+			    scope.form.encounter = encounter;			    
 			}
 		    }
 		    
