@@ -335,11 +335,6 @@ formEntry
 		    function setValue(newValue) {
 			if(newValue === undefined) return;
 			
-			if (Object.prototype.toString.call(newValue) === "[object Date]") {
-			    newValue = newValue.toISOString();			    
-			    elem.find("input").val(newValue.substring(0,10));
-			}	
-
 			var o = $parse(lineage)(formScope);
 			var setter = $parse(lineage);
 			
@@ -437,6 +432,11 @@ formEntry
 		    }
 		    
 		    scope.$watch('selected',function(newValue,oldValue) {		   
+
+			if (Object.prototype.toString.call(newValue) === "[object Date]") {
+			    newValue = newValue.toISOString();			    
+			    scope.selected = newValue;
+			}				
 			setValue(newValue);
 		    });
 		    
