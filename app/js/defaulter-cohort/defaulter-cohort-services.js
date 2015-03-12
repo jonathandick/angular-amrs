@@ -30,7 +30,8 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 	  else { session.setItem("curDefaulterCohortUuid",uuid); }
 
 	  var dc = session.getItem(uuid);
-	  if(dc) {	      
+	  console.log('dc: ' + dc + ' uuid: ' + uuid);
+	  if(dc) {
 	      callback(JSON.parse(dc));
 	      spinner.hide('waiting');
 	  }

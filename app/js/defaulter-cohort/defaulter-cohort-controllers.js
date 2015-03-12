@@ -16,7 +16,6 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
       $scope.outreachProviders = DefaulterCohort.getOutreachProviders();
       //Get defaulter cohort if one exists in session
       
-
       function setNumRetired() {
 	  var numRetired = 0;
 	  for(var i in $scope.defaulterCohort.patients) {
@@ -30,7 +29,12 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
 
 	  
       $scope.getDefaulterCohort = function() {
-	  if($scope.defaulterCohortUuid === undefined || $scope.defaulterCohortUuid === null || $scope.defaulterCohortUuid === "") return;
+	  var prevCohortUuid = sessionStorage.getItem('curDefaulterCohortUuid');	  
+	  if($scope.defaulterCohortUuid === undefined || $scope.defaulterCohortUuid === null || $scope.defaulterCohortUuid === "") { 
+	      if(prevCohortUuid) $scope.defaulterCohortUuid = prevCohortUuid;
+	      else return;
+	  }
+
 	  console.log("Getting defaulter cohort...");
 
 	  DefaulterCohort.get($scope.defaulterCohortUuid,function(data) {
@@ -46,6 +50,8 @@ dc.controller('DefaulterCohortCtrl', ['$scope','$http','Auth','DefaulterCohort',
 	      setNumRetired();
 	  });
       };
+
+      $scope.getDefaulterCohort();
 
       
 
